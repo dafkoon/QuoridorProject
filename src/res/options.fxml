@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.shape.Ellipse?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<GridPane fx:id="mainPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.72" xmlns:fx="http://javafx.com/fxml/1" fx:controller="aston.group12.controller.SettingsController">
+  <columnConstraints>
+      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+  </columnConstraints>
+  <rowConstraints>
+    <RowConstraints />
+    <RowConstraints />
+      <RowConstraints />
+      <RowConstraints maxHeight="195.0" minHeight="10.0" prefHeight="100.0" vgrow="SOMETIMES" />
+      <RowConstraints maxHeight="300.0" minHeight="10.0" prefHeight="300.0" vgrow="SOMETIMES" />
+  </rowConstraints>
+   <children>
+      <TabPane prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE" GridPane.rowIndex="4">
+        <tabs>
+          <Tab text="Main">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="104.0" prefWidth="587.0">
+                     <children>
+                        <Button layoutX="36.0" layoutY="232.0" mnemonicParsing="false" onAction="#onResetBtn" text="Reset to Default" />
+                        <Button layoutX="537.0" layoutY="232.0" mnemonicParsing="false" onAction="#onSaveBtn" text="Save" />
+                        <Text layoutX="98.0" layoutY="58.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Main">
+                           <font>
+                              <Font size="18.0" />
+                           </font>
+                        </Text>
+                        <Text accessibleText="Whether to show help when moving pawn" fill="#b2acac" layoutX="499.0" layoutY="124.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Ghost Trail" />
+                        <Text accessibleText="The number of walls to be available per player" layoutX="172.0" layoutY="126.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Number of Walls" />
+                        <Text accessibleText="Whether to show names aboves pawns" layoutX="322.0" layoutY="125.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Show Name Labels" />
+                        <CheckBox fx:id="indicateLabel" layoutX="300.0" layoutY="143.0" mnemonicParsing="false" selected="true" text="Enabled" />
+                        <CheckBox disable="true" layoutX="495.0" layoutY="136.0" mnemonicParsing="false" text="Enabled" />
+                        <ImageView fitHeight="16.0" fitWidth="16.0" layoutX="14.0" layoutY="237.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@/res/layouts/images/settings/red_line.png" />
+                           </image>
+                        </ImageView>
+                        <ImageView fitHeight="16.0" fitWidth="16.0" layoutX="519.0" layoutY="237.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@/res/layouts/images/settings/accept_button.png" />
+                           </image>
+                        </ImageView>
+                        <ImageView fitHeight="57.0" fitWidth="66.0" layoutX="21.0" layoutY="23.0">
+                           <image>
+                              <Image url="@/res/layouts/images/settings/main_opts.png" />
+                           </image>
+                        </ImageView>
+                        <Ellipse fill="RED" layoutX="309.0" layoutY="120.0" radiusX="9.0" radiusY="9.0" stroke="#f20101" strokeType="INSIDE" />
+                        <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#a17c0b" height="22.0" layoutX="152.0" layoutY="110.0" stroke="TRANSPARENT" strokeType="INSIDE" width="9.0" />
+                        <Ellipse fill="#ff000022" layoutX="486.0" layoutY="118.0" radiusX="9.0" radiusY="9.0" stroke="#f20101" strokeType="INSIDE" />
+                        <Text accessibleHelp="The rule type to be used in game" accessibleText="The rule type to be used in game" layoutX="30.0" layoutY="126.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Game Rule Type" />
+                        <ChoiceBox fx:id="ruleBox" layoutX="31.0" layoutY="139.0" prefHeight="18.0" prefWidth="85.0" />
+                        <ImageView fitHeight="16.0" fitWidth="16.0" layoutX="6.0" layoutY="113.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@/res/layouts/images/settings/panel.png" />
+                           </image>
+                        </ImageView>
+                        <ChoiceBox fx:id="wallBox" layoutX="172.0" layoutY="139.0" prefHeight="18.0" prefWidth="85.0" />
+                     </children>
+                  </AnchorPane>
+            </content>
+          </Tab>
+            <Tab text="Advanced">
+               <content>
+                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="104.0" prefWidth="587.0">
+                     <children>
+                        <Button layoutX="36.0" layoutY="232.0" mnemonicParsing="false" onAction="#onResetBtn" text="Reset to Default" />
+                        <Button layoutX="537.0" layoutY="232.0" mnemonicParsing="false" onAction="#onSaveBtn" text="Save" />
+                        <Text layoutX="101.0" layoutY="58.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Advanced">
+                           <font>
+                              <Font size="18.0" />
+                           </font>
+                        </Text>
+                        <Text layoutX="203.0" layoutY="127.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Board Size" />
+                        <ImageView fitHeight="16.0" fitWidth="16.0" layoutX="14.0" layoutY="237.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@/res/layouts/images/settings/red_line.png" />
+                           </image>
+                        </ImageView>
+                        <ImageView fitHeight="16.0" fitWidth="16.0" layoutX="519.0" layoutY="237.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@/res/layouts/images/settings/accept_button.png" />
+                           </image>
+                        </ImageView>
+                        <ImageView fitHeight="16.0" fitWidth="16.0" layoutX="172.0" layoutY="115.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@/res/layouts/images/settings/board_game.png" />
+                           </image>
+                        </ImageView>
+                        <ImageView fitHeight="16.0" fitWidth="16.0" layoutX="327.0" layoutY="115.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@/res/layouts/images/settings/large_tiles.png" />
+                           </image>
+                        </ImageView>
+                        <ImageView fitHeight="62.0" fitWidth="78.0" layoutX="15.0" layoutY="20.0">
+                           <image>
+                              <Image url="@/res/layouts/images/settings/adv_opts.png" />
+                           </image>
+                        </ImageView>
+                        <Text layoutX="349.0" layoutY="127.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Tile Size" />
+                        <ChoiceBox fx:id="boardBox" layoutX="188.0" layoutY="147.0" prefHeight="25.0" prefWidth="85.0" />
+                        <ChoiceBox fx:id="tileBox" layoutX="328.0" layoutY="147.0" prefHeight="25.0" prefWidth="85.0" />
+                     </children>
+                  </AnchorPane>
+               </content>
+            </Tab>
+            <Tab disable="true" text="Tournament">
+              <content>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+              </content>
+            </Tab>
+        </tabs>
+      </TabPane>
+      <Pane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="3">
+         <children>
+            <Text layoutX="258.0" layoutY="59.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Settings">
+               <font>
+                  <Font size="24.0" />
+               </font>
+            </Text>
+            <ImageView fitHeight="32.0" fitWidth="32.0" layoutX="486.0" layoutY="33.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@/res/layouts/images/settings/arrow_left.png" />
+               </image>
+            </ImageView>
+            <Button layoutX="527.0" layoutY="37.0" mnemonicParsing="false" onAction="#onBackBtn" text="Back" />
+            <ImageView fitHeight="32.0" fitWidth="32.0" layoutX="28.0" layoutY="32.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@/res/layouts/images/main/setting_tools.png" />
+               </image>
+            </ImageView>
+         </children>
+      </Pane>
+   </children>
+</GridPane>

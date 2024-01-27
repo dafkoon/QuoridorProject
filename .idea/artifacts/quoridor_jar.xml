@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="quoridor:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/quoridor_jar</output-path>
+    <root id="archive" name="quoridor.jar">
+      <element id="module-output" name="quoridor" />
+    </root>
+  </artifact>
+</component>
