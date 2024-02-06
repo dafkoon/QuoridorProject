@@ -12,6 +12,14 @@ import View.pieces.VerticalWall;
 import Model.GameSession;
 import Model.Player;
 
+<<<<<<< Updated upstream
+=======
+import Controller.Controller;
+import Controller.EventHandler;
+import static Controller.Controller.TILE_SIZE;
+import static Controller.Controller.BOARD_DIMENSION;
+
+>>>>>>> Stashed changes
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Group;
@@ -29,8 +37,16 @@ import javafx.stage.Stage;
 
 
 public class Game extends Application {
+<<<<<<< Updated upstream
     public static final int TILE_SIZE = 50;
     public static final int BOARD_DIMENSION = 9;
+=======
+    private final Controller controller = new Controller(); // Access to controller class
+    private EventHandler eventHandler;
+    //private final Tile[][] board = new Tile[BOARD_DIMENSION][BOARD_DIMENSION];   NOT USED.
+    //private final HorizontalWall[][] horizontalWalls = new HorizontalWall[BOARD_DIMENSION][BOARD_DIMENSION];
+    //private final VerticalWall[][] verticalWalls = new VerticalWall[BOARD_DIMENSION][BOARD_DIMENSION];
+>>>>>>> Stashed changes
 
 
     private List<Pawn> pawnList = new ArrayList<Pawn>(2);
@@ -50,9 +66,15 @@ public class Game extends Application {
     private Scene scene;
 
     public void start(Stage primaryStage) {
+<<<<<<< Updated upstream
         //setupModel();
         // GameSession gameSession, List<Player> players
         setupModel();
+=======
+        this.eventHandler = controller.startup();
+        initPawns();
+
+>>>>>>> Stashed changes
         currentTurnLabel = new Label();
         wallLabel = new Label();
         Scene scene = new Scene(createBoard());
@@ -83,17 +105,25 @@ public class Game extends Application {
      */
     public void setupPawns() {
         int currentType = 0;
-        int[] xStartPos = new int[]{BOARD_DIMENSION/2, BOARD_DIMENSION/2};
-        int[] yStartPos = new int[]{BOARD_DIMENSION-1, 0};
+        int[] colPos = new int[]{BOARD_DIMENSION/2, BOARD_DIMENSION/2};
+        int[] rowPos = new int[]{BOARD_DIMENSION-1, 0};
         PawnType[] pawnTypes = PawnType.values();
         for(PawnType pawnType : pawnTypes) {
+<<<<<<< Updated upstream
             Pawn pawn = makePawn(pawnType, pawnType.name(), xStartPos[currentType], yStartPos[currentType]);
             pawnList.add(pawn);
+=======
+            PawnColor color = (pawnType == PawnType.AI) ? PawnColor.RED : PawnColor.BLUE;
+            Pawn pawn = new Pawn(pawnType, color, colPos[currentType], rowPos[currentType]);
+            pawnGroup.getChildren().add(pawn);
+>>>>>>> Stashed changes
             currentType++;
+            pawnMouseEvents(pawn);
         }
 
     }
 
+<<<<<<< Updated upstream
     public Pawn makePawn(PawnType type, String color, int x, int y) {
         Pawn pawn = new Pawn(type, color, x, y);
         pawn.setOnMouseReleased(event -> {
@@ -104,6 +134,12 @@ public class Game extends Application {
 
         });
         return pawn;
+=======
+    public void pawnMouseEvents(Pawn pawn) {
+        pawn.setOnMousePressed(event -> eventHandler.handlePawnMovement(event, pawn));
+        pawn.setOnMouseDragged(event -> eventHandler.handlePawnMovement(event, pawn));
+        pawn.setOnMouseReleased(event -> eventHandler.handlePawnMovement(event, pawn));
+>>>>>>> Stashed changes
     }
 
 
@@ -121,7 +157,34 @@ public class Game extends Application {
                 tileGroup.getChildren().add(tile);
             }
         }
+<<<<<<< Updated upstream
         pawnGroup.getChildren().addAll(pawnList);
+=======
+        // Add vertical walls.
+        for(int y = 0; y < BOARD_DIMENSION; y++) {
+            for(int x = 0; x < BOARD_DIMENSION; x++) {
+                VerticalWall wall = new VerticalWall(x, y);
+                //verticalWalls[x][y] = wall;
+                verticalWallGroup.getChildren().add(wall);
+                int thisX = x;
+                int thisY = y;
+                int nextX = x;
+                int nextY = y+1;
+                wall.setOnMouseEntered(e -> {
+                    if(nextX == BOARD_DIMENSION-1) {
+                        return;
+                    }
+                    if(nextY < BOARD_DIMENSION) {
+                        wall.setFill(Color.valueOf("000000"));
+                        //verticalWalls[nextX][nextY].setFill(Color.valueOf("000000"));
+                    }
+                });
+
+            }
+        }
+
+        root.getChildren().addAll(tileGroup, labelGroup , horizontalWallGroup, verticalWallGroup, pawnGroup, generateInfoPanel());
+>>>>>>> Stashed changes
         return root;
     }
 
