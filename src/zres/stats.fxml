@@ -17,7 +17,7 @@
       </Label>
       <ImageView fitHeight="32.0" fitWidth="32.0" layoutX="428.0" layoutY="34.0" pickOnBounds="true" preserveRatio="true">
          <image>
-            <Image url="@/res/layouts/images/stats/house.png" />
+            <Image url="@/zres/layouts/images/stats/house.png" />
          </image>
       </ImageView>
       <Button layoutX="467.0" layoutY="25.0" mnemonicParsing="false" onAction="#onMenuBtn" prefHeight="49.0" prefWidth="105.0" text="Main Menu" />

@@ -3,8 +3,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
-import static Controller.Controller.BOARD_DIMENSION;
-
 /**
  * Represents a Tile on the "Board" class.
  */

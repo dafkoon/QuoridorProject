@@ -1,5 +1,4 @@
 package Controller;
-
 import Model.Square;
 import View.pieces.Pawn;
 import View.pieces.Tile;
@@ -31,9 +30,7 @@ public class EventHandler {
     public void pawnMousePressed(MouseEvent event, Pawn pawn) {
         pawn.mouseX = event.getSceneX();
         pawn.mouseY = event.getSceneY();
-        System.out.println(pawn.getLayoutY() + " " + pawn.getLayoutX());
         Square tile = new Square(pixelToBoard(pawn.mouseX),pixelToBoard(pawn.mouseX));
-        System.out.println(tile.toString());
     }
 
     public void pawnMouseDragged(MouseEvent event, Pawn pawn) {
@@ -52,7 +49,6 @@ public class EventHandler {
         int newY = pixelToBoard(pawn.getLayoutY());
         Square dest = new Square(newX, newY);
         if(gameSession.isValidTraversal(dest)) {
-            System.out.println(pawn.getType() + " x:" + newX + " y:" + newY);
         }
 //            if(controller.isValidMove(type.ordinal() ,nextTile)); {
 //                System.out.println(type + " x:" + newX + " y:" + newY);

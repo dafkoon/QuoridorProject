@@ -4,14 +4,27 @@ package Model;
  * Represents a player in the game.
  */
 public class Player {
-    private String pawnColor;
+    private String playerName;
+    private String playerColor;
     private int walls;
-    //private Statistics stats;
 
-    public Player(String pawnColor) {
-        this.pawnColor = pawnColor;
-        this.walls = 10;
+    public Player(String pawnType, String pawnColor) {
+        this.playerName = pawnType;
+        this.playerColor = pawnColor;
+        this.walls = 10; // Default number of walls.
     }
+
+    /**
+     * Gets the name of the player (HUMAN / AI).
+     * @return A string of the player name.
+     */
+    public String getName() { return playerName; }
+
+    /**
+     * Gets the Color of the player (BLUE / RED).
+     * @return A string of the player color.
+     */
+    public String getPlayerColor() { return playerColor; }
 
     /**
      * Gets the amount of walls a player has left.

@@ -1,16 +1,21 @@
 package Controller;
-<<<<<<< Updated upstream
-
-public class Controller {
-=======
 import javafx.scene.input.MouseEvent;
+import javafx.scene.Node;
+import java.util.List;
 
 
 import View.pieces.Pawn;
 import View.pieces.Tile;
 import Model.Square;
+import Model.Wall;
+import Model.Move;
 import Model.Player;
 import Model.GameSession;
+import Model.Board;
+import Model.Square;
+
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 
 public class Controller {
     public static final int TILE_SIZE = 50;
@@ -23,20 +28,17 @@ public class Controller {
         this.gameSession = new GameSession();
         this.gameSession.addPlayer(new Player(Pawn.PawnType.HUMAN.name(), Pawn.PawnColor.BLUE.name()));
         this.gameSession.addPlayer(new Player(Pawn.PawnType.AI.name(), Pawn.PawnColor.RED.name()));
-
         return new EventHandler(this.gameSession);
+
     }
 
-
-
-//    public boolean getMoves(Tile nextTile) {
+    //    public boolean getMoves(Tile nextTile) {
 //        Square nextSquare = convertTileToSquare(nextTile);
 //        List<String> moves = gameSession.generateValidMoves();
 //        //System.out.println(moves.toString());
 //         //gameSession.move()
 //        return gameSession.isValidTraversal(nextSquare) && gameSession.currentPlayer() == playerTurn;
 //    }
-
 
 
 
@@ -61,5 +63,4 @@ public class Controller {
 
 
 
->>>>>>> Stashed changes
 }

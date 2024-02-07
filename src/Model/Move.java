@@ -4,34 +4,26 @@ package Model;
  * Represents a move taken during the game.
  */
 public class Move {
-    private Tile from;
-    private Tile to;
+    private String move;
     private Player player;
 
-    public Move(Tile from, Tile to, Player player) throws IllegalArgumentException{
-        if(from == null || to == null) {
-            throw new IllegalArgumentException("Tiles cannot be null");
-        }
+    public Move(String move, Player player) throws IllegalArgumentException{
         if(player == null) {
             throw new IllegalArgumentException("Player cannot be null");
         }
+        this.move = move;
+        this.player = player;
     }
 
     /**
-     * Gets the tile the player moved from.
-     * @return tile player moved from.
+     * Gets the move that was preformed.
+     * @return move in game notation.
      */
-    public Tile getFrom() {
-        return from;
+    public String getMove() {
+        return move;
     }
 
-    /**
-     * Gets the tile the player moved to.
-     * @return tile player moved to.
-     */
-    public Tile getTo() {
-        return to;
-    }
+
 
     /**
      * Gets the player who made the move.

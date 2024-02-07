@@ -3,29 +3,24 @@ package View;
 import java.util.ArrayList;
 import java.util.List;
 
-import View.pieces.HorizontalWall;
-import View.pieces.Pawn;
+import Model.Board;
+import View.pieces.*;
 import View.pieces.Pawn.PawnType;
-import View.pieces.Tile;
-import View.pieces.VerticalWall;
+import View.pieces.Pawn.PawnColor;
 
 import Model.GameSession;
 import Model.Player;
 
-<<<<<<< Updated upstream
-=======
 import Controller.Controller;
 import Controller.EventHandler;
 import static Controller.Controller.TILE_SIZE;
 import static Controller.Controller.BOARD_DIMENSION;
 
->>>>>>> Stashed changes
 import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
+import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.layout.Pane;
@@ -37,129 +32,75 @@ import javafx.stage.Stage;
 
 
 public class Game extends Application {
-<<<<<<< Updated upstream
-    public static final int TILE_SIZE = 50;
-    public static final int BOARD_DIMENSION = 9;
-=======
     private final Controller controller = new Controller(); // Access to controller class
     private EventHandler eventHandler;
     //private final Tile[][] board = new Tile[BOARD_DIMENSION][BOARD_DIMENSION];   NOT USED.
     //private final HorizontalWall[][] horizontalWalls = new HorizontalWall[BOARD_DIMENSION][BOARD_DIMENSION];
     //private final VerticalWall[][] verticalWalls = new VerticalWall[BOARD_DIMENSION][BOARD_DIMENSION];
->>>>>>> Stashed changes
 
 
-    private List<Pawn> pawnList = new ArrayList<Pawn>(2);
-    private GameSession gameSession;
-
-    private int turnIndex;
-
-    private Tile[][] board;
-    private HorizontalWall[][] horizontalWalls;
-    private VerticalWall[][] verticalWalls;
-    private Group tileGroup = new Group();
-    private Group pawnGroup = new Group();
-    private Group horizontalWallGroup = new Group();
-    private Group verticalWallGroup = new Group();
+    private final Group tileGroup = new Group();
+    private final Group pawnGroup = new Group();
+    private final Group horizontalWallGroup = new Group();
+    private final Group verticalWallGroup = new Group();
+    private final Group labelGroup = new Group();
     private Label currentTurnLabel;
     private Label wallLabel;
-    private Scene scene;
+
 
     public void start(Stage primaryStage) {
-<<<<<<< Updated upstream
-        //setupModel();
-        // GameSession gameSession, List<Player> players
-        setupModel();
-=======
+        controller.startup();
         this.eventHandler = controller.startup();
         initPawns();
 
->>>>>>> Stashed changes
         currentTurnLabel = new Label();
         wallLabel = new Label();
         Scene scene = new Scene(createBoard());
-        primaryStage.getIcons().add(new Image("res/icon.png"));
+        primaryStage.getIcons().add(new Image("zres/icon.png"));
         primaryStage.setTitle("Quoridor");
         primaryStage.setScene(scene);
         primaryStage.show();
     }
 
     /**
-     * Starts a new game session and adds 2 players (Updates model).
-     * Initializes attributes related to dimensions of the board.
+     * Initializes the pawn's location and calls for a method to create the pawn.
+     * Calls the setupPawns method.
      */
-    public void setupModel() {
-        gameSession = new GameSession();
-        gameSession.addPlayer(new Player("RED"));
-        gameSession.addPlayer(new Player("BLUE"));
-
-        board = new Tile[BOARD_DIMENSION][BOARD_DIMENSION];
-        horizontalWalls = new HorizontalWall[BOARD_DIMENSION][BOARD_DIMENSION];
-        verticalWalls = new VerticalWall[BOARD_DIMENSION][BOARD_DIMENSION];
-        turnIndex = 0;
-        setupPawns();
-    }
-
-    /**
-     * Sets up the pawns in the game in hardcoded locations.
-     */
-    public void setupPawns() {
+    public void initPawns() {
         int currentType = 0;
         int[] colPos = new int[]{BOARD_DIMENSION/2, BOARD_DIMENSION/2};
         int[] rowPos = new int[]{BOARD_DIMENSION-1, 0};
         PawnType[] pawnTypes = PawnType.values();
         for(PawnType pawnType : pawnTypes) {
-<<<<<<< Updated upstream
-            Pawn pawn = makePawn(pawnType, pawnType.name(), xStartPos[currentType], yStartPos[currentType]);
-            pawnList.add(pawn);
-=======
             PawnColor color = (pawnType == PawnType.AI) ? PawnColor.RED : PawnColor.BLUE;
             Pawn pawn = new Pawn(pawnType, color, colPos[currentType], rowPos[currentType]);
             pawnGroup.getChildren().add(pawn);
->>>>>>> Stashed changes
             currentType++;
             pawnMouseEvents(pawn);
         }
-
     }
 
-<<<<<<< Updated upstream
-    public Pawn makePawn(PawnType type, String color, int x, int y) {
-        Pawn pawn = new Pawn(type, color, x, y);
-        pawn.setOnMouseReleased(event -> {
-            int newX = pixelToBoard(pawn.getLayoutX());
-            int newY = pixelToBoard(pawn.getLayoutY());
-            Tile currentTile = new Tile(pixelToBoard(pawn.getOldX()), pixelToBoard(pawn.getOldY()));
-            Tile nextTILE = new Tile(newX, newY);
-
-        });
-        return pawn;
-=======
     public void pawnMouseEvents(Pawn pawn) {
         pawn.setOnMousePressed(event -> eventHandler.handlePawnMovement(event, pawn));
         pawn.setOnMouseDragged(event -> eventHandler.handlePawnMovement(event, pawn));
         pawn.setOnMouseReleased(event -> eventHandler.handlePawnMovement(event, pawn));
->>>>>>> Stashed changes
     }
 
 
     private Parent createBoard() {
         Pane root = new Pane();
-        root.setPrefSize((BOARD_DIMENSION * TILE_SIZE) + 85, BOARD_DIMENSION * TILE_SIZE);
-        //root.getChildren().addAll(tileGroup, pawnGroup, horizontalWallGroup, verticalWallGroup, infoPanel());
-        root.getChildren().addAll(tileGroup, pawnGroup, horizontalWallGroup, verticalWallGroup);
+        //root.setPrefSize((BOARD_DIMENSION * TILE_SIZE) + 150, BOARD_DIMENSION * TILE_SIZE + 30);
 
         //Add tiles to the board
-        for (int y = 0; y < BOARD_DIMENSION; y++) {
-            for (int x = 0; x < BOARD_DIMENSION; x++) {
-                Tile tile = new Tile(x, y);
-                board[x][y] = tile;
+        for (int row = 0; row < BOARD_DIMENSION; row++) {
+            for (int col = 0; col < BOARD_DIMENSION; col++) {
+                Tile tile = new Tile(row, col);
+                NotationLabel label = new NotationLabel(row, col);
+                //board[x][y] = tile;
                 tileGroup.getChildren().add(tile);
+                labelGroup.getChildren().add(label);
             }
         }
-<<<<<<< Updated upstream
-        pawnGroup.getChildren().addAll(pawnList);
-=======
         // Add vertical walls.
         for(int y = 0; y < BOARD_DIMENSION; y++) {
             for(int x = 0; x < BOARD_DIMENSION; x++) {
@@ -183,10 +124,27 @@ public class Game extends Application {
             }
         }
 
-        root.getChildren().addAll(tileGroup, labelGroup , horizontalWallGroup, verticalWallGroup, pawnGroup, generateInfoPanel());
->>>>>>> Stashed changes
+        root.getChildren().addAll(tileGroup, labelGroup , pawnGroup, horizontalWallGroup, verticalWallGroup, generateInfoPanel());
         return root;
     }
+
+    public Pane generateInfoPanel() {
+        Pane panel = new Pane();
+        currentTurnLabel.setText(controller.getCurrentPlayerName() + "'s turn");
+        currentTurnLabel.setTextFill(Color.valueOf(controller.getCurrentPlayerColor()));
+        currentTurnLabel.setFont(Font.font("Verdana", FontWeight.BOLD, 12));
+        currentTurnLabel.setTranslateY(10);
+
+        wallLabel.setText("Walls left: " + controller.getCurrentPlayerWallsLeft());
+        wallLabel.setTextFill(Color.valueOf(controller.getCurrentPlayerColor()));
+        wallLabel.setTranslateY(20);
+
+        panel.getChildren().addAll(currentTurnLabel, wallLabel);
+        panel.setTranslateX(BOARD_DIMENSION*TILE_SIZE +10);
+        return panel;
+    }
+
+    public void validMoves() {;}
 
     /**
      * Converts pixel value to coordinate.
