@@ -8,6 +8,9 @@ import javafx.scene.text.Text;
 import javafx.scene.input.MouseEvent;
 
 import static Controller.Controller.TILE_SIZE;
+import static Controller.Controller.BOARD_DIMENSION;
+import static View.Game.BOARD_SIZE;
+
 import javafx.scene.input.MouseEvent;
 
 import java.sql.SQLOutput;
@@ -21,25 +24,22 @@ public class Pawn extends StackPane{
     private final PawnType type;
     private final PawnColor color;
     public double mouseX, mouseY;
-    //private int oldX, oldY;
 
     public PawnColor getColor() { return color;}
     public PawnType getType() {
         return type;
     }
-//    public int getOldX() {
-//        return oldX;
-//    } // Pixel on x axis.
-//    public int getOldY() {
-//        return oldY;
-//    } // Pixel on y axis.
 
-    public Pawn(PawnType type, PawnColor color, int x, int y) {
+    public Pawn(PawnType type, PawnColor color, int xPixel, int yPixel) {
         this.type = type;
         this.color = color;
+        if(type == PawnType.HUMAN) {
+            System.out.println("Pawn " + xPixel + "," + yPixel);
+        }
+        //relocate(xIndex*TILE_SIZE, yIndex*TILE_SIZE);
+//        relocate(xIndex * TILE_SIZE, (BOARD_DIMENSION - 1 - yIndex) * TILE_SIZE);
+        relocate(xPixel, (BOARD_SIZE-TILE_SIZE) - yPixel);
         addPawn();
-        relocate(x*TILE_SIZE, y*TILE_SIZE);
-        pawnActions();
     }
 
     /**
@@ -64,38 +64,7 @@ public class Pawn extends StackPane{
 
     }
 
-    public void pawnActions() {
-        // When the pawn is pressed store is location.
-        setOnMousePressed(e -> {
-            mouseX = e.getSceneX();
-            mouseY = e.getSceneY();
 
-        });
-
-        // When the pawn is dragged continually update its location.
-        setOnMouseDragged(e -> {
-            if(type == PawnType.HUMAN) {
-            // getLayoutX() + (e.getSceneX()-mouseX)
-            // e.getSceneX()-mouseX continually calculates horizontal distance mouse has moved since last update.
-            // getLayoutX current X coordinate of the node within its parent's coordinate system.
-            relocate(getLayoutX() + (e.getSceneX()-mouseX), getLayoutY() + (e.getSceneY() - mouseY));
-            mouseX = e.getSceneX();
-            mouseY = e.getSceneY();
-             }
-        });
-
-    }
-
-    /**
-     * Moves the pawn object to a square.
-     * @param x index of square (column).
-     * @param y index of square (row).
-     */
-//    public void moveTo(int x, int y) {
-//        oldX = x * TILE_SIZE;
-//        oldY = y * TILE_SIZE;
-//        relocate(oldX, oldY);
-//    }
 
     public enum PawnType {
         HUMAN, AI;

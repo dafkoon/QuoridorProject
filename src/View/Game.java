@@ -32,12 +32,13 @@ import javafx.stage.Stage;
 
 
 public class Game extends Application {
+    public static final int BOARD_SIZE = TILE_SIZE * BOARD_DIMENSION;
+
     private final Controller controller = new Controller(); // Access to controller class
     private EventHandler eventHandler;
     //private final Tile[][] board = new Tile[BOARD_DIMENSION][BOARD_DIMENSION];   NOT USED.
     //private final HorizontalWall[][] horizontalWalls = new HorizontalWall[BOARD_DIMENSION][BOARD_DIMENSION];
     //private final VerticalWall[][] verticalWalls = new VerticalWall[BOARD_DIMENSION][BOARD_DIMENSION];
-
 
     private final Group tileGroup = new Group();
     private final Group pawnGroup = new Group();
@@ -55,7 +56,8 @@ public class Game extends Application {
 
         currentTurnLabel = new Label();
         wallLabel = new Label();
-        Scene scene = new Scene(createBoard());
+        Pane root = createBoard();
+        Scene scene = new Scene(root);
         primaryStage.getIcons().add(new Image("zres/icon.png"));
         primaryStage.setTitle("Quoridor");
         primaryStage.setScene(scene);
@@ -68,12 +70,16 @@ public class Game extends Application {
      */
     public void initPawns() {
         int currentType = 0;
-        int[] colPos = new int[]{BOARD_DIMENSION/2, BOARD_DIMENSION/2};
-        int[] rowPos = new int[]{BOARD_DIMENSION-1, 0};
+        int[] xPixel = new int[]{BOARD_SIZE/2-TILE_SIZE/2, BOARD_SIZE/2-TILE_SIZE/2};
+        int[] yPixel = new int[]{0, BOARD_SIZE-TILE_SIZE};
+        //int[] xIndex = new int[]{BOARD_DIMENSION/2, BOARD_DIMENSION/2};
+        //int[] yIndex = new int[]{0, BOARD_DIMENSION-1};
+        // HUMAN Pawn 4, 0
+        // AI Pawn 4, 8
         PawnType[] pawnTypes = PawnType.values();
         for(PawnType pawnType : pawnTypes) {
             PawnColor color = (pawnType == PawnType.AI) ? PawnColor.RED : PawnColor.BLUE;
-            Pawn pawn = new Pawn(pawnType, color, colPos[currentType], rowPos[currentType]);
+            Pawn pawn = new Pawn(pawnType, color, xPixel[currentType], yPixel[currentType]);
             pawnGroup.getChildren().add(pawn);
             currentType++;
             pawnMouseEvents(pawn);
@@ -87,30 +93,42 @@ public class Game extends Application {
     }
 
 
-    private Parent createBoard() {
+    private Pane createBoard() {
         Pane root = new Pane();
         //root.setPrefSize((BOARD_DIMENSION * TILE_SIZE) + 150, BOARD_DIMENSION * TILE_SIZE + 30);
 
         //Add tiles to the board
-        for (int row = 0; row < BOARD_DIMENSION; row++) {
+        for (int row = BOARD_DIMENSION - 1; row >= 0; row--) {
             for (int col = 0; col < BOARD_DIMENSION; col++) {
+                System.out.print(row + "," + col + "  ");
                 Tile tile = new Tile(row, col);
                 NotationLabel label = new NotationLabel(row, col);
-                //board[x][y] = tile;
                 tileGroup.getChildren().add(tile);
                 labelGroup.getChildren().add(label);
             }
+            System.out.println();
         }
+
+
+//        for (int row = 0; row < BOARD_DIMENSION; row++) {
+//            for (int col = 0; col < BOARD_DIMENSION; col++) {
+//                Tile tile = new Tile(row, col);
+//                NotationLabel label = new NotationLabel(row, col);
+//                //board[x][y] = tile;
+//                tileGroup.getChildren().add(tile);
+//                labelGroup.getChildren().add(label);
+//            }
+//        }
         // Add vertical walls.
-        for(int y = 0; y < BOARD_DIMENSION; y++) {
-            for(int x = 0; x < BOARD_DIMENSION; x++) {
-                VerticalWall wall = new VerticalWall(x, y);
+        for (int row = 0; row < BOARD_DIMENSION; row++) {
+            for (int col = 0; col < BOARD_DIMENSION; col++) {
+                VerticalWall wall = new VerticalWall(row, col);
                 //verticalWalls[x][y] = wall;
                 verticalWallGroup.getChildren().add(wall);
-                int thisX = x;
-                int thisY = y;
-                int nextX = x;
-                int nextY = y+1;
+                int thisX = col;
+                int thisY = row;
+                int nextX = col;
+                int nextY = row+1;
                 wall.setOnMouseEntered(e -> {
                     if(nextX == BOARD_DIMENSION-1) {
                         return;

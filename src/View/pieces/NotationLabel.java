@@ -6,6 +6,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 
+import java.util.Objects;
+
 import static Controller.Controller.TILE_SIZE;
 import static Controller.Controller.BOARD_DIMENSION;
 
@@ -13,15 +15,17 @@ import static Controller.Controller.BOARD_DIMENSION;
 public class NotationLabel extends Label {
     int row;
     int col;
-    public NotationLabel(int x, int y) {
-        this.row = BOARD_DIMENSION-(BOARD_DIMENSION-x); // number
-        this.col = BOARD_DIMENSION-(y+1); // letter
+    public NotationLabel(int row, int col) {
+        this.row = BOARD_DIMENSION - (row+1); // number
+        this.col = col; // letter
 
         setText(generateNotation());
-
+//        if(Objects.equals(generateNotation(), "e1")) {
+//            System.out.println("Notation "+ row + "," + col);
+//        }
         setWidth(TILE_SIZE);
         setHeight(TILE_SIZE);
-        relocate(x * TILE_SIZE, y * TILE_SIZE);
+        relocate(col * TILE_SIZE, row * TILE_SIZE);
         setTextFill(Color.BLACK);
         setOpacity(0.25);
         setFont(Font.font("Verdana", FontWeight.BOLD, 12));

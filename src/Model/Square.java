@@ -3,6 +3,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
+import static Controller.Controller.BOARD_DIMENSION;
+
 /**
  * Represents a Tile on the "Board" class.
  */
@@ -113,6 +115,7 @@ public class Square {
 
     @Override
     public String toString() {
+        System.out.println("tostring col:" + this.col + " row:" + this.row);
         char row = (char) ('1' + this.row);
         char col = (char) ('a' + this.col);
         return ""+col+row;
