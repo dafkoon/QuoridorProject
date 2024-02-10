@@ -40,7 +40,7 @@ public class EventHandler {
         if(pawn.getType() == Pawn.PawnType.HUMAN) {
             // e.getSceneX()-mouseX continually calculates horizontal distance mouse has moved since last update.
             // getLayoutX current X coordinate of the node within its parent's coordinate system.
-            pawn.relocate(pawn.getLayoutX() + (event.getSceneX()-pawn.mouseX), pawn.getLayoutY() + (event.getSceneY() - pawn.mouseY));
+            pawn.move(pawn.getLayoutX() + (event.getSceneX()-pawn.mouseX), pawn.getLayoutY() + (event.getSceneY() - pawn.mouseY));
             pawn.mouseX = event.getSceneX();
             pawn.mouseY = event.getSceneY();
         }
@@ -52,12 +52,14 @@ public class EventHandler {
         int newCol = pixelToBoard(xPixel);
         int newRow = pixelToBoard(yPixel);
         Square dest = new Square(newRow, newCol);
-//        System.out.println("pixels " + pawn.getType() + " moved to x:" + xPixel + " y:" + yPixel);
-        System.out.println("square col:" + newCol + " row:" + newRow + "   " + dest);
-//        System.out.println("relocate " + pawn.getType() + " moved to: " + xIndex*TILE_SIZE + ", " + yIndex*TILE_SIZE);
+        System.out.println("Pawn moved to: " + newCol + "," + newRow);
+        System.out.println("Pawn moved to: " + dest);
+        System.out.println("Neighbors are: " + dest.neighbourhood(1));
         if(gameSession.isValidTraversal(dest)) {
-            System.out.println(pawn.getType() + " x:" + newCol + " y:" + newRow);
+
         }
+        pawn.move(newCol*TILE_SIZE, (BOARD_SIZE-TILE_SIZE)-newRow*TILE_SIZE);
+
 //            if(controller.isValidMove(type.ordinal() ,nextTile)); {
 //                System.out.println(type + " x:" + newX + " y:" + newY);
 //                pawn.moveTo(newX, newY);
@@ -66,7 +68,6 @@ public class EventHandler {
 ////                gameSession.getBoard().getTile(nextSquare.getX(), nextSquare.getY()).setContainsPawn(true);
 //            }
 
-        pawn.relocate(newCol*TILE_SIZE, (BOARD_SIZE-TILE_SIZE)-newRow*TILE_SIZE);
     }
 
     public int pixelToBoard(double pixel) {

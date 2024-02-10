@@ -40,13 +40,18 @@ public class Controller {
 //        return gameSession.isValidTraversal(nextSquare) && gameSession.currentPlayer() == playerTurn;
 //    }
 
-
-
-    public Square convertTileToSquare(Tile tile) {
-        int tileX = tile.getRow();
-        int tileY = tile.getCol();
-        return new Square(tileX, tileY);
+    public boolean doesWallExist(int thisRow, int thisCol, boolean isHorizontal) {
+        char orientation = isHorizontal ? 'h' : 'v';
+        Square thisSquare = new Square(thisRow, thisCol);
+        Wall wall = new Wall(thisSquare, orientation);
+//        System.out.println(thisSquare.getColNotation() + "" + thisSquare.getRowNotation() + orientation + " " + wall);
+        //System.out.print(thisCol + "," + thisRow + "=" +wall + " ");
+        return !gameSession.isValidWallPlacement(wall);
+//        //System.out.println(thisX + "," + thisY + "  " + nextWallX + "," + nextWallY);
+//        return true;
     }
+
+
 
     public String getCurrentPlayerName() {
         return gameSession.getPlayer(gameSession.currentPlayer()).getName();

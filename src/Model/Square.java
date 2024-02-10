@@ -24,8 +24,9 @@ public class Square {
      * @param col index of column.
      */
     public Square(int row, int col) {
-        this.row = row;
         this.col = col;
+        this.row = row;
+
     }
 
     /**
@@ -67,14 +68,13 @@ public class Square {
      */
     public List<Square> neighbourhood (int radius) {
         List <Square> neighbors = new LinkedList<Square>();
-        for (int displacement = -radius; displacement < radius+1; displacement++) {
-            if (displacement != 0) {
-                if (row+displacement >= 0 && row+displacement < 9) {
-                    neighbors.add(new Square(row+displacement, col));
-                }
-                if (col+displacement >= 0 && col+displacement < 9) {
-                    neighbors.add(new Square(row,col+displacement));
-                }
+        for(int distance = -radius; distance <= radius; distance++) {
+            if(distance != 0) {
+                System.out.print("row:" + this.row + " col:" + this.col + "  ");
+                if(row+distance >= 0 && row+distance < 9)
+                    neighbors.add(new Square(row+distance, col));
+                if(col+distance >= 0 && col+distance < 9)
+                    neighbors.add(new Square(row, col+distance));
             }
         }
         return neighbors;
@@ -104,7 +104,6 @@ public class Square {
     public int getRow() {
         return row;
     }
-
     /**
      * Get the index of the column.
      * @return index of column.
@@ -113,11 +112,13 @@ public class Square {
         return col;
     }
 
+    public char getRowNotation() { return (char) ('1' + this.row); }
+    public char getColNotation() { return (char) ('a' + this.col); }
+
     @Override
     public String toString() {
-        System.out.println("tostring col:" + this.col + " row:" + this.row);
-        char row = (char) ('1' + this.row);
-        char col = (char) ('a' + this.col);
+        char row = getRowNotation();
+        char col = getColNotation();
         return ""+col+row;
     }
 

@@ -1,5 +1,6 @@
 package View;
 
+import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -98,48 +99,50 @@ public class Game extends Application {
         //root.setPrefSize((BOARD_DIMENSION * TILE_SIZE) + 150, BOARD_DIMENSION * TILE_SIZE + 30);
 
         //Add tiles to the board
-        for (int row = BOARD_DIMENSION - 1; row >= 0; row--) {
-            for (int col = 0; col < BOARD_DIMENSION; col++) {
-                System.out.print(row + "," + col + "  ");
-                Tile tile = new Tile(row, col);
-                NotationLabel label = new NotationLabel(row, col);
+//        for (int y = 0; y < BOARD_DIMENSION; y++) {
+//            for (int x = 0; x < BOARD_DIMENSION; x++) {
+//                System.out.print(x + "," + y + "   ");
+//                Tile tile = new Tile(x, y);
+//                NotationLabel label = new NotationLabel(x, y);
+//                tileGroup.getChildren().add(tile);
+//                labelGroup.getChildren().add(label);
+//            }
+//            System.out.println();
+//        }
+        for (int col = BOARD_DIMENSION - 1; col >= 0; col--) {
+            for (int row = 0; row < BOARD_DIMENSION; row++) {
+                Tile tile = new Tile(col, row);
+                NotationLabel label = new NotationLabel(col, row);
+                System.out.print(col + "," + row + "  ");
                 tileGroup.getChildren().add(tile);
                 labelGroup.getChildren().add(label);
             }
             System.out.println();
         }
+        System.out.println();
 
 
-//        for (int row = 0; row < BOARD_DIMENSION; row++) {
-//            for (int col = 0; col < BOARD_DIMENSION; col++) {
-//                Tile tile = new Tile(row, col);
-//                NotationLabel label = new NotationLabel(row, col);
-//                //board[x][y] = tile;
-//                tileGroup.getChildren().add(tile);
-//                labelGroup.getChildren().add(label);
-//            }
-//        }
         // Add vertical walls.
-        for (int row = 0; row < BOARD_DIMENSION; row++) {
-            for (int col = 0; col < BOARD_DIMENSION; col++) {
-                VerticalWall wall = new VerticalWall(row, col);
-                //verticalWalls[x][y] = wall;
+        for (int col = BOARD_DIMENSION-2; col >= 0; col--) { // from left to right
+            for (int row = 0; row < BOARD_DIMENSION; row++) { // from top to bottom
+                VerticalWall wall = new VerticalWall(col, row);
                 verticalWallGroup.getChildren().add(wall);
-                int thisX = col;
-                int thisY = row;
-                int nextX = col;
-                int nextY = row+1;
+                int thisRow = BOARD_DIMENSION - (row+1);
+                int thisCol = col;
+                System.out.print(thisCol + "," + thisRow + "  ");
+
                 wall.setOnMouseEntered(e -> {
-                    if(nextX == BOARD_DIMENSION-1) {
-                        return;
-                    }
-                    if(nextY < BOARD_DIMENSION) {
-                        wall.setFill(Color.valueOf("000000"));
+                    if(thisCol < BOARD_DIMENSION) {
+//                        System.out.print(thisCol + "," + thisRow + " ");
+                        if(!controller.doesWallExist(thisRow, thisCol, false)) {
+                            wall.setFill(Color.valueOf("000000"));
+                        }
                         //verticalWalls[nextX][nextY].setFill(Color.valueOf("000000"));
                     }
                 });
-
             }
+            System.out.println();
+
         }
 
         root.getChildren().addAll(tileGroup, labelGroup , pawnGroup, horizontalWallGroup, verticalWallGroup, generateInfoPanel());

@@ -86,7 +86,6 @@ public class GameSession {
 
         List<String> validMoves = new LinkedList<String>();
         for(Square sq: getCurrentPlayerSquare().neighbourhood(1)) {
-            System.out.println(sq);
             if(isValidTraversal(sq)) {
                 validMoves.add(sq.toString());
             }
@@ -130,8 +129,10 @@ public class GameSession {
         if(currentPlayerNumWalls() <= 0)
             return false;
         // Check wall is not being placed on the border.
-        if(wall.getStartingSq().getCol() == 8 || wall.getStartingSq().getRow() == 8)
-            return false;
+//        if(wall.getStartingSq().getCol() == 8 || wall.getStartingSq().getRow() == 8) {
+//            System.out.println("fails");
+//            return false;
+//        }
 
         // Check if wall not intersecting other walls.
         if(wall.getOrientation() == Wall.Orientation.HORIZONTAL) {
@@ -152,11 +153,11 @@ public class GameSession {
         }
         if(wall.getOrientation() == Wall.Orientation.HORIZONTAL) {
             removeEdge(wall.startingSq, wall.startingSq.neighbor(1, 0));
-            removeEdge(wall.startingSq.neighbor(0, 1), wall.startingSq.neighbor(1, 1));
+            removeEdge(wall.startingSq.neighbor(0, 1), wall.startingSq.neighbor(1, 1)); //
         }
         else {
-            removeEdge(wall.startingSq, wall.startingSq.neighbor(0, 1));
-            removeEdge(wall.startingSq.neighbor(1, 0), wall.startingSq.neighbor(1, 1));
+            removeEdge(wall.startingSq, wall.startingSq.neighbor(0, 1)); // remove connecting between startingSq and the wall to the left of it
+            removeEdge(wall.startingSq.neighbor(1, 0), wall.startingSq.neighbor(1, 1)); // remove the connection between squares on the next rank.
         }
         boolean hasPath = hasPathToGoal();
         if(!hasPath) {
@@ -175,18 +176,18 @@ public class GameSession {
     public boolean isValidTraversal(Square dest) {
         int currentPlayerSquareIndex = board.squareToIndex(getCurrentPlayerSquare());
         int otherPlayerSquareIndex = board.squareToIndex(getOtherPlayerSquare());
-        if(dest.equals(getCurrentPlayerSquare()) || dest.equals(getOtherPlayerSquare())) {
+        if(dest.equals(getCurrentPlayerSquare()) || dest.equals(getOtherPlayerSquare())) { // If dest equals any of the player's positions.
             return false;
         }
-        else if (board.graph[currentPlayerSquareIndex].contains(dest)) {
+        else if (board.graph[currentPlayerSquareIndex].contains(dest)) { // If the player's square is connected to dest.
             return true;
         }
-        else if(board.graph[currentPlayerSquareIndex].contains(getOtherPlayerSquare())) {
+        else if(board.graph[currentPlayerSquareIndex].contains(getOtherPlayerSquare())) { // If players are adjacent.
             if(board.graph[currentPlayerSquareIndex].contains(getCurrentPlayerSquare().opposite(getOtherPlayerSquare()))) {
                 return board.graph[otherPlayerSquareIndex].contains(dest) && getCurrentPlayerSquare().isCardinalTo(dest);
             }
             else {
-                return board.graph[otherPlayerSquareIndex].contains(dest);
+                return board.graph[otherPlayerSquareIndex].contains(dest); // Other's square is connected to dest.
             }
         }
         return false;
@@ -253,9 +254,11 @@ public class GameSession {
     private void removeEdge(Square sq1, Square sq2) {
         int sq1_index = board.squareToIndex(sq1);
         int sq2_index = board.squareToIndex(sq2);
-
-        board.graph[sq1_index].remove(sq2);
-        board.graph[sq2_index].remove(sq1);
+        System.out.println(sq1 + "=" + sq1_index + " " + sq2 + "=" +sq2_index);
+        if(sq1_index <= 81 && sq2_index <= 81) {
+            board.graph[sq2_index].remove(sq1);
+            board.graph[sq1_index].remove(sq2);
+        }
     }
 
     public int currentPlayer() {

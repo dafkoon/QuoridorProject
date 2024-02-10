@@ -16,6 +16,11 @@ public class Wall {
         this.orientation = orientation;
     }
 
+    public Wall(Square startingSq, char orientation) {
+        this.startingSq = startingSq;
+        this.orientation = (orientation == 'h') ? Orientation.HORIZONTAL : Orientation.VERTICAL;
+    }
+
     /** Constructor for Wall using a string.
      * example: Vertical wall between column e and f spanning rows 3 and 4 is e3v.
      * @param s string constructor
@@ -39,7 +44,7 @@ public class Wall {
 
     @Override
     public String toString() {
-        return orientation.toString() + orientation.name().toLowerCase().charAt(0);
+        return startingSq.toString() + orientation.name().toLowerCase().charAt(0);
     }
 
     @Override

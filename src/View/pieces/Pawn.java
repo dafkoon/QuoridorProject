@@ -24,21 +24,27 @@ public class Pawn extends StackPane{
     private final PawnType type;
     private final PawnColor color;
     public double mouseX, mouseY;
+    private double oldX, oldY;
 
     public PawnColor getColor() { return color;}
     public PawnType getType() {
         return type;
     }
 
+    public double getOldX() {
+        return oldX;
+    }
+
+    public double getOldY() {
+        return oldY;
+    }
+
     public Pawn(PawnType type, PawnColor color, int xPixel, int yPixel) {
         this.type = type;
         this.color = color;
-        if(type == PawnType.HUMAN) {
-            System.out.println("Pawn " + xPixel + "," + yPixel);
-        }
         //relocate(xIndex*TILE_SIZE, yIndex*TILE_SIZE);
 //        relocate(xIndex * TILE_SIZE, (BOARD_DIMENSION - 1 - yIndex) * TILE_SIZE);
-        relocate(xPixel, (BOARD_SIZE-TILE_SIZE) - yPixel);
+        move(xPixel, (BOARD_SIZE-TILE_SIZE) - yPixel);
         addPawn();
     }
 
@@ -64,7 +70,11 @@ public class Pawn extends StackPane{
 
     }
 
-
+    public void move(double xPixel, double yPixel) {
+        oldX = xPixel;
+        oldY = yPixel;
+        relocate(xPixel, yPixel);
+    }
 
     public enum PawnType {
         HUMAN, AI;

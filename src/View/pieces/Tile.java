@@ -3,14 +3,15 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 
+import static Controller.Controller.BOARD_DIMENSION;
 import static Controller.Controller.TILE_SIZE;
 public class Tile extends Rectangle{
     private int row;
     private int col;
 
-    public Tile(int row, int col) {
-        this.row = row;
+    public Tile(int col, int row) {
         this.col = col;
+        this.row = BOARD_DIMENSION - (row+1); // number
 
         setWidth(TILE_SIZE);
         setHeight(TILE_SIZE);
