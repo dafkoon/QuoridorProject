@@ -44,10 +44,7 @@ public class Controller {
         char orientation = isHorizontal ? 'h' : 'v';
         Square thisSquare = new Square(thisRow, thisCol);
         Wall wall = new Wall(thisSquare, orientation);
-//        System.out.println(thisSquare.getColNotation() + "" + thisSquare.getRowNotation() + orientation + " " + wall);
-        //System.out.print(thisCol + "," + thisRow + "=" +wall + " ");
         return !gameSession.isValidWallPlacement(wall);
-//        //System.out.println(thisX + "," + thisY + "  " + nextWallX + "," + nextWallY);
 //        return true;
     }
 

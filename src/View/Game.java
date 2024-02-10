@@ -20,6 +20,7 @@ import static Controller.Controller.BOARD_DIMENSION;
 import javafx.application.Application;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
@@ -73,10 +74,6 @@ public class Game extends Application {
         int currentType = 0;
         int[] xPixel = new int[]{BOARD_SIZE/2-TILE_SIZE/2, BOARD_SIZE/2-TILE_SIZE/2};
         int[] yPixel = new int[]{0, BOARD_SIZE-TILE_SIZE};
-        //int[] xIndex = new int[]{BOARD_DIMENSION/2, BOARD_DIMENSION/2};
-        //int[] yIndex = new int[]{0, BOARD_DIMENSION-1};
-        // HUMAN Pawn 4, 0
-        // AI Pawn 4, 8
         PawnType[] pawnTypes = PawnType.values();
         for(PawnType pawnType : pawnTypes) {
             PawnColor color = (pawnType == PawnType.AI) ? PawnColor.RED : PawnColor.BLUE;
@@ -113,35 +110,42 @@ public class Game extends Application {
             for (int row = 0; row < BOARD_DIMENSION; row++) {
                 Tile tile = new Tile(col, row);
                 NotationLabel label = new NotationLabel(col, row);
-                System.out.print(col + "," + row + "  ");
+                //System.out.print(col + "," + row + "  ");
                 tileGroup.getChildren().add(tile);
                 labelGroup.getChildren().add(label);
             }
-            System.out.println();
+            //System.out.println();
         }
-        System.out.println();
 
 
         // Add vertical walls.
         for (int col = BOARD_DIMENSION-2; col >= 0; col--) { // from left to right
             for (int row = 0; row < BOARD_DIMENSION; row++) { // from top to bottom
-                VerticalWall wall = new VerticalWall(col, row);
-                verticalWallGroup.getChildren().add(wall);
                 int thisRow = BOARD_DIMENSION - (row+1);
                 int thisCol = col;
-                System.out.print(thisCol + "," + thisRow + "  ");
-
+                int nextRow = thisRow+1;
+                int nextCol = col;
+                VerticalWall wall = new VerticalWall(thisCol, thisRow);
+                verticalWallGroup.getChildren().add(wall);
                 wall.setOnMouseEntered(e -> {
-                    if(thisCol < BOARD_DIMENSION) {
-//                        System.out.print(thisCol + "," + thisRow + " ");
-                        if(!controller.doesWallExist(thisRow, thisCol, false)) {
+                    if(thisRow > 0) {
+                        if (!controller.doesWallExist(thisRow, thisCol, false) && !controller.doesWallExist(nextRow, nextCol, false)) {
+                            VerticalWall wallAbove = findWall(thisRow-1, thisCol);
+                            wallAbove.setFill(Color.valueOf("000000"));
                             wall.setFill(Color.valueOf("000000"));
                         }
-                        //verticalWalls[nextX][nextY].setFill(Color.valueOf("000000"));
+                    }
+                });
+                wall.setOnMouseExited(e -> {
+                    if(thisRow > 0) {
+                        if (!controller.doesWallExist(thisRow, thisCol, false) && !controller.doesWallExist(nextRow, nextCol, false)) {
+                            VerticalWall wallAbove = findWall(thisRow-1, thisCol);
+                            wallAbove.setFill(Color.SILVER);
+                            wall.setFill(Color.SILVER);
+                        }
                     }
                 });
             }
-            System.out.println();
 
         }
 
@@ -174,6 +178,15 @@ public class Game extends Application {
      */
     private int pixelToBoard(double pixel) {
         return (int)(pixel + TILE_SIZE /2 ) / TILE_SIZE;
+    }
+
+    private VerticalWall findWall(int row, int col) {
+        for(Node node : verticalWallGroup.getChildren()) {
+            VerticalWall wall = (VerticalWall) node;
+            if(wall.getCol() == col && wall.getRow() == row)
+                return wall;
+        }
+        return null;
     }
 
 

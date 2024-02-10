@@ -52,9 +52,6 @@ public class EventHandler {
         int newCol = pixelToBoard(xPixel);
         int newRow = pixelToBoard(yPixel);
         Square dest = new Square(newRow, newCol);
-        System.out.println("Pawn moved to: " + newCol + "," + newRow);
-        System.out.println("Pawn moved to: " + dest);
-        System.out.println("Neighbors are: " + dest.neighbourhood(1));
         if(gameSession.isValidTraversal(dest)) {
 
         }

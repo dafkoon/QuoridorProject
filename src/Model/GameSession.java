@@ -158,6 +158,7 @@ public class GameSession {
         else {
             removeEdge(wall.startingSq, wall.startingSq.neighbor(0, 1)); // remove connecting between startingSq and the wall to the left of it
             removeEdge(wall.startingSq.neighbor(1, 0), wall.startingSq.neighbor(1, 1)); // remove the connection between squares on the next rank.
+            System.out.println();
         }
         boolean hasPath = hasPathToGoal();
         if(!hasPath) {
@@ -254,7 +255,7 @@ public class GameSession {
     private void removeEdge(Square sq1, Square sq2) {
         int sq1_index = board.squareToIndex(sq1);
         int sq2_index = board.squareToIndex(sq2);
-        System.out.println(sq1 + "=" + sq1_index + " " + sq2 + "=" +sq2_index);
+        System.out.print(sq1 + "=" + sq1_index + " " + sq2 + "=" + sq2_index + "   ");
         if(sq1_index <= 81 && sq2_index <= 81) {
             board.graph[sq2_index].remove(sq1);
             board.graph[sq1_index].remove(sq2);
