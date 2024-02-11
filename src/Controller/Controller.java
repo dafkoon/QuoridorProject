@@ -1,21 +1,13 @@
 package Controller;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.Node;
-import java.util.List;
 
 
 import View.pieces.Pawn;
-import View.pieces.Tile;
 import Model.Square;
 import Model.Wall;
-import Model.Move;
 import Model.Player;
 import Model.GameSession;
-import Model.Board;
-import Model.Square;
 
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
+import java.sql.SQLOutput;
 
 public class Controller {
     public static final int TILE_SIZE = 50;
@@ -40,29 +32,37 @@ public class Controller {
 //        return gameSession.isValidTraversal(nextSquare) && gameSession.currentPlayer() == playerTurn;
 //    }
 
-    public boolean doesWallExist(int thisRow, int thisCol, boolean isHorizontal) {
+    public boolean doesWallExist(String squareLocation, boolean isHorizontal) {
         char orientation = isHorizontal ? 'h' : 'v';
-        Square thisSquare = new Square(thisRow, thisCol);
-        Wall wall = new Wall(thisSquare, orientation);
+        Square sq = new Square(squareLocation);
+        Wall wall = new Wall(sq, orientation);
+//        System.out.println(wall);
         return !gameSession.isValidWallPlacement(wall);
-//        return true;
     }
 
+    public int wallsLeft() {
+        return getCurrentPlayerWallsLeft();
+    }
 
+    public void addWall(String squareLocation, boolean isHorizontal) {
+        char orientation = isHorizontal ? 'h' : 'v';
+        Square thisSquare = new Square(squareLocation);
+        Wall wall = new Wall(thisSquare, orientation);
+        System.out.println(wall);
+        gameSession.move(wall.toString());
+    }
+
+    public boolean isHumanTurn() { return gameSession.currentTurn() == 0; }
 
     public String getCurrentPlayerName() {
-        return gameSession.getPlayer(gameSession.currentPlayer()).getName();
+        return gameSession.getPlayer(gameSession.currentTurn()).getName();
     }
 
     public String getCurrentPlayerColor() {
-        return gameSession.getPlayer(gameSession.currentPlayer()).getPlayerColor();
+        return gameSession.getPlayer(gameSession.currentTurn()).getPlayerColor();
     }
 
     public int getCurrentPlayerWallsLeft() {
-        return gameSession.getPlayer(gameSession.currentPlayer()).getWallsLeft();
+        return gameSession.getPlayer(gameSession.currentTurn()).getWallsLeft();
     }
-
-
-
-
 }

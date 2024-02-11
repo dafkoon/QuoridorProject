@@ -15,8 +15,8 @@ public class GameSession {
     private Player[] players;
     private Stack<Move> moves;
     private List<Wall> walls;
-    private Square aiPos;
-    private Square humanPos;
+    private Square player1; // AI
+    private Square player2; // HUMAN
     private Player winner;
     private int turn;
 
@@ -26,8 +26,8 @@ public class GameSession {
         this.moves = new Stack<Move>();
         this.walls = new LinkedList<Wall>();
         this.board = new Board();
-        this.aiPos = new Square("e9");
-        this.humanPos = new Square("e1");
+        this.player1 = new Square("e9");
+        this.player2 = new Square("e1");
         this.turn = 0;
     }
 
@@ -57,24 +57,23 @@ public class GameSession {
      */
     public boolean move(String move) {
         boolean flag = gameOver();
-        if(!flag) // Game over.
+        if(flag) // Game over.
             return false;
-        if (isWallMove(move)) { // Check if move is a wall move.
+        if (isWallMove(move)) {
             Wall wall = new Wall(move);
             flag = isValidWallPlacement(wall); // Check validity of wall move.
             if (flag) {
                 placeWall(wall); // Update player walls and add wall to walls list.
             }
         }
-        else { // Pawn move.
+        else {
             Square sq = new Square(move);
             flag = isValidTraversal(sq);
             if (flag) {
                 movePawn(sq);
             }
         }
-
-        if(currentPlayer() == 0)
+        if(currentTurn() == 0)
             moves.push(new Move(move, players[0]));
         else
             moves.push(new Move(move, players[0]));
@@ -125,29 +124,26 @@ public class GameSession {
     }
 
     public boolean isValidWallPlacement(Wall wall) {
-        // Check number of walls for current player is positive.
         if(currentPlayerNumWalls() <= 0)
             return false;
-        // Check wall is not being placed on the border.
-//        if(wall.getStartingSq().getCol() == 8 || wall.getStartingSq().getRow() == 8) {
-//            System.out.println("fails");
-//            return false;
-//        }
-
-        // Check if wall not intersecting other walls.
-        if(wall.getOrientation() == Wall.Orientation.HORIZONTAL) {
+        if(wall.getOrientation() == Wall.Orientation.HORIZONTAL) { // Check Horizontal wall not intersecting others.
+            System.out.println(wall + " " + wall.neighbor(0, 0, Wall.Orientation.VERTICAL) + " " +
+                    wall.neighbor(0, -1, Wall.Orientation.HORIZONTAL) + " " +
+                    wall.neighbor(0, 1, Wall.Orientation.HORIZONTAL));
             if (walls.contains(wall) ||
-                    walls.contains(wall.neighbor(0, 0, Wall.Orientation.VERTICAL)) ||
-                    walls.contains(wall.neighbor(0, -1, Wall.Orientation.HORIZONTAL)) ||
+                    walls.contains(wall.neighbor(0, 0, Wall.Orientation.VERTICAL)) || // Through it
+                    walls.contains(wall.neighbor(0, -1, Wall.Orientation.HORIZONTAL)) || //
                     walls.contains(wall.neighbor(0, 1, Wall.Orientation.HORIZONTAL))) {
+                System.out.println(wall + " intersecting ");
                 return false;
             }
         }
-        else {
+        else { // Check Vertical wall not intersecting others.
             if (walls.contains(wall) ||
                     walls.contains(wall.neighbor(0, 0, Wall.Orientation.HORIZONTAL)) ||
                     walls.contains(wall.neighbor(-1, 0, Wall.Orientation.VERTICAL)) ||
                     walls.contains(wall.neighbor(1, 0, Wall.Orientation.VERTICAL))) {
+                System.out.println(wall + " intersecting ");
                 return false;
             }
         }
@@ -158,18 +154,15 @@ public class GameSession {
         else {
             removeEdge(wall.startingSq, wall.startingSq.neighbor(0, 1)); // remove connecting between startingSq and the wall to the left of it
             removeEdge(wall.startingSq.neighbor(1, 0), wall.startingSq.neighbor(1, 1)); // remove the connection between squares on the next rank.
-            System.out.println();
         }
         boolean hasPath = hasPathToGoal();
-        if(!hasPath) {
-            if(wall.getOrientation() == Wall.Orientation.HORIZONTAL) {
-                addEdge(wall.startingSq, wall.startingSq.neighbor(1, 0));
-                addEdge(wall.startingSq.neighbor(0, 1), wall.startingSq.neighbor(1, 1));
-            }
-            else {
-                addEdge(wall.startingSq, wall.startingSq.neighbor(0, 1));
-                addEdge(wall.startingSq.neighbor(1, 0), wall.startingSq.neighbor(1, 1));
-            }
+        if(wall.getOrientation() == Wall.Orientation.HORIZONTAL) {
+            addEdge(wall.startingSq, wall.startingSq.neighbor(1, 0));
+            addEdge(wall.startingSq.neighbor(0, 1), wall.startingSq.neighbor(1, 1));
+        }
+        else {
+            addEdge(wall.startingSq, wall.startingSq.neighbor(0, 1));
+            addEdge(wall.startingSq.neighbor(1, 0), wall.startingSq.neighbor(1, 1));
         }
         return hasPath;
     }
@@ -195,7 +188,7 @@ public class GameSession {
     }
 
     public boolean hasPathToGoal() {
-        return !(BFS(humanPos, 8).isEmpty() || BFS(aiPos, 0).isEmpty());
+        return !(BFS(player2, 8).isEmpty() || BFS(player1, 0).isEmpty());
     }
 
     public List<Square> BFS(Square src, int destRow) {
@@ -227,20 +220,11 @@ public class GameSession {
     }
 
     public void placeWall(Wall wall) {
-        if(currentPlayer() == 0)
+        if(currentTurn() == 0)
             players[0].decWalls();
         else
             players[1].decWalls();
         walls.add(wall);
-        // was already done in isValidWallPlacement.
-//        if(wall.getOrientation() == Wall.Orientation.HORIZONTAL) {
-//            removeEdge(wall.startingSq, wall.startingSq.neighbor(1, 0));
-//            removeEdge(wall.startingSq.neighbor(0, 1), wall.startingSq.neighbor(1, 1));
-//        }
-//        else {
-//            removeEdge(wall.startingSq, wall.startingSq.neighbor(0, 1));
-//            removeEdge(wall.startingSq.neighbor(1, 0), wall.startingSq.neighbor(1, 1));
-//        }
 
     }
 
@@ -255,23 +239,24 @@ public class GameSession {
     private void removeEdge(Square sq1, Square sq2) {
         int sq1_index = board.squareToIndex(sq1);
         int sq2_index = board.squareToIndex(sq2);
-        System.out.print(sq1 + "=" + sq1_index + " " + sq2 + "=" + sq2_index + "   ");
+//        System.out.println(sq2 + " " + sq2_index);
+//        System.out.println(sq1 + " " + sq1_index);
         if(sq1_index <= 81 && sq2_index <= 81) {
             board.graph[sq2_index].remove(sq1);
             board.graph[sq1_index].remove(sq2);
         }
     }
 
-    public int currentPlayer() {
+    public int currentTurn() {
         return turn%2;
     }
 
-    public Square getCurrentPlayerSquare() { return currentPlayer() == 0 ? humanPos : aiPos; }
+    public Square getCurrentPlayerSquare() { return currentTurn() == 0 ? player2 : player1; }
 
-    public Square getOtherPlayerSquare() { return getCurrentPlayerSquare().equals(aiPos) ? aiPos : humanPos; }
+    public Square getOtherPlayerSquare() { return getCurrentPlayerSquare().equals(player1) ? player1 : player2; }
 
     public int currentPlayerNumWalls() {
-        if (currentPlayer()==0) {
+        if (currentTurn()==0) {
             return players[0].getWallsLeft();
         } else {
             return players[1].getWallsLeft();
@@ -279,14 +264,14 @@ public class GameSession {
     }
 
     public void movePawn(Square sq) {
-        if(currentPlayer() == 0)
-            humanPos = sq;
+        if(currentTurn() == 0)
+            player2 = sq;
         else
-            aiPos = sq;
+            player1 = sq;
     }
 
     public boolean gameOver() {
-        return aiPos.getRow() == 0 || humanPos.getRow() == 8;
+        return player1.getRow() == 0 || player2.getRow() == 8;
     }
 
 

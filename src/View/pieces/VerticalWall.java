@@ -7,6 +7,7 @@ import static Controller.Controller.TILE_SIZE;
 public class VerticalWall extends Rectangle{
     private int x;
     private int y;
+    private boolean pressCommit;
     public VerticalWall(int x, int y)
     {
         this.x = x;
@@ -24,5 +25,13 @@ public class VerticalWall extends Rectangle{
 
     public int getRow() {
         return y;
+    }
+
+    public void setPressCommit(boolean pressed) {
+        this.pressCommit = pressed;
+    }
+
+    public boolean isPressCommit() {
+        return this.pressCommit;
     }
 }

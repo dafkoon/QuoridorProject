@@ -1,6 +1,5 @@
 package View.pieces;
 
-import Model.Board;
 import javafx.scene.control.Label;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -29,7 +28,6 @@ public class NotationLabel extends Label {
         setTranslateX(25);
         setTranslateY(25);
     }
-
     public String generateNotation() {
         char row = (char) ('1' + this.row);
         char col = (char) ('a' + this.col);

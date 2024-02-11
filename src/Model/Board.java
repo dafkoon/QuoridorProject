@@ -4,7 +4,6 @@ import java.util.*;
 import static Controller.Controller.BOARD_DIMENSION;
 
 public class Board {
-// board
     private final int BOARD_DIMENSION = 9;
     public List<Square>[] graph;
     public Set<Wall> walls;
@@ -50,10 +49,6 @@ public class Board {
                     graph[i].add(new Square(row + 1, col)); // down.
             }
         }
-//        for(int row = 0; row < BOARD_DIMENSION*BOARD_DIMENSION; row++) {
-//            System.out.println(graph[row].toString());
-
-
     }
 
 

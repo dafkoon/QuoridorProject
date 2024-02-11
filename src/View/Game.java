@@ -93,64 +93,124 @@ public class Game extends Application {
 
     private Pane createBoard() {
         Pane root = new Pane();
-        //root.setPrefSize((BOARD_DIMENSION * TILE_SIZE) + 150, BOARD_DIMENSION * TILE_SIZE + 30);
+        root.setPrefSize((BOARD_DIMENSION * TILE_SIZE) + 120, BOARD_DIMENSION * TILE_SIZE);
 
         //Add tiles to the board
-//        for (int y = 0; y < BOARD_DIMENSION; y++) {
-//            for (int x = 0; x < BOARD_DIMENSION; x++) {
-//                System.out.print(x + "," + y + "   ");
-//                Tile tile = new Tile(x, y);
-//                NotationLabel label = new NotationLabel(x, y);
-//                tileGroup.getChildren().add(tile);
-//                labelGroup.getChildren().add(label);
-//            }
-//            System.out.println();
-//        }
-        for (int col = BOARD_DIMENSION - 1; col >= 0; col--) {
-            for (int row = 0; row < BOARD_DIMENSION; row++) {
+        for (int row = BOARD_DIMENSION - 1; row >= 0; row--) {
+            for (int col = 0; col < BOARD_DIMENSION; col++) {
                 Tile tile = new Tile(col, row);
                 NotationLabel label = new NotationLabel(col, row);
-                //System.out.print(col + "," + row + "  ");
                 tileGroup.getChildren().add(tile);
                 labelGroup.getChildren().add(label);
             }
-            //System.out.println();
         }
-
-
         // Add vertical walls.
-        for (int col = BOARD_DIMENSION-2; col >= 0; col--) { // from left to right
-            for (int row = 0; row < BOARD_DIMENSION; row++) { // from top to bottom
-                int thisRow = BOARD_DIMENSION - (row+1);
+        for (int row = BOARD_DIMENSION-1; row >= 0; row--) { // from top to bottom
+            for (int col = 0; col < BOARD_DIMENSION-1; col++) { // from left to right
+                int thisRow = row;
                 int thisCol = col;
-                int nextRow = thisRow+1;
-                int nextCol = col;
+                System.out.print(notation(BOARD_DIMENSION-(thisRow+1), thisCol) + "  ");
                 VerticalWall wall = new VerticalWall(thisCol, thisRow);
                 verticalWallGroup.getChildren().add(wall);
                 wall.setOnMouseEntered(e -> {
                     if(thisRow > 0) {
-                        if (!controller.doesWallExist(thisRow, thisCol, false) && !controller.doesWallExist(nextRow, nextCol, false)) {
-                            VerticalWall wallAbove = findWall(thisRow-1, thisCol);
-                            wallAbove.setFill(Color.valueOf("000000"));
-                            wall.setFill(Color.valueOf("000000"));
+                        if(!controller.doesWallExist(notation(BOARD_DIMENSION - (thisRow + 1), thisCol), false)) {
+                            VerticalWall wallAbove = findVwall(thisRow - 1, thisCol);
+                            wallAbove.setFill(Color.BLACK);
+                            wall.setFill(Color.BLACK);
                         }
+//                        if (!controller.doesWallExist(notation(BOARD_DIMENSION - (thisRow + 1), thisCol), false) && // Square to the left of wall
+//                                !controller.doesWallExist(notation(BOARD_DIMENSION - thisRow, thisCol), false)) { // Square above
+//                        }
                     }
                 });
                 wall.setOnMouseExited(e -> {
-                    if(thisRow > 0) {
-                        if (!controller.doesWallExist(thisRow, thisCol, false) && !controller.doesWallExist(nextRow, nextCol, false)) {
-                            VerticalWall wallAbove = findWall(thisRow-1, thisCol);
+                    if(thisRow > 0 && !wall.isPressCommit()) {
+                        if(!controller.doesWallExist(notation(BOARD_DIMENSION - (thisRow + 1), thisCol), false)) {
+                            VerticalWall wallAbove = findVwall(thisRow - 1, thisCol);
                             wallAbove.setFill(Color.SILVER);
                             wall.setFill(Color.SILVER);
                         }
                     }
                 });
+                wall.setOnMousePressed((e -> {
+                    if(thisRow == 0 || controller.wallsLeft() == 0)
+                        return;
+                    if(e.isPrimaryButtonDown()) {
+                        if(controller.doesWallExist(notation(BOARD_DIMENSION - (thisRow + 1), thisCol), false)) {
+                            System.out.println("There is already a wall here.");
+                        }
+                        else {
+                            controller.addWall(notation(BOARD_DIMENSION - (thisRow + 1), thisCol), false);
+                            VerticalWall wallAbove = findVwall(thisRow - 1, thisCol);
+                            wall.setFill(Color.BLACK);
+                            wallAbove.setFill(Color.BLACK);
+                            wallLabel.setText("Walls left: " + controller.getCurrentPlayerWallsLeft());
+                            wall.setPressCommit(true);
+                        }
+                    }
+                }));
             }
-
+            System.out.println();
+//            System.out.println();
         }
 
+        System.out.println();
+        // Add horizontal walls.
+        for (int row = BOARD_DIMENSION-1; row > 0; row--) { // from top to bottom
+            for (int col = 0; col < BOARD_DIMENSION; col++) { // from left to right
+                int thisRow = row;
+                int thisCol = col;
+                HorizontalWall wall = new HorizontalWall(thisCol, thisRow);
+                System.out.print(notation(BOARD_DIMENSION-(thisRow+1), thisCol) + "  ");
+                horizontalWallGroup.getChildren().add(wall);
+                wall.setOnMouseEntered(e -> {
+                    if(thisCol < BOARD_DIMENSION-1) {
+                        if(!controller.doesWallExist(notation(BOARD_DIMENSION - (thisRow + 1), thisCol), true)) {
+                            HorizontalWall rightWall = findHwall(thisRow, thisCol+1);
+                            rightWall.setFill(Color.BLACK);
+                            wall.setFill(Color.BLACK);
+                        }
+
+                    }
+                });
+                wall.setOnMouseExited(e -> {
+                    if(thisCol < BOARD_DIMENSION-1 && !wall.isPressCommit()) {
+                        if(!controller.doesWallExist(notation(BOARD_DIMENSION - (thisRow + 1), thisCol), true)) {
+                            HorizontalWall rightWall = findHwall(thisRow, thisCol+1);
+                            rightWall.setFill(Color.SILVER);
+                            wall.setFill(Color.SILVER);
+                        }
+                    }
+                });
+
+                wall.setOnMousePressed((e -> {
+                    if(thisCol == BOARD_DIMENSION-1 || controller.wallsLeft() == 0)
+                        return;
+                    if(controller.doesWallExist(notation(BOARD_DIMENSION - (thisRow + 1), thisCol), false)) {
+                        System.out.println("There is already a wall here.");
+                    }
+                    else {
+                        controller.addWall(notation(BOARD_DIMENSION - (thisRow + 1), thisCol), false);
+                        HorizontalWall rightWall = findHwall(thisRow, thisCol + 1);
+                        wall.setFill(Color.BLACK);
+                        rightWall.setFill(Color.BLACK);
+                        wallLabel.setText("Walls left: " + controller.getCurrentPlayerWallsLeft());
+                        wall.setPressCommit(true);
+                    }
+                }));
+
+            }
+            System.out.println();
+        }
         root.getChildren().addAll(tileGroup, labelGroup , pawnGroup, horizontalWallGroup, verticalWallGroup, generateInfoPanel());
         return root;
+    }
+
+    public String notation(int r, int c) {
+        char row = (char) ('1' + r);
+        char col = (char) ('a' + c);
+        return ""+col+row;
     }
 
     public Pane generateInfoPanel() {
@@ -169,25 +229,28 @@ public class Game extends Application {
         return panel;
     }
 
-    public void validMoves() {;}
 
-    /**
-     * Converts pixel value to coordinate.
-     * @param pixel pixel location.
-     * @return a coordinate.
-     */
-    private int pixelToBoard(double pixel) {
-        return (int)(pixel + TILE_SIZE /2 ) / TILE_SIZE;
-    }
 
-    private VerticalWall findWall(int row, int col) {
+    private VerticalWall findVwall(int row, int col) {
         for(Node node : verticalWallGroup.getChildren()) {
             VerticalWall wall = (VerticalWall) node;
-            if(wall.getCol() == col && wall.getRow() == row)
+            if (wall.getCol() == col && wall.getRow() == row) {
                 return wall;
+            }
         }
         return null;
     }
+    private HorizontalWall findHwall(int row, int col) {
+        for(Node node : horizontalWallGroup.getChildren()) {
+            HorizontalWall wall = (HorizontalWall) node;
+            if (wall.getCol() == col && wall.getRow() == row) {
+                return wall;
+            }
+        }
+        System.out.println();
+        return null;
+    }
+
 
 
     public static void main(String[] args) {
