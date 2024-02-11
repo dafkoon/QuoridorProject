@@ -1,16 +1,8 @@
 package View;
 
-import java.sql.SQLOutput;
-import java.util.ArrayList;
-import java.util.List;
-
-import Model.Board;
 import View.pieces.*;
 import View.pieces.Pawn.PawnType;
 import View.pieces.Pawn.PawnColor;
-
-import Model.GameSession;
-import Model.Player;
 
 import Controller.Controller;
 import Controller.EventHandler;
@@ -18,10 +10,8 @@ import static Controller.Controller.TILE_SIZE;
 import static Controller.Controller.BOARD_DIMENSION;
 
 import javafx.application.Application;
-import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
@@ -36,7 +26,7 @@ import javafx.stage.Stage;
 public class Game extends Application {
     public static final int BOARD_SIZE = TILE_SIZE * BOARD_DIMENSION;
 
-    private final Controller controller = new Controller(); // Access to controller class
+    private Controller controller = new Controller(this); // Access to controller class
     private EventHandler eventHandler;
     //private final Tile[][] board = new Tile[BOARD_DIMENSION][BOARD_DIMENSION];   NOT USED.
     //private final HorizontalWall[][] horizontalWalls = new HorizontalWall[BOARD_DIMENSION][BOARD_DIMENSION];
@@ -49,16 +39,16 @@ public class Game extends Application {
     private final Group labelGroup = new Group();
     private Label currentTurnLabel;
     private Label wallLabel;
+    private Pane root;
 
 
     public void start(Stage primaryStage) {
-        controller.startup();
         this.eventHandler = controller.startup();
         initPawns();
 
         currentTurnLabel = new Label();
         wallLabel = new Label();
-        Pane root = createBoard();
+        root = createBoard();
         Scene scene = new Scene(root);
         primaryStage.getIcons().add(new Image("zres/icon.png"));
         primaryStage.setTitle("Quoridor");
@@ -109,7 +99,6 @@ public class Game extends Application {
             for (int col = 0; col < BOARD_DIMENSION-1; col++) { // from left to right
                 int thisRow = row;
                 int thisCol = col;
-                System.out.print(notation(BOARD_DIMENSION-(thisRow+1), thisCol) + "  ");
                 VerticalWall wall = new VerticalWall(thisCol, thisRow);
                 verticalWallGroup.getChildren().add(wall);
                 wall.setOnMouseEntered(e -> {
@@ -119,9 +108,6 @@ public class Game extends Application {
                             wallAbove.setFill(Color.BLACK);
                             wall.setFill(Color.BLACK);
                         }
-//                        if (!controller.doesWallExist(notation(BOARD_DIMENSION - (thisRow + 1), thisCol), false) && // Square to the left of wall
-//                                !controller.doesWallExist(notation(BOARD_DIMENSION - thisRow, thisCol), false)) { // Square above
-//                        }
                     }
                 });
                 wall.setOnMouseExited(e -> {
@@ -145,24 +131,19 @@ public class Game extends Application {
                             VerticalWall wallAbove = findVwall(thisRow - 1, thisCol);
                             wall.setFill(Color.BLACK);
                             wallAbove.setFill(Color.BLACK);
-                            wallLabel.setText("Walls left: " + controller.getCurrentPlayerWallsLeft());
                             wall.setPressCommit(true);
+                            generateInfoPanel();
                         }
                     }
                 }));
             }
-            System.out.println();
-//            System.out.println();
         }
-
-        System.out.println();
         // Add horizontal walls.
         for (int row = BOARD_DIMENSION-1; row > 0; row--) { // from top to bottom
             for (int col = 0; col < BOARD_DIMENSION; col++) { // from left to right
                 int thisRow = row;
                 int thisCol = col;
                 HorizontalWall wall = new HorizontalWall(thisCol, thisRow);
-                System.out.print(notation(BOARD_DIMENSION-(thisRow+1), thisCol) + "  ");
                 horizontalWallGroup.getChildren().add(wall);
                 wall.setOnMouseEntered(e -> {
                     if(thisCol < BOARD_DIMENSION-1) {
@@ -187,21 +168,20 @@ public class Game extends Application {
                 wall.setOnMousePressed((e -> {
                     if(thisCol == BOARD_DIMENSION-1 || controller.wallsLeft() == 0)
                         return;
-                    if(controller.doesWallExist(notation(BOARD_DIMENSION - (thisRow + 1), thisCol), false)) {
+                    if(controller.doesWallExist(notation(BOARD_DIMENSION - (thisRow + 1), thisCol), true)) {
                         System.out.println("There is already a wall here.");
                     }
                     else {
-                        controller.addWall(notation(BOARD_DIMENSION - (thisRow + 1), thisCol), false);
+                        controller.addWall(notation(BOARD_DIMENSION - (thisRow + 1), thisCol), true);
                         HorizontalWall rightWall = findHwall(thisRow, thisCol + 1);
                         wall.setFill(Color.BLACK);
                         rightWall.setFill(Color.BLACK);
-                        wallLabel.setText("Walls left: " + controller.getCurrentPlayerWallsLeft());
                         wall.setPressCommit(true);
+                        updateInfoPanel();
                     }
                 }));
 
             }
-            System.out.println();
         }
         root.getChildren().addAll(tileGroup, labelGroup , pawnGroup, horizontalWallGroup, verticalWallGroup, generateInfoPanel());
         return root;
@@ -213,20 +193,25 @@ public class Game extends Application {
         return ""+col+row;
     }
 
+
     public Pane generateInfoPanel() {
         Pane panel = new Pane();
-        currentTurnLabel.setText(controller.getCurrentPlayerName() + "'s turn");
-        currentTurnLabel.setTextFill(Color.valueOf(controller.getCurrentPlayerColor()));
+        currentTurnLabel.setText(controller.getPlayerName() + "'s turn");
+        currentTurnLabel.setTextFill(Color.valueOf(controller.getPlayerColor()));
         currentTurnLabel.setFont(Font.font("Verdana", FontWeight.BOLD, 12));
+        wallLabel.setText("Walls left: " + controller.getPlayerWallLeft());
+        wallLabel.setTextFill(Color.valueOf(controller.getPlayerColor()));
         currentTurnLabel.setTranslateY(10);
-
-        wallLabel.setText("Walls left: " + controller.getCurrentPlayerWallsLeft());
-        wallLabel.setTextFill(Color.valueOf(controller.getCurrentPlayerColor()));
         wallLabel.setTranslateY(20);
-
-        panel.getChildren().addAll(currentTurnLabel, wallLabel);
         panel.setTranslateX(BOARD_DIMENSION*TILE_SIZE +10);
+        panel.getChildren().addAll(currentTurnLabel, wallLabel);
         return panel;
+    }
+    public void updateInfoPanel() {
+        currentTurnLabel.setText(controller.getPlayerName() + "'s turn");
+        currentTurnLabel.setTextFill(Color.valueOf(controller.getPlayerColor()));
+        wallLabel.setText("Walls left: " + controller.getPlayerWallLeft());
+        wallLabel.setTextFill(Color.valueOf(controller.getPlayerColor()));
     }
 
 
@@ -247,7 +232,6 @@ public class Game extends Application {
                 return wall;
             }
         }
-        System.out.println();
         return null;
     }
 

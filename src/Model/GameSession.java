@@ -15,8 +15,8 @@ public class GameSession {
     private Player[] players;
     private Stack<Move> moves;
     private List<Wall> walls;
+    private Square player0; // HUMAN
     private Square player1; // AI
-    private Square player2; // HUMAN
     private Player winner;
     private int turn;
 
@@ -26,28 +26,17 @@ public class GameSession {
         this.moves = new Stack<Move>();
         this.walls = new LinkedList<Wall>();
         this.board = new Board();
+        this.player0 = new Square("e1");
         this.player1 = new Square("e9");
-        this.player2 = new Square("e1");
         this.turn = 0;
     }
 
     /**
      * Adds a player to the session.
      * @param player player to add.
-     * @throws IllegalStateException if more players than the limit are added.
-     * @throws IllegalArgumentException if player is null.
      */
-    public void addPlayer(Player player) throws IllegalStateException, IllegalArgumentException{
-        if(players.length > MAX_PLAYERS) {
-            throw new IllegalStateException("Tried to surpass max amount of player: " + MAX_PLAYERS);
-        }
-        if(player == null) {
-            throw new IllegalArgumentException("Player cannot be null.");
-        }
-        for(int i = 0; i < players.length; i++) {
-            if(players[i] == null)
-                players[i] = player;
-        }
+    public void addPlayer(Player player, int id){
+        players[id] = player;
     }
 
     /**
@@ -63,6 +52,7 @@ public class GameSession {
             Wall wall = new Wall(move);
             flag = isValidWallPlacement(wall); // Check validity of wall move.
             if (flag) {
+                turn++;
                 placeWall(wall); // Update player walls and add wall to walls list.
             }
         }
@@ -70,14 +60,14 @@ public class GameSession {
             Square sq = new Square(move);
             flag = isValidTraversal(sq);
             if (flag) {
+                turn++;
                 movePawn(sq);
             }
         }
         if(currentTurn() == 0)
             moves.push(new Move(move, players[0]));
         else
-            moves.push(new Move(move, players[0]));
-        turn++;
+            moves.push(new Move(move, players[1]));
         return flag;
     }
 
@@ -127,9 +117,6 @@ public class GameSession {
         if(currentPlayerNumWalls() <= 0)
             return false;
         if(wall.getOrientation() == Wall.Orientation.HORIZONTAL) { // Check Horizontal wall not intersecting others.
-            System.out.println(wall + " " + wall.neighbor(0, 0, Wall.Orientation.VERTICAL) + " " +
-                    wall.neighbor(0, -1, Wall.Orientation.HORIZONTAL) + " " +
-                    wall.neighbor(0, 1, Wall.Orientation.HORIZONTAL));
             if (walls.contains(wall) ||
                     walls.contains(wall.neighbor(0, 0, Wall.Orientation.VERTICAL)) || // Through it
                     walls.contains(wall.neighbor(0, -1, Wall.Orientation.HORIZONTAL)) || //
@@ -188,7 +175,7 @@ public class GameSession {
     }
 
     public boolean hasPathToGoal() {
-        return !(BFS(player2, 8).isEmpty() || BFS(player1, 0).isEmpty());
+        return !(BFS(player0, 8).isEmpty() || BFS(player1, 0).isEmpty());
     }
 
     public List<Square> BFS(Square src, int destRow) {
@@ -227,7 +214,6 @@ public class GameSession {
         walls.add(wall);
 
     }
-
     private void addEdge(Square sq1, Square sq2) {
         int sq1_index = board.squareToIndex(sq1);
         int sq2_index = board.squareToIndex(sq2);
@@ -235,7 +221,6 @@ public class GameSession {
         board.graph[sq1_index].add(sq2);
         board.graph[sq2_index].add(sq1);
     }
-
     private void removeEdge(Square sq1, Square sq2) {
         int sq1_index = board.squareToIndex(sq1);
         int sq2_index = board.squareToIndex(sq2);
@@ -247,13 +232,20 @@ public class GameSession {
         }
     }
 
+    public void movePawn(Square sq) {
+        if(currentTurn() == 0)
+            player0 = sq;
+        else
+            player1 = sq;
+    }
+
     public int currentTurn() {
         return turn%2;
     }
 
-    public Square getCurrentPlayerSquare() { return currentTurn() == 0 ? player2 : player1; }
+    public Square getCurrentPlayerSquare() { return currentTurn() == 0 ? player0 : player1; }
 
-    public Square getOtherPlayerSquare() { return getCurrentPlayerSquare().equals(player1) ? player1 : player2; }
+    public Square getOtherPlayerSquare() { return getCurrentPlayerSquare().equals(player1) ? player1 : player0; }
 
     public int currentPlayerNumWalls() {
         if (currentTurn()==0) {
@@ -263,22 +255,10 @@ public class GameSession {
         }
     }
 
-    public void movePawn(Square sq) {
-        if(currentTurn() == 0)
-            player2 = sq;
-        else
-            player1 = sq;
-    }
-
     public boolean gameOver() {
-        return player1.getRow() == 0 || player2.getRow() == 8;
+        return player1.getRow() == 0 || player0.getRow() == 8;
     }
 
-
-
-
-
-    public Board getBoard() { return board; }
     /**
      * Gets the list of all players in the session.
      * @return players in the session.
@@ -299,6 +279,5 @@ public class GameSession {
      */
     public Stack<Move> getMoves() { return moves; }
 
-    public List<Wall> getWalls() { return walls; }
 
 }

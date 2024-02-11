@@ -18,7 +18,8 @@ public class Player {
      * Gets the name of the player (HUMAN / AI).
      * @return A string of the player name.
      */
-    public String getName() { return playerName; }
+    public String getName() {
+        return playerName; }
 
     /**
      * Gets the Color of the player (BLUE / RED).

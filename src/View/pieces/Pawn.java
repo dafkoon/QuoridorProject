@@ -66,8 +66,10 @@ public class Pawn extends StackPane{
         text.setFont(Font.font("Verdana", FontWeight.BOLD, 10));
         getChildren().add(text);
         getChildren().addAll(ellipse);
+    }
 
-
+    public void reverse() {
+        relocate(oldX, oldY);
     }
 
     public void move(double xPixel, double yPixel) {
