@@ -1,4 +1,4 @@
-package Model;
+package Model.Gamestate;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -70,7 +70,6 @@ public class Square {
         List <Square> neighbors = new LinkedList<Square>();
         for(int distance = -radius; distance <= radius; distance++) {
             if(distance != 0) {
-//                System.out.print("row:" + this.row + " col:" + this.col + "  ");
                 if(row+distance >= 0 && row+distance < 9)
                     neighbors.add(new Square(row+distance, col));
                 if(col+distance >= 0 && col+distance < 9)

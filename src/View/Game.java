@@ -1,4 +1,5 @@
 package View;
+import java.util.List;
 
 import View.pieces.*;
 import View.pieces.Pawn.PawnType;
@@ -103,7 +104,7 @@ public class Game extends Application {
                 verticalWallGroup.getChildren().add(wall);
                 wall.setOnMouseEntered(e -> {
                     if(thisRow > 0) {
-                        if(!controller.doesWallExist(notation(BOARD_DIMENSION - (thisRow + 1), thisCol), false)) {
+                        if(!controller.doesWallExist(toAlgebraic(BOARD_DIMENSION - (thisRow + 1), thisCol), false)) {
                             VerticalWall wallAbove = findVwall(thisRow - 1, thisCol);
                             wallAbove.setFill(Color.BLACK);
                             wall.setFill(Color.BLACK);
@@ -112,7 +113,7 @@ public class Game extends Application {
                 });
                 wall.setOnMouseExited(e -> {
                     if(thisRow > 0 && !wall.isPressCommit()) {
-                        if(!controller.doesWallExist(notation(BOARD_DIMENSION - (thisRow + 1), thisCol), false)) {
+                        if(!controller.doesWallExist(toAlgebraic(BOARD_DIMENSION - (thisRow + 1), thisCol), false)) {
                             VerticalWall wallAbove = findVwall(thisRow - 1, thisCol);
                             wallAbove.setFill(Color.SILVER);
                             wall.setFill(Color.SILVER);
@@ -120,14 +121,14 @@ public class Game extends Application {
                     }
                 });
                 wall.setOnMousePressed((e -> {
-                    if(thisRow == 0 || controller.wallsLeft() == 0)
+                    if(thisRow == 0 || controller.wallsLeft() == 0 || controller.getTurn() != 0)
                         return;
                     if(e.isPrimaryButtonDown()) {
-                        if(controller.doesWallExist(notation(BOARD_DIMENSION - (thisRow + 1), thisCol), false)) {
+                        if(controller.doesWallExist(toAlgebraic(BOARD_DIMENSION - (thisRow + 1), thisCol), false)) {
                             System.out.println("There is already a wall here.");
                         }
                         else {
-                            controller.addWall(notation(BOARD_DIMENSION - (thisRow + 1), thisCol), false);
+                            controller.addWall(toAlgebraic(BOARD_DIMENSION - (thisRow + 1), thisCol), false);
                             VerticalWall wallAbove = findVwall(thisRow - 1, thisCol);
                             wall.setFill(Color.BLACK);
                             wallAbove.setFill(Color.BLACK);
@@ -147,7 +148,7 @@ public class Game extends Application {
                 horizontalWallGroup.getChildren().add(wall);
                 wall.setOnMouseEntered(e -> {
                     if(thisCol < BOARD_DIMENSION-1) {
-                        if(!controller.doesWallExist(notation(BOARD_DIMENSION - (thisRow + 1), thisCol), true)) {
+                        if(!controller.doesWallExist(toAlgebraic(BOARD_DIMENSION - (thisRow + 1), thisCol), true)) {
                             HorizontalWall rightWall = findHwall(thisRow, thisCol+1);
                             rightWall.setFill(Color.BLACK);
                             wall.setFill(Color.BLACK);
@@ -157,7 +158,7 @@ public class Game extends Application {
                 });
                 wall.setOnMouseExited(e -> {
                     if(thisCol < BOARD_DIMENSION-1 && !wall.isPressCommit()) {
-                        if(!controller.doesWallExist(notation(BOARD_DIMENSION - (thisRow + 1), thisCol), true)) {
+                        if(!controller.doesWallExist(toAlgebraic(BOARD_DIMENSION - (thisRow + 1), thisCol), true)) {
                             HorizontalWall rightWall = findHwall(thisRow, thisCol+1);
                             rightWall.setFill(Color.SILVER);
                             wall.setFill(Color.SILVER);
@@ -166,13 +167,13 @@ public class Game extends Application {
                 });
 
                 wall.setOnMousePressed((e -> {
-                    if(thisCol == BOARD_DIMENSION-1 || controller.wallsLeft() == 0)
+                    if(thisCol == BOARD_DIMENSION-1 || controller.wallsLeft() == 0 || controller.getTurn() != 0)
                         return;
-                    if(controller.doesWallExist(notation(BOARD_DIMENSION - (thisRow + 1), thisCol), true)) {
+                    if(controller.doesWallExist(toAlgebraic(BOARD_DIMENSION - (thisRow + 1), thisCol), true)) {
                         System.out.println("There is already a wall here.");
                     }
                     else {
-                        controller.addWall(notation(BOARD_DIMENSION - (thisRow + 1), thisCol), true);
+                        controller.addWall(toAlgebraic(BOARD_DIMENSION - (thisRow + 1), thisCol), true);
                         HorizontalWall rightWall = findHwall(thisRow, thisCol + 1);
                         wall.setFill(Color.BLACK);
                         rightWall.setFill(Color.BLACK);
@@ -185,12 +186,6 @@ public class Game extends Application {
         }
         root.getChildren().addAll(tileGroup, labelGroup , pawnGroup, horizontalWallGroup, verticalWallGroup, generateInfoPanel());
         return root;
-    }
-
-    public String notation(int r, int c) {
-        char row = (char) ('1' + r);
-        char col = (char) ('a' + c);
-        return ""+col+row;
     }
 
 
@@ -207,13 +202,13 @@ public class Game extends Application {
         panel.getChildren().addAll(currentTurnLabel, wallLabel);
         return panel;
     }
+
     public void updateInfoPanel() {
         currentTurnLabel.setText(controller.getPlayerName() + "'s turn");
         currentTurnLabel.setTextFill(Color.valueOf(controller.getPlayerColor()));
         wallLabel.setText("Walls left: " + controller.getPlayerWallLeft());
         wallLabel.setTextFill(Color.valueOf(controller.getPlayerColor()));
     }
-
 
 
     private VerticalWall findVwall(int row, int col) {
@@ -225,6 +220,7 @@ public class Game extends Application {
         }
         return null;
     }
+
     private HorizontalWall findHwall(int row, int col) {
         for(Node node : horizontalWallGroup.getChildren()) {
             HorizontalWall wall = (HorizontalWall) node;
@@ -235,6 +231,15 @@ public class Game extends Application {
         return null;
     }
 
+    public void highlightMoves(List<String> moves) {
+        System.out.println(moves);
+    }
+
+    public String toAlgebraic(int r, int c) {
+        char row = (char) ('1' + r);
+        char col = (char) ('a' + c);
+        return ""+col+row;
+    }
 
 
     public static void main(String[] args) {

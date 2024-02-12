@@ -1,18 +1,18 @@
 package Controller;
-import Model.Board;
-import Model.Square;
 import View.pieces.Pawn;
 import View.Game;
-import View.pieces.Tile;
-import Model.GameSession;
+import Model.Gamestate.Square;
+
+import Model.Gamestate.GameSession;
 import javafx.scene.input.MouseEvent;
+
 
 import static Controller.Controller.BOARD_DIMENSION;
 import static Controller.Controller.TILE_SIZE;
 
 public class EventHandler {
-    private GameSession gameSession;
-    private Game view;
+    private final Game view;
+    private final GameSession gameSession;
     private final int BOARD_SIZE = BOARD_DIMENSION*TILE_SIZE;
 
     public EventHandler(GameSession gameSession, Game view) {
@@ -38,7 +38,6 @@ public class EventHandler {
     public void pawnMousePressed(MouseEvent event, Pawn pawn) {
         pawn.mouseX = event.getSceneX();
         pawn.mouseY = event.getSceneY();
-        add a thing to highlight the possible pawn moves.
     }
 
     public void pawnMouseDragged(MouseEvent event, Pawn pawn) {

@@ -1,4 +1,6 @@
-package Model;
+package Model.Gamestate;
+
+import View.pieces.Pawn;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -20,6 +22,8 @@ public class GameSession {
     private Player winner;
     private int turn;
 
+    private static int counter;
+
 
     public GameSession() {
         this.players = new Player[MAX_PLAYERS];
@@ -29,14 +33,11 @@ public class GameSession {
         this.player0 = new Square("e1");
         this.player1 = new Square("e9");
         this.turn = 0;
+
     }
 
-    /**
-     * Adds a player to the session.
-     * @param player player to add.
-     */
-    public void addPlayer(Player player, int id){
-        players[id] = player;
+    public void addPlayer(String name, String color, int type){
+        players[type] = new Player(name, color);
     }
 
     /**
@@ -71,20 +72,24 @@ public class GameSession {
         return flag;
     }
 
-    public List<String> generateValidMoves() {
-
+    public List<String> generateValidPawnMoves() {
         List<String> validMoves = new LinkedList<String>();
-        for(Square sq: getCurrentPlayerSquare().neighbourhood(1)) {
-            if(isValidTraversal(sq)) {
+        for (Square sq: getCurrentPlayerSquare().neighbourhood(2)) {
+            if (isValidTraversal(sq)) {
                 validMoves.add(sq.toString());
             }
         }
-        for(int i = 0; i < BOARD_DIMENSION; i++) {
-            for(int j = 0; j < BOARD_DIMENSION; j++) {
-                Square sq = new Square(i, j);
-                for(Wall.Orientation o: Wall.Orientation.values()) {
+        return validMoves;
+    }
+
+    public List<String> generateValidWallMoves() {
+        List<String> validMoves = new LinkedList<String>();
+        for (int i = 0; i < BOARD_DIMENSION ; i++) {
+            for (int j = 0; j < BOARD_DIMENSION; j++) {
+                Square sq = new Square(i,j);
+                for (Wall.Orientation o: Wall.Orientation.values()) {
                     Wall wall = new Wall(sq, o);
-                    if(isValidWallPlacement(wall)) {
+                    if (isValidWallPlacement(wall)) {
                         validMoves.add(wall.toString());
                     }
                 }
@@ -175,38 +180,46 @@ public class GameSession {
     }
 
     public boolean hasPathToGoal() {
-        return !(BFS(player0, 8).isEmpty() || BFS(player1, 0).isEmpty());
+
+        return !(shortestPathToRow(player0, 8).isEmpty() || shortestPathToRow(player1, 0).isEmpty());
     }
 
-    public List<Square> BFS(Square src, int destRow) {
-        List<Square> shortestPath = new LinkedList<Square>();
+    public List<Square> shortestPathToRow(Square src, int destRow) {
+        List<Square> path = new LinkedList<Square>();
         Queue <Square> queue = new LinkedList<Square>();
-        HashMap<Square, Square> parentNode = new HashMap<Square, Square>();
+        HashMap <Square,Square> parentNode = new HashMap<Square,Square>();
         queue.add(src);
         parentNode.put(src, null);
-
         while (!queue.isEmpty()) {
-            Square sq = queue.poll();
-            if (sq.getRow() == destRow) {
-                while (!sq.equals(src)) {
-                    shortestPath.add(sq);
-                    sq = parentNode.get(sq);
+            Square curr = queue.poll();
+            if (curr.getRow() == destRow) {
+                while (!curr.equals(src)) {
+                    path.add(curr);
+                    curr = parentNode.get(curr);
                 }
-                Collections.reverse(shortestPath);
-                return shortestPath;
+                Collections.reverse(path);
+                return path;
             }
-            int i = board.squareToIndex(sq);
+            int i = board.squareToIndex(curr);
             for (Square e: board.graph[i]) {
                 if (!parentNode.containsKey(e)) {
-                    parentNode.put(e, sq);
+                    parentNode.put(e, curr);
                     queue.add(e);
                 }
             }
-        }
-        return shortestPath;
-    }
 
+        }
+        return path;
+    }
     public void placeWall(Wall wall) {
+        if(wall.getOrientation() == Wall.Orientation.HORIZONTAL) {
+            removeEdge(wall.startingSq, wall.startingSq.neighbor(1, 0));
+            removeEdge(wall.startingSq.neighbor(0, 1), wall.startingSq.neighbor(1, 1)); //
+        }
+        else {
+            removeEdge(wall.startingSq, wall.startingSq.neighbor(0, 1)); // remove connecting between startingSq and the wall to the left of it
+            removeEdge(wall.startingSq.neighbor(1, 0), wall.startingSq.neighbor(1, 1)); // remove the connection between squares on the next rank.
+        }
         if(currentTurn() == 0)
             players[0].decWalls();
         else
@@ -217,18 +230,17 @@ public class GameSession {
     private void addEdge(Square sq1, Square sq2) {
         int sq1_index = board.squareToIndex(sq1);
         int sq2_index = board.squareToIndex(sq2);
-
-        board.graph[sq1_index].add(sq2);
-        board.graph[sq2_index].add(sq1);
+        if (sq1_index >= 0 && sq1_index < 81 && sq2_index >= 0 && sq2_index < 81) {
+            board.graph[sq1_index].add(sq2);
+            board.graph[sq2_index].add(sq1);
+        }
     }
     private void removeEdge(Square sq1, Square sq2) {
         int sq1_index = board.squareToIndex(sq1);
         int sq2_index = board.squareToIndex(sq2);
-//        System.out.println(sq2 + " " + sq2_index);
-//        System.out.println(sq1 + " " + sq1_index);
-        if(sq1_index <= 81 && sq2_index <= 81) {
-            board.graph[sq2_index].remove(sq1);
+        if (sq1_index >= 0 && sq1_index < 81 && sq2_index >= 0 && sq2_index < 81) {
             board.graph[sq1_index].remove(sq2);
+            board.graph[sq2_index].remove(sq1);
         }
     }
 
@@ -245,7 +257,7 @@ public class GameSession {
 
     public Square getCurrentPlayerSquare() { return currentTurn() == 0 ? player0 : player1; }
 
-    public Square getOtherPlayerSquare() { return getCurrentPlayerSquare().equals(player1) ? player1 : player0; }
+    public Square getOtherPlayerSquare() { return currentTurn() == 0 ? player1 : player0; }
 
     public int currentPlayerNumWalls() {
         if (currentTurn()==0) {
@@ -258,6 +270,7 @@ public class GameSession {
     public boolean gameOver() {
         return player1.getRow() == 0 || player0.getRow() == 8;
     }
+
 
     /**
      * Gets the list of all players in the session.

@@ -3,10 +3,12 @@ package Controller;
 
 import View.pieces.Pawn;
 import View.Game;
-import Model.Square;
-import Model.Wall;
-import Model.Player;
-import Model.GameSession;
+
+import Model.Gamestate.Square;
+import Model.Gamestate.Wall;
+import Model.Gamestate.Player;
+import Model.Gamestate.GameSession;
+import Model.Gamestate.Board;
 
 public class Controller {
     public static final int TILE_SIZE = 50;
@@ -20,8 +22,8 @@ public class Controller {
 
     public EventHandler startup() {
         this.gameSession = new GameSession();
-        this.gameSession.addPlayer(new Player(Pawn.PawnType.HUMAN.name(), Pawn.PawnColor.BLUE.name()), Pawn.PawnType.HUMAN.ordinal());
-        this.gameSession.addPlayer(new Player(Pawn.PawnType.AI.name(), Pawn.PawnColor.RED.name()), Pawn.PawnType.AI.ordinal());
+        this.gameSession.addPlayer(Pawn.PawnType.HUMAN.name(), Pawn.PawnColor.BLUE.name(), Pawn.PawnType.HUMAN.ordinal());
+        this.gameSession.addPlayer(Pawn.PawnType.AI.name(), Pawn.PawnColor.RED.name(), Pawn.PawnType.AI.ordinal());
         return new EventHandler(this.gameSession, this.view);
 
     }
@@ -34,15 +36,19 @@ public class Controller {
         return !gameSession.isValidWallPlacement(wall);
     }
 
-    public int wallsLeft() {
-        return getPlayerWallLeft();
-    }
-
     public void addWall(String squareLocation, boolean isHorizontal) {
         char orientation = isHorizontal ? 'h' : 'v';
         Square thisSquare = new Square(squareLocation);
         Wall wall = new Wall(thisSquare, orientation);
         gameSession.move(wall.toString());
+    }
+
+    public int wallsLeft() {
+        return getPlayerWallLeft();
+    }
+
+    public int getTurn() {
+        return gameSession.currentTurn();
     }
 
     public String getPlayerName() {

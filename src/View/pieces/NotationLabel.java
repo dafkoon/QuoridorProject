@@ -5,8 +5,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 
-import java.util.Objects;
-
 import static Controller.Controller.TILE_SIZE;
 import static Controller.Controller.BOARD_DIMENSION;
 

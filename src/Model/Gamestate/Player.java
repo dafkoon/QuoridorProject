@@ -1,4 +1,4 @@
-package Model;
+package Model.Gamestate;
 
 /**
  * Represents a player in the game.
@@ -8,9 +8,9 @@ public class Player {
     private String playerColor;
     private int walls;
 
-    public Player(String pawnType, String pawnColor) {
-        this.playerName = pawnType;
-        this.playerColor = pawnColor;
+    public Player(String name, String color) {
+        this.playerName = name;
+        this.playerColor = color;
         this.walls = 10; // Default number of walls.
     }
 

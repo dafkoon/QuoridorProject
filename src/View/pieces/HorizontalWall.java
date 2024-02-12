@@ -3,7 +3,6 @@ package View.pieces;
 import static Controller.Controller.TILE_SIZE;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
-import View.Game;
 
 /**
  * Represents a horizontal wall component within the board using the {@link Rectangle} shape.

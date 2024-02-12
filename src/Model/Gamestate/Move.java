@@ -1,4 +1,4 @@
-package Model;
+package Model.Gamestate;
 
 /**
  * Represents a move taken during the game.
@@ -22,7 +22,6 @@ public class Move {
     public String getMove() {
         return move;
     }
-
 
 
     /**

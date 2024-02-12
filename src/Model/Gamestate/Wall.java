@@ -1,4 +1,4 @@
-package Model;
+package Model.Gamestate;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -38,13 +38,7 @@ public class Wall {
     public Wall neighbor(int row, int column, Orientation orientation) {
         Square neighborSq = new Square(startingSq.getRow()+row, startingSq.getCol()+column);
         Wall wall = new Wall(neighborSq, orientation);
-        //System.out.print(wall + " ");
         return wall;
-    }
-
-    public List<Wall> neighborhood(int radius) {
-        List <Wall> neighbors = new LinkedList<Wall>();
-        return neighbors;
     }
 
     public Square getStartingSq() { return startingSq; }

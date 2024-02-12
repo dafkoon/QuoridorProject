@@ -1,4 +1,4 @@
-package Model;
+package Model.Gamestate;
 import java.util.*;
 
 import static Controller.Controller.BOARD_DIMENSION;
@@ -9,7 +9,7 @@ public class Board {
     public Set<Wall> walls;
 
     public Board() {
-        graph = new LinkedList[BOARD_DIMENSION*BOARD_DIMENSION];
+        this.graph = new LinkedList[BOARD_DIMENSION*BOARD_DIMENSION];
         initializeGraph();
     }
 
@@ -19,22 +19,6 @@ public class Board {
      * For each Square add its connections (edges) to the LinkedList.
      */
     public void initializeGraph() {
-//        for (int col = BOARD_DIMENSION - 1; col >= 0; col--) {
-//            for (int row = 0; row < BOARD_DIMENSION; row++) {
-//                int i = col * BOARD_DIMENSION + row;
-//                System.out.print(i + " ");
-//                graph[i] = new LinkedList<>();
-//                if(col > 0)
-//                    graph[i].add(new Square(col-1, row)); // left.
-//                if(col < BOARD_DIMENSION -1)
-//                    graph[i].add(new Square(col+1, row)); // right.
-//                if(row > 0)
-//                    graph[i].add(new Square(col, row - 1)); // up.
-//                if(row < BOARD_DIMENSION - 1)
-//                    graph[i].add(new Square(col, row + 1)); // down.
-//            }
-//            System.out.println();
-//        }
         for(int row = 0; row < BOARD_DIMENSION; row++) {
             for(int col = 0; col < BOARD_DIMENSION; col++) {
                 int i = row * BOARD_DIMENSION + col;
@@ -50,8 +34,6 @@ public class Board {
             }
         }
     }
-
-
     /**
      * Turns a Square object to its index components which is used to find its location in the adjacency list.
      * for example: new Square(row=4, col=4) --> row*(how many Squares are there in a board) + col = index in array.
@@ -63,14 +45,6 @@ public class Board {
         int sq_col = sq.getCol();
         return sq_row*BOARD_DIMENSION+sq_col;
     }
-
-    public void addWall(Wall wall) {
-        walls.add(wall);
-    }
-
-    public List<Square>[] getBoard() { return graph; }
-    public int getSize() { return BOARD_DIMENSION; }
-
 
     @Override
     public String toString() {
