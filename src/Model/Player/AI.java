@@ -4,5 +4,5 @@ import Model.Gamestate.Board;
 
 public interface AI {
     String move = null;
-    String makeMove();
+    String decideMove(Board board);
 }
