@@ -36,4 +36,10 @@ public class HorizontalWall extends Rectangle {
     public boolean isPressCommit() {
         return this.pressCommit;
     }
+
+    public String toAlgebraic(int r, int c) {
+        char row = (char) ('1' + r);
+        char col = (char) ('a' + c);
+        return ""+col+row;
+    }
 }

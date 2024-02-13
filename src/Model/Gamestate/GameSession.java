@@ -97,7 +97,7 @@ public class GameSession {
             Wall wall = new Wall(move);
             flag = isValidWallPlacement(wall); // Check validity of wall move.
             if (flag) {
-                turn++;
+//                turn++;
                 placeWall(wall); // Update player walls and add wall to walls list.
             }
         }
@@ -105,7 +105,7 @@ public class GameSession {
             Square sq = new Square(move);
             flag = isValidTraversal(sq);
             if (flag) {
-                turn++;
+//                turn++;
                 movePawn(sq);
             }
         }
