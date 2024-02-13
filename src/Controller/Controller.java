@@ -29,28 +29,6 @@ public class Controller {
     }
 
 
-    public boolean doesWallExist(String squareLocation, boolean isHorizontal) {
-        char orientation = isHorizontal ? 'h' : 'v';
-        Square sq = new Square(squareLocation);
-        Wall wall = new Wall(sq, orientation);
-        return !gameSession.isValidWallPlacement(wall);
-    }
-
-    public void addWall(String squareLocation, boolean isHorizontal) {
-        char orientation = isHorizontal ? 'h' : 'v';
-        Square thisSquare = new Square(squareLocation);
-        Wall wall = new Wall(thisSquare, orientation);
-        gameSession.move(wall.toString());
-    }
-
-    public int wallsLeft() {
-        return getPlayerWallLeft();
-    }
-
-    public int getTurn() {
-        return gameSession.currentTurn();
-    }
-
     public String getPlayerName() {
         return gameSession.getPlayer(gameSession.currentTurn()).getName();
     }

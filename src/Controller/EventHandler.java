@@ -86,7 +86,7 @@ public class EventHandler {
         int newCol = pixelToBoard(xPixel);
         int newRow = pixelToBoard(yPixel);
         Square dest = new Square(newRow, newCol);
-        if(gameSession.move(dest.toString())) {
+        if(move(dest.toString())) {
             pawn.move(newCol*TILE_SIZE, (BOARD_SIZE-TILE_SIZE)-newRow*TILE_SIZE);
             System.out.println(pawn.getType() + "-> " + dest);
             view.updateInfoPanel();
@@ -109,7 +109,7 @@ public class EventHandler {
     public void verticalWallPressed(MouseEvent event, VerticalWall wall) {
         int row = wall.getRow();
         int col = wall.getCol();
-        if(row == 0 || getPlayerWallLeft() == 0 || getTurn() != 0)
+        if(row == 0 || getPlayerWalls() == 0 || getTurn() != 0)
             return;
         if(doesWallExist(wall.toAlgebraic(BOARD_DIMENSION - (row + 1), col), false)) {
             System.out.println("There is already a wall here.");
@@ -150,7 +150,7 @@ public class EventHandler {
     public void horizontalWallPressed(MouseEvent event, HorizontalWall wall) {
         int row = wall.getRow();;
         int col = wall.getCol();
-        if(col == BOARD_DIMENSION-1 || getPlayerWallLeft() == 0 || getTurn() != 0)
+        if(col == BOARD_DIMENSION-1 || getPlayerWalls() == 0 || getTurn() != 0)
             return;
         if(doesWallExist(wall.toAlgebraic(BOARD_DIMENSION - (row + 1), col), true)) {
             System.out.println("There is already a wall here.");
@@ -183,20 +183,23 @@ public class EventHandler {
         Wall wall = new Wall(sq, orientation);
         return !gameSession.isValidWallPlacement(wall);
     }
+    public void addWall(String squareLocation, boolean isHorizontal) {
+        char orientation = isHorizontal ? 'h' : 'v';
+        Square thisSquare = new Square(squareLocation);
+        Wall wall = new Wall(thisSquare, orientation);
+        move(wall.toString());
+    }
+    public boolean move(String move) {
+        return gameSession.move(move);
+    }
 
-    public int getPlayerWallLeft() {
+
+    public int getPlayerWalls() {
         return gameSession.getPlayer(gameSession.currentTurn()).getWallsLeft();
     }
     public int getTurn() {
         return gameSession.currentTurn();
     }
-    public void addWall(String squareLocation, boolean isHorizontal) {
-        char orientation = isHorizontal ? 'h' : 'v';
-        Square thisSquare = new Square(squareLocation);
-        Wall wall = new Wall(thisSquare, orientation);
-        gameSession.move(wall.toString());
-    }
-
 
     public int pixelToBoard(double pixel) {
         return (int)(pixel+ TILE_SIZE/2)/TILE_SIZE;
