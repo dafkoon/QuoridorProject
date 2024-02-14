@@ -38,6 +38,7 @@ public class EventHandler {
                     break;
             }
         }
+        triggerAI();
     }
     public void handleVerticalWallMovement(MouseEvent event, VerticalWall wall) {
         switch(event.getEventType().getName()) {
@@ -51,6 +52,7 @@ public class EventHandler {
                 verticalWallExited(event, wall);
                 break;
         }
+        triggerAI();
     }
     public void handleHorizontalWallMovement(MouseEvent event, HorizontalWall wall) {
         switch(event.getEventType().getName()) {
@@ -63,8 +65,8 @@ public class EventHandler {
             case "MOUSE_EXITED":
                 horizontalWallExited(event, wall);
                 break;
-
         }
+        triggerAI();
     }
 
     public void pawnMousePressed(MouseEvent event, Pawn pawn) {
@@ -87,12 +89,10 @@ public class EventHandler {
         int newRow = pixelToBoard(yPixel);
         Square dest = new Square(newRow, newCol);
         if(move(dest.toString())) {
-            pawn.move(newCol*TILE_SIZE, (BOARD_SIZE-TILE_SIZE)-newRow*TILE_SIZE);
-            System.out.println(pawn.getType() + "-> " + dest);
-            view.updateInfoPanel();
+            view.updatePawn(Pawn.PawnType.HUMAN, newCol*TILE_SIZE, (BOARD_SIZE-TILE_SIZE)-newRow*TILE_SIZE);
         }
         else
-            pawn.reverse();
+            view.updatePawn(Pawn.PawnType.HUMAN, -1, -1);
     }
 
     public void verticalWallEntered(MouseEvent event, VerticalWall wall) {
@@ -103,6 +103,17 @@ public class EventHandler {
                 VerticalWall wallAbove = view.findVwall(row - 1, col);
                 wallAbove.setFill(Color.BLACK);
                 wall.setFill(Color.BLACK);
+            }
+        }
+    }
+    public void verticalWallExited(MouseEvent event, VerticalWall wall) {
+        int row = wall.getRow();
+        int col = wall.getCol();
+        if(row > 0 && !wall.isPressCommit()) {
+            if(!doesWallExist(wall.toAlgebraic(BOARD_DIMENSION - (row + 1), col), false)) {
+                VerticalWall wallAbove = view.findVwall(row - 1, col);
+                wallAbove.setFill(Color.SILVER);
+                wall.setFill(Color.SILVER);
             }
         }
     }
@@ -117,21 +128,7 @@ public class EventHandler {
         else {
             addWall(wall.toAlgebraic(BOARD_DIMENSION - (row + 1), col), false);
             VerticalWall wallAbove = view.findVwall(row - 1, col);
-            wall.setFill(Color.BLACK);
-            wallAbove.setFill(Color.BLACK);
-            wall.setPressCommit(true);
-            view.generateInfoPanel();
-        }
-    }
-    public void verticalWallExited(MouseEvent event, VerticalWall wall) {
-        int row = wall.getRow();
-        int col = wall.getCol();
-        if(row > 0 && !wall.isPressCommit()) {
-            if(!doesWallExist(wall.toAlgebraic(BOARD_DIMENSION - (row + 1), col), false)) {
-                VerticalWall wallAbove = view.findVwall(row - 1, col);
-                wallAbove.setFill(Color.SILVER);
-                wall.setFill(Color.SILVER);
-            }
+            view.updateVertWall(wall, wallAbove);
         }
     }
 
@@ -147,6 +144,17 @@ public class EventHandler {
 
         }
     }
+    public void horizontalWallExited(MouseEvent event, HorizontalWall wall) {
+        int row = wall.getRow();
+        int col = wall.getCol();
+        if(col < BOARD_DIMENSION-1 && !wall.isPressCommit()) {
+            if(!doesWallExist(wall.toAlgebraic(BOARD_DIMENSION - (row + 1), col), true)) {
+                HorizontalWall rightWall = view.findHwall(row, col+1);
+                rightWall.setFill(Color.SILVER);
+                wall.setFill(Color.SILVER);
+            }
+        }
+    }
     public void horizontalWallPressed(MouseEvent event, HorizontalWall wall) {
         int row = wall.getRow();;
         int col = wall.getCol();
@@ -158,21 +166,7 @@ public class EventHandler {
         else {
             addWall(wall.toAlgebraic(BOARD_DIMENSION - (row + 1), col), true);
             HorizontalWall rightWall = view.findHwall(row, col + 1);
-            wall.setFill(Color.BLACK);
-            rightWall.setFill(Color.BLACK);
-            wall.setPressCommit(true);
-            view.updateInfoPanel();
-        }
-    }
-    public void horizontalWallExited(MouseEvent event, HorizontalWall wall) {
-        int row = wall.getRow();
-        int col = wall.getCol();
-        if(col < BOARD_DIMENSION-1 && !wall.isPressCommit()) {
-            if(!doesWallExist(wall.toAlgebraic(BOARD_DIMENSION - (row + 1), col), true)) {
-                HorizontalWall rightWall = view.findHwall(row, col+1);
-                rightWall.setFill(Color.SILVER);
-                wall.setFill(Color.SILVER);
-            }
+            view.updateHorzWall(wall, rightWall);
         }
     }
 
@@ -192,16 +186,25 @@ public class EventHandler {
     public boolean move(String move) {
         return gameSession.move(move);
     }
-
-
     public int getPlayerWalls() {
         return gameSession.getPlayer(gameSession.currentTurn()).getWallsLeft();
     }
     public int getTurn() {
         return gameSession.currentTurn();
     }
-
     public int pixelToBoard(double pixel) {
         return (int)(pixel+ TILE_SIZE/2)/TILE_SIZE;
+    }
+    public int boardToPixel(int boardIndex) { return boardIndex*TILE_SIZE; }
+
+    public void triggerAI() {
+        if(getTurn() != 0) {
+            Square aiMove = this.gameSession.getAIMove();
+            if(aiMove != null) {
+                if(aiMove.toString().length() == 2) {
+                    view.updatePawn(Pawn.PawnType.AI, boardToPixel(aiMove.getCol()), boardToPixel(BOARD_DIMENSION-(aiMove.getRow()+1)));
+                }
+            }
+        }
     }
 }

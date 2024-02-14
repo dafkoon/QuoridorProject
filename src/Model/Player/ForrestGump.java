@@ -8,26 +8,29 @@ import sun.awt.image.ImageWatched;
 
 import java.util.*;
 
-public class ForrestGump implements AI {
+public class ForrestGump{
+    public static final int BOARD_DIMENSION = 9;
     private String move;
     private int destRow;
     private List<Square> shortestPath;
+    private Board board;
 
     public ForrestGump(int destRow) {
         this.destRow = destRow;
         this.shortestPath = new LinkedList<Square>();
     }
 
-    public String decideMove(Board board, Square src) {
-        shortestPath = shortestPathToRow(board, src, this.destRow);
-        System.out.println(shortestPath);
-        return "";
+    public Square makeMove(List<Square>[] currentGraph, Square src) {
+        shortestPath = shortestPathToRow(currentGraph, src, this.destRow);
+        System.out.println("ai moves: " + shortestPath.get(0));
+        return shortestPath.get(0);
     }
 
-    public List<Square> shortestPathToRow(Board board, Square src, int destRow) {
+    public List<Square> shortestPathToRow(List<Square>[] currentGraph, Square src, int destRow) {
+        System.out.println(src + "  src");
         List<Square> path = new LinkedList<Square>();
-        Queue<Square> queue = new LinkedList<Square>();
-        HashMap<Square,Square> parentNode = new HashMap<Square,Square>();
+        Queue <Square> queue = new LinkedList<Square>();
+        HashMap <Square,Square> parentNode = new HashMap<Square,Square>();
         queue.add(src);
         parentNode.put(src, null);
         while (!queue.isEmpty()) {
@@ -40,8 +43,8 @@ public class ForrestGump implements AI {
                 Collections.reverse(path);
                 return path;
             }
-            int i = board.squareToIndex(curr);
-            for (Square e: board.graph[i]) {
+            int i = squareToIndex(curr);
+            for (Square e: currentGraph[i]) {
                 if (!parentNode.containsKey(e)) {
                     parentNode.put(e, curr);
                     queue.add(e);
@@ -49,5 +52,11 @@ public class ForrestGump implements AI {
             }
         }
         return path;
+    }
+
+    public int squareToIndex(Square sq) {
+        int sq_row = sq.getRow();
+        int sq_col = sq.getCol();
+        return sq_row*BOARD_DIMENSION+sq_col;
     }
 }

@@ -4,11 +4,7 @@ package Controller;
 import View.pieces.Pawn;
 import View.Game;
 
-import Model.Gamestate.Square;
-import Model.Gamestate.Wall;
-import Model.Gamestate.Player;
 import Model.Gamestate.GameSession;
-import Model.Gamestate.Board;
 
 public class Controller {
     public static final int TILE_SIZE = 50;
@@ -29,15 +25,14 @@ public class Controller {
     }
 
 
-    public String getPlayerName() {
+    public String getNextPlayerName() {
         return gameSession.getPlayer(gameSession.currentTurn()).getName();
-    }
 
-    public String getPlayerColor() {
+    }
+    public String getNextPlayerColor() {
         return gameSession.getPlayer(gameSession.currentTurn()).getPlayerColor();
     }
-
-    public int getPlayerWallLeft() {
+    public int getNextPlayerWalls() {
         return gameSession.getPlayer(gameSession.currentTurn()).getWallsLeft();
     }
 }

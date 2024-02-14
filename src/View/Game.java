@@ -1,5 +1,4 @@
 package View;
-import java.util.List;
 
 import View.pieces.*;
 import View.pieces.Pawn.PawnType;
@@ -29,10 +28,7 @@ public class Game extends Application {
 
     private Controller controller = new Controller(this); // Access to controller class
     private EventHandler eventHandler;
-    //private final Tile[][] board = new Tile[BOARD_DIMENSION][BOARD_DIMENSION];   NOT USED.
-    //private final HorizontalWall[][] horizontalWalls = new HorizontalWall[BOARD_DIMENSION][BOARD_DIMENSION];
-    //private final VerticalWall[][] verticalWalls = new VerticalWall[BOARD_DIMENSION][BOARD_DIMENSION];
-
+    private Pawn pawnList[];
     private final Group tileGroup = new Group();
     private final Group pawnGroup = new Group();
     private final Group horizontalWallGroup = new Group();
@@ -65,35 +61,32 @@ public class Game extends Application {
         int currentType = 0;
         int[] xPixel = new int[]{BOARD_SIZE/2-TILE_SIZE/2, BOARD_SIZE/2-TILE_SIZE/2};
         int[] yPixel = new int[]{0, BOARD_SIZE-TILE_SIZE};
+        pawnList = new Pawn[xPixel.length];
         PawnType[] pawnTypes = PawnType.values();
         for(PawnType pawnType : pawnTypes) {
             PawnColor color = (pawnType == PawnType.AI) ? PawnColor.RED : PawnColor.BLUE;
             Pawn pawn = new Pawn(pawnType, color, xPixel[currentType], yPixel[currentType]);
             pawnGroup.getChildren().add(pawn);
+            pawnList[pawnType.ordinal()] = pawn;
             currentType++;
             pawnMouseEvents(pawn);
         }
     }
-
     public void pawnMouseEvents(Pawn pawn) {
         pawn.setOnMousePressed(event -> eventHandler.handlePawnMovement(event, pawn));
         pawn.setOnMouseDragged(event -> eventHandler.handlePawnMovement(event, pawn));
         pawn.setOnMouseReleased(event -> eventHandler.handlePawnMovement(event, pawn));
     }
-
     public void horizontalWallMouseEvents(HorizontalWall wall) {
         wall.setOnMouseEntered(event -> eventHandler.handleHorizontalWallMovement(event, wall));
         wall.setOnMousePressed(event -> eventHandler.handleHorizontalWallMovement(event, wall));
         wall.setOnMouseExited(event -> eventHandler.handleHorizontalWallMovement(event, wall));
     }
-
     public void verticalWallMouseEvents(VerticalWall wall) {
         wall.setOnMouseEntered(event -> eventHandler.handleVerticalWallMovement(event, wall));
         wall.setOnMousePressed(event -> eventHandler.handleVerticalWallMovement(event, wall));
         wall.setOnMouseExited(event -> eventHandler.handleVerticalWallMovement(event, wall));
     }
-
-
     private Pane createBoard() {
         Pane root = new Pane();
         root.setPrefSize((BOARD_DIMENSION * TILE_SIZE) + 120, BOARD_DIMENSION * TILE_SIZE);
@@ -115,43 +108,6 @@ public class Game extends Application {
                 VerticalWall wall = new VerticalWall(thisCol, thisRow);
                 verticalWallGroup.getChildren().add(wall);
                 verticalWallMouseEvents(wall);
-
-
-//                wall.setOnMouseEntered(e -> {
-//                    if(thisRow > 0) {
-//                        if(!controller.doesWallExist(wall.toAlgebraic(BOARD_DIMENSION - (thisRow + 1), thisCol), false)) {
-//                            VerticalWall wallAbove = findVwall(thisRow - 1, thisCol);
-//                            wallAbove.setFill(Color.BLACK);
-//                            wall.setFill(Color.BLACK);
-//                        }
-//                    }
-//                });
-//                wall.setOnMouseExited(e -> {
-//                    if(thisRow > 0 && !wall.isPressCommit()) {
-//                        if(!controller.doesWallExist(wall.toAlgebraic(BOARD_DIMENSION - (thisRow + 1), thisCol), false)) {
-//                            VerticalWall wallAbove = findVwall(thisRow - 1, thisCol);
-//                            wallAbove.setFill(Color.SILVER);
-//                            wall.setFill(Color.SILVER);
-//                        }
-//                    }
-//                });
-//                wall.setOnMousePressed((e -> {
-//                    if(thisRow == 0 || controller.wallsLeft() == 0 || controller.getTurn() != 0)
-//                        return;
-//                    if(e.isPrimaryButtonDown()) {
-//                        if(controller.doesWallExist(wall.toAlgebraic(BOARD_DIMENSION - (thisRow + 1), thisCol), false)) {
-//                            System.out.println("There is already a wall here.");
-//                        }
-//                        else {
-//                            controller.addWall(wall.toAlgebraic(BOARD_DIMENSION - (thisRow + 1), thisCol), false);
-//                            VerticalWall wallAbove = findVwall(thisRow - 1, thisCol);
-//                            wall.setFill(Color.BLACK);
-//                            wallAbove.setFill(Color.BLACK);
-//                            wall.setPressCommit(true);
-//                            generateInfoPanel();
-//                        }
-//                    }
-//                }));
             }
         }
         // Add horizontal walls.
@@ -163,68 +119,31 @@ public class Game extends Application {
                 horizontalWallGroup.getChildren().add(wall);
                 horizontalWallMouseEvents(wall);
 
-//                wall.setOnMouseEntered(e -> {
-//                    if(thisCol < BOARD_DIMENSION-1) {
-//                        if(!controller.doesWallExist(wall.toAlgebraic(BOARD_DIMENSION - (thisRow + 1), thisCol), true)) {
-//                            HorizontalWall rightWall = findHwall(thisRow, thisCol+1);
-//                            rightWall.setFill(Color.BLACK);
-//                            wall.setFill(Color.BLACK);
-//                        }
-//
-//                    }
-//                });
-//                wall.setOnMouseExited(e -> {
-//                    if(thisCol < BOARD_DIMENSION-1 && !wall.isPressCommit()) {
-//                        if(!controller.doesWallExist(wall.toAlgebraic(BOARD_DIMENSION - (thisRow + 1), thisCol), true)) {
-//                            HorizontalWall rightWall = findHwall(thisRow, thisCol+1);
-//                            rightWall.setFill(Color.SILVER);
-//                            wall.setFill(Color.SILVER);
-//                        }
-//                    }
-//                });
-//
-//                wall.setOnMousePressed((e -> {
-//                    if(thisCol == BOARD_DIMENSION-1 || controller.wallsLeft() == 0 || controller.getTurn() != 0)
-//                        return;
-//                    if(controller.doesWallExist(wall.toAlgebraic(BOARD_DIMENSION - (thisRow + 1), thisCol), true)) {
-//                        System.out.println("There is already a wall here.");
-//                    }
-//                    else {
-//                        controller.addWall(wall.toAlgebraic(BOARD_DIMENSION - (thisRow + 1), thisCol), true);
-//                        HorizontalWall rightWall = findHwall(thisRow, thisCol + 1);
-//                        wall.setFill(Color.BLACK);
-//                        rightWall.setFill(Color.BLACK);
-//                        wall.setPressCommit(true);
-//                        updateInfoPanel();
-//                    }
-//                }));
-
             }
         }
         root.getChildren().addAll(tileGroup, labelGroup , pawnGroup, horizontalWallGroup, verticalWallGroup, generateInfoPanel());
         return root;
     }
 
-
     public Pane generateInfoPanel() {
         Pane panel = new Pane();
-        currentTurnLabel.setText(controller.getPlayerName() + "'s turn");
-        currentTurnLabel.setTextFill(Color.valueOf(controller.getPlayerColor()));
+        currentTurnLabel.setText(controller.getNextPlayerName() + "'s turn");
+        currentTurnLabel.setTextFill(Color.valueOf(controller.getNextPlayerColor()));
         currentTurnLabel.setFont(Font.font("Verdana", FontWeight.BOLD, 12));
-        wallLabel.setText("Walls left: " + controller.getPlayerWallLeft());
-        wallLabel.setTextFill(Color.valueOf(controller.getPlayerColor()));
+        wallLabel.setText("Walls left: " + controller.getNextPlayerWalls());
+        wallLabel.setTextFill(Color.valueOf(controller.getNextPlayerColor()));
         currentTurnLabel.setTranslateY(10);
         wallLabel.setTranslateY(20);
         panel.setTranslateX(BOARD_DIMENSION*TILE_SIZE +10);
         panel.getChildren().addAll(currentTurnLabel, wallLabel);
         return panel;
     }
-
     public void updateInfoPanel() {
-        currentTurnLabel.setText(controller.getPlayerName() + "'s turn");
-        currentTurnLabel.setTextFill(Color.valueOf(controller.getPlayerColor()));
-        wallLabel.setText("Walls left: " + controller.getPlayerWallLeft());
-        wallLabel.setTextFill(Color.valueOf(controller.getPlayerColor()));
+        currentTurnLabel.setText(controller.getNextPlayerName() + "'s turn");
+        currentTurnLabel.setTextFill(Color.valueOf(controller.getNextPlayerColor()));
+        wallLabel.setText("Walls left: " + controller.getNextPlayerWalls());
+        wallLabel.setTextFill(Color.valueOf(controller.getNextPlayerColor()));
+
     }
 
 
@@ -237,7 +156,6 @@ public class Game extends Application {
         }
         return null;
     }
-
     public HorizontalWall findHwall(int row, int col) {
         for(Node node : horizontalWallGroup.getChildren()) {
             HorizontalWall wall = (HorizontalWall) node;
@@ -246,6 +164,33 @@ public class Game extends Application {
             }
         }
         return null;
+    }
+
+    public void updatePawn(PawnType type, double xPixel, double yPixel) {
+        Pawn pawn = null;
+        for(int i = 0; i < pawnList.length; i++) {
+            if(i == type.ordinal())
+                pawn = pawnList[i];
+        }
+        if(xPixel != -1 && yPixel != -1) {
+            pawn.move(xPixel, yPixel);
+            updateInfoPanel();
+        }
+        else {
+            pawn.reverse();
+        }
+    }
+    public void updateVertWall(VerticalWall wall1, VerticalWall wall2) {
+        wall1.setFill(Color.BLACK);
+        wall2.setFill(Color.BLACK);
+        wall1.setPressCommit(true);
+        generateInfoPanel();
+    }
+    public void updateHorzWall(HorizontalWall wall1, HorizontalWall wall2) {
+        wall1.setFill(Color.BLACK);
+        wall2.setFill(Color.BLACK);
+        wall1.setPressCommit(true);
+        updateInfoPanel();
     }
 
 

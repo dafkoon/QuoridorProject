@@ -1,5 +1,6 @@
 package Model.Gamestate;
 
+import Model.Player.ForrestGump;
 import View.pieces.Pawn;
 
 import java.util.*;
@@ -20,16 +21,18 @@ public class GameSession {
     private Square player1; // AI
     private Player winner;
     private int turn;
+    private ForrestGump shortPathAI;
 
     private static int counter;
 
 
     public GameSession() {
-        this.players = new Player[MAX_PLAYERS];
-        this.moves = new Stack<Move>();
         this.board = new Board(this);
-        this.player0 = new Square("e1");
-        this.player1 = new Square("e9");
+        this.players = new Player[MAX_PLAYERS];
+        this.player0 = new Square("e1"); // HUMAN
+        this.player1 = new Square("e9"); // AI
+        this.shortPathAI = new ForrestGump(0);
+        this.moves = new Stack<Move>();
         this.turn = 0;
 
     }
@@ -97,16 +100,16 @@ public class GameSession {
             Wall wall = new Wall(move);
             flag = isValidWallPlacement(wall); // Check validity of wall move.
             if (flag) {
-                turn++;
                 placeWall(wall); // Update player walls and add wall to walls list.
+                turn++;
             }
         }
         else {
             Square sq = new Square(move);
             flag = isValidTraversal(sq);
             if (flag) {
-                turn++;
                 movePawn(sq);
+                turn++;
             }
         }
         if(currentTurn() == 0)
@@ -119,7 +122,6 @@ public class GameSession {
     public int currentTurn() {
         return turn%2;
     }
-
     public Square getCurrentPlayerSquare() { return currentTurn() == 0 ? player0 : player1; }
     public Square getOtherPlayerSquare() { return currentTurn() == 0 ? player1 : player0; }
     public Square getPlayer0Square() { return player0; }
@@ -152,8 +154,15 @@ public class GameSession {
      * @return a stack of the moves.
      */
     public Stack<Move> getMoves() { return moves; }
+    public List<Square>[] getGraph()  {return board.graph; }
 
-    public Board getBoard() { return this.board; }
+    public Square getAIMove() {
+        Square moveTo = this.shortPathAI.makeMove(getGraph(), getPlayer1Square());
+        if(move(moveTo.toString()))
+            return moveTo;
+        else
+            return null;
+    }
 
 
 
