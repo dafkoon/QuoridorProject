@@ -154,15 +154,11 @@ public class GameSession {
     public List<Square>[] getGraph()  {return board.graph; }
 
     public String getAIMove() {
-        String move;
-        move = ai.generateMove(getGraph(), this.player1, this.player0);
+        String move = ai.generateMove(getGraph(), this.player1, this.player0);
         if (move(move)) {
             return move;
         }
         else
             return null;
     }
-
-
-
 }

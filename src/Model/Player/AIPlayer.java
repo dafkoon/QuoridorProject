@@ -4,16 +4,19 @@ import Model.Gamestate.Player;
 import Model.Gamestate.Square;
 import Model.Gamestate.Wall;
 import View.Game;
-import com.sun.javafx.binding.OrElseBinding;
 
 import java.util.*;
 
 public class AIPlayer {
     public static final int BOARD_DIMENSION = 9;
+    private GameSession gameSession;
+    private List<Square>[] gameGraph;
     private Player player;
     private Square move;
     private int destRow;
-    private GameSession gameSession;
+
+    private List<Square>[] getGameGraph() { return this.gameGraph; }
+    private void setGameGraph(List<Square>[] gameGraph) { this.gameGraph = gameGraph; }
 
 
     public AIPlayer(int destRow) {
@@ -25,27 +28,26 @@ public class AIPlayer {
         this.gameSession = gameSession;
     }
 
-    public String generateMove(List<Square>[] currentGraph, Square playerSquare, Square otherSquare) {
+    public String generateMove(List<Square>[] currentGraph, Square playerSquare, Square otherPlayer) {
+        setGameGraph(currentGraph);
         if(this.player.getWallsLeft() > 0) {
-            move = shortestPath(currentGraph, playerSquare, otherSquare).get(0);
-            if(move.equals(otherSquare)) {
-                move = makeJump(currentGraph, playerSquare, otherSquare);
-            }
+            move = shortestPath(playerSquare, otherPlayer).get(0);
+
         }
         else {
-            move = bestMove(currentGraph, playerSquare, otherSquare);
+            move = bestMove(currentGraph, playerSquare, otherPlayer);
         }
         return move.toString();
     }
 
-    public List<Square> shortestPath(List<Square>[] currentGraph, Square src, Square otherPos) {
-        List<Square> path = new LinkedList<Square>();
-        Queue<Square> queue = new LinkedList<Square>();
-        HashMap<Square,Square> parentNode = new HashMap<Square,Square>();
+    public List<Square> shortestPath(Square src, Square otherPlayer) {
+        List<Square>[] graph = getGameGraph();
+        List<Square> path = new LinkedList<>();
+        Queue<Square> queue = new LinkedList<>();
+        HashMap<Square, Square> parentNode = new HashMap<>();
 
         queue.add(src);
         parentNode.put(src, null);
-
         while (!queue.isEmpty()) {
             Square curr = queue.poll();
 
@@ -54,31 +56,34 @@ public class AIPlayer {
                     path.add(curr);
                     curr = parentNode.get(curr);
                 }
+                if(path.contains(otherPlayer) && path.size() == 1) {
+                    path = generatePawnMoves(curr);
+                }
+                if(path.contains(otherPlayer) && path.size() > 1) {
+                    path.remove(otherPlayer);
+                }
                 Collections.reverse(path);
                 return path;
             }
             int i = squareToIndex(curr);
-            for (Square e: currentGraph[i]) {
+            for (Square e : graph[i]) {
                 if (!parentNode.containsKey(e)) {
                     parentNode.put(e, curr);
                     queue.add(e);
+                    }
                 }
-            }
         }
         return path;
     }
     public Square bestMove(List<Square>[] currentGraph, Square src, Square other) {
         return new Square();
     }
-    public Square makeJump(Square move, Square otherPos) {
 
-    }
-
-    public List<String> generatePawnMoves(Square playerPos) {
-        List<String> validMoves = new LinkedList<String>();
+    public List<Square> generatePawnMoves(Square playerPos) {
+        List<Square> validMoves = new LinkedList<Square>();
         for (Square sq:playerPos.neighbourhood(2)) {
             if (gameSession.isValidTraversal(sq)) {
-                validMoves.add(sq.toString());
+                validMoves.add(sq);
             }
         }
         return validMoves;

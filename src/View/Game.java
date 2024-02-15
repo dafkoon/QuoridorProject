@@ -184,7 +184,7 @@ public class Game extends Application {
         wall1.setFill(Color.BLACK);
         wall2.setFill(Color.BLACK);
         wall1.setPressCommit(true);
-        generateInfoPanel();
+        updateInfoPanel();
     }
     public void updateHorzWall(HorizontalWall wall1, HorizontalWall wall2) {
         wall1.setFill(Color.BLACK);

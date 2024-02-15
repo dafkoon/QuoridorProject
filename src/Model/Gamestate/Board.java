@@ -137,7 +137,6 @@ public class Board {
     }
 
     public boolean isValidTraversal(Square dest, Square currentPlayerPos, Square otherPlayerPos){
-        System.out.println(currentPlayerPos + " " + otherPlayerPos);
         int currentPlayerSquareIndex = squareToIndex(currentPlayerPos);
         int otherPlayerSquareIndex = squareToIndex(otherPlayerPos);
         if(dest.equals(currentPlayerPos) || dest.equals(otherPlayerPos)) { // If dest equals any of the player's positions.
