@@ -1,8 +1,6 @@
 package Model.Gamestate;
 
-import Model.Player.ForrestGump;
-import View.pieces.Pawn;
-
+import Model.Player.AIPlayer;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -21,24 +19,23 @@ public class GameSession {
     private Square player1; // AI
     private Player winner;
     private int turn;
-    private ForrestGump shortPathAI;
-
-    private static int counter;
-
+    private AIPlayer ai;
 
     public GameSession() {
         this.board = new Board(this);
         this.players = new Player[MAX_PLAYERS];
         this.player0 = new Square("e1"); // HUMAN
         this.player1 = new Square("e9"); // AI
-        this.shortPathAI = new ForrestGump(0);
         this.moves = new Stack<Move>();
         this.turn = 0;
-
     }
 
     public void addPlayer(String name, String color, int type){
-        players[type] = new Player(name, color);
+        Player player = new Player(name, color);
+        players[type] = player;
+        if(type == 1) {
+            ai = new AIPlayer(player, this.player0.getRow(), this);
+        }
     }
 
     public boolean gameOver() {
@@ -156,10 +153,12 @@ public class GameSession {
     public Stack<Move> getMoves() { return moves; }
     public List<Square>[] getGraph()  {return board.graph; }
 
-    public Square getAIMove() {
-        Square moveTo = this.shortPathAI.makeMove(getGraph(), getPlayer1Square());
-        if(move(moveTo.toString()))
-            return moveTo;
+    public String getAIMove() {
+        String move;
+        move = ai.generateMove(getGraph(), this.player1, this.player0);
+        if (move(move)) {
+            return move;
+        }
         else
             return null;
     }

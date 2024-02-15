@@ -137,6 +137,7 @@ public class Board {
     }
 
     public boolean isValidTraversal(Square dest, Square currentPlayerPos, Square otherPlayerPos){
+        System.out.println(currentPlayerPos + " " + otherPlayerPos);
         int currentPlayerSquareIndex = squareToIndex(currentPlayerPos);
         int otherPlayerSquareIndex = squareToIndex(otherPlayerPos);
         if(dest.equals(currentPlayerPos) || dest.equals(otherPlayerPos)) { // If dest equals any of the player's positions.
@@ -155,6 +156,19 @@ public class Board {
         }
         return false;
     }
+
+//    public Square isJumpedNeeded(Square currentPlayerPos, Square otherPlayerPos) {
+//        int currentPlayerSquareIndex = squareToIndex(currentPlayerPos);
+//        int otherPlayerSquareIndex = squareToIndex(otherPlayerPos);
+//        else if(graph[currentPlayerSquareIndex].contains(otherPlayerPos)) { // If players are adjacent.
+//            if(graph[currentPlayerSquareIndex].contains(currentPlayerPos.opposite(otherPlayerPos))) {
+//                return graph[otherPlayerSquareIndex].contains(dest) && otherPlayerPos.isCardinalTo(dest);
+//            }
+//            else {
+//                return graph[otherPlayerSquareIndex].contains(dest); // Other's square is connected to dest.
+//            }
+//        }
+//    }
 
     /**
      * Turns a Square object to its index components which is used to find its location in the adjacency list.

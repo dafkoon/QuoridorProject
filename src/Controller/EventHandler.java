@@ -199,10 +199,24 @@ public class EventHandler {
 
     public void triggerAI() {
         if(getTurn() != 0) {
-            Square aiMove = this.gameSession.getAIMove();
+            String aiMove = this.gameSession.getAIMove();
             if(aiMove != null) {
-                if(aiMove.toString().length() == 2) {
-                    view.updatePawn(Pawn.PawnType.AI, boardToPixel(aiMove.getCol()), boardToPixel(BOARD_DIMENSION-(aiMove.getRow()+1)));
+                if(aiMove.length() == 2) {
+                    Square sq = new Square(aiMove);
+                    view.updatePawn(Pawn.PawnType.AI, boardToPixel(sq.getCol()), boardToPixel(BOARD_DIMENSION-(sq.getRow()+1)));
+                }
+                else if(aiMove.length() == 3) {
+                    Wall wall = new Wall(aiMove);
+                    if(aiMove.charAt(2) == 'h') {
+                        HorizontalWall wall1 = new HorizontalWall(wall.getStartingSq().getCol(), wall.getStartingSq().getRow());
+                        HorizontalWall wall2 = view.findHwall(wall.getStartingSq().getRow(), wall.getStartingSq().getCol() + 1);
+                        view.updateHorzWall(wall1, wall2);
+                    }
+                    else if(aiMove.charAt(2) == 'v') {
+                        VerticalWall wall1 = new VerticalWall(wall.getStartingSq().getCol(), wall.getStartingSq().getRow());
+                        VerticalWall wall2 = view.findVwall(wall.getStartingSq().getRow() - 1, wall.getStartingSq().getCol());
+                        view.updateVertWall(wall1, wall2);
+                    }
                 }
             }
         }
