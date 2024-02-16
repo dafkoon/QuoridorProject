@@ -4,8 +4,6 @@ package Controller;
 import View.pieces.Pawn;
 import View.Game;
 
-import Model.Gamestate.GameSession;
-
 public class Controller {
     public static final int TILE_SIZE = 50;
     public static final int BOARD_DIMENSION = 9;

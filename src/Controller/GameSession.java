@@ -1,6 +1,7 @@
-package Model.Gamestate;
+package Controller;
 
-import Model.Player.AIPlayer;
+import Model.Gamestate.*;
+
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -109,10 +110,8 @@ public class GameSession {
                 turn++;
             }
         }
-        if(currentTurn() == 0)
-            moves.push(new Move(move, players[0]));
-        else
-            moves.push(new Move(move, players[1]));
+        int indPlayer = currentTurn() == 0 ? 0 : 1;
+        moves.push(new Move(move, players[indPlayer]));
         return flag;
     }
 
@@ -155,10 +154,6 @@ public class GameSession {
 
     public String getAIMove() {
         String move = ai.generateMove(getGraph(), this.player1, this.player0);
-        if (move(move)) {
-            return move;
-        }
-        else
-            return null;
+        return move(move) ? move : null;
     }
 }

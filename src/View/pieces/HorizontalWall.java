@@ -24,15 +24,12 @@ public class HorizontalWall extends Rectangle {
     public int getCol() {
         return x;
     }
-
     public int getRow() {
         return y;
     }
-
     public void setPressCommit(boolean pressed) {
         this.pressCommit = pressed;
     }
-
     public boolean isPressCommit() {
         return this.pressCommit;
     }

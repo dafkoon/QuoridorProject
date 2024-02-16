@@ -1,9 +1,9 @@
 package Model.Gamestate;
-import View.Game;
+import Controller.GameSession;
+
+import static Controller.Utility.shortestPathBFS;
 
 import java.util.*;
-
-import static Controller.Controller.BOARD_DIMENSION;
 
 public class Board {
     private final int BOARD_DIMENSION = 9;
@@ -45,7 +45,6 @@ public class Board {
                     walls.contains(wall.neighbor(0, 0, Wall.Orientation.VERTICAL)) || // Through it
                     walls.contains(wall.neighbor(0, -1, Wall.Orientation.HORIZONTAL)) || //
                     walls.contains(wall.neighbor(0, 1, Wall.Orientation.HORIZONTAL))) {
-                System.out.println(wall + " intersecting ");
                 return false;
             }
         }
@@ -54,7 +53,6 @@ public class Board {
                     walls.contains(wall.neighbor(0, 0, Wall.Orientation.HORIZONTAL)) ||
                     walls.contains(wall.neighbor(-1, 0, Wall.Orientation.VERTICAL)) ||
                     walls.contains(wall.neighbor(1, 0, Wall.Orientation.VERTICAL))) {
-                System.out.println(wall + " intersecting ");
                 return false;
             }
         }
@@ -94,9 +92,7 @@ public class Board {
         }
     }
     public boolean hasPathToGoal() {
-        Square player0 = gs.getPlayer0Square();
-        Square player1 = gs.getPlayer1Square();
-        return !(shortestPathToRow(player0, 8).isEmpty() || shortestPathToRow(player1, 0).isEmpty());
+        return !(shortestPathBFS(graph, gs.getPlayer0Square(), 8).isEmpty() || shortestPathBFS(graph, gs.getPlayer1Square(), 0).isEmpty());
     }
     public List<Square> shortestPathToRow(Square src, int destRow) {
         List<Square> path = new LinkedList<Square>();
@@ -156,18 +152,7 @@ public class Board {
         return false;
     }
 
-//    public Square isJumpedNeeded(Square currentPlayerPos, Square otherPlayerPos) {
-//        int currentPlayerSquareIndex = squareToIndex(currentPlayerPos);
-//        int otherPlayerSquareIndex = squareToIndex(otherPlayerPos);
-//        else if(graph[currentPlayerSquareIndex].contains(otherPlayerPos)) { // If players are adjacent.
-//            if(graph[currentPlayerSquareIndex].contains(currentPlayerPos.opposite(otherPlayerPos))) {
-//                return graph[otherPlayerSquareIndex].contains(dest) && otherPlayerPos.isCardinalTo(dest);
-//            }
-//            else {
-//                return graph[otherPlayerSquareIndex].contains(dest); // Other's square is connected to dest.
-//            }
-//        }
-//    }
+
 
     /**
      * Turns a Square object to its index components which is used to find its location in the adjacency list.

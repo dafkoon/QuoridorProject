@@ -5,13 +5,10 @@ import View.pieces.Pawn;
 import View.Game;
 import Model.Gamestate.Square;
 
-import Model.Gamestate.GameSession;
 import View.pieces.VerticalWall;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 
-
-import java.util.List;
 
 import static Controller.Controller.BOARD_DIMENSION;
 import static Controller.Controller.TILE_SIZE;
