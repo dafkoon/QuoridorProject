@@ -5,7 +5,6 @@ import View.pieces.Pawn.PawnType;
 import View.pieces.Pawn.PawnColor;
 
 import Controller.Controller;
-import Controller.EventHandler;
 import static Controller.Controller.TILE_SIZE;
 import static Controller.Controller.BOARD_DIMENSION;
 
@@ -26,8 +25,7 @@ import javafx.stage.Stage;
 public class Game extends Application {
     public static final int BOARD_SIZE = TILE_SIZE * BOARD_DIMENSION;
 
-    private Controller controller = new Controller(this); // Access to controller class
-    private EventHandler eventHandler;
+    private final Controller controller = new Controller(this); // Access to controller class
     private Pawn pawnList[];
     private final Group tileGroup = new Group();
     private final Group pawnGroup = new Group();
@@ -40,7 +38,6 @@ public class Game extends Application {
 
 
     public void start(Stage primaryStage) {
-        this.eventHandler = controller.startup();
         initPawns();
 
         currentTurnLabel = new Label();
@@ -66,6 +63,7 @@ public class Game extends Application {
         for(PawnType pawnType : pawnTypes) {
             PawnColor color = (pawnType == PawnType.AI) ? PawnColor.RED : PawnColor.BLUE;
             Pawn pawn = new Pawn(pawnType, color, xPixel[currentType], yPixel[currentType]);
+            controller.addPlayer(pawnType.name(), color.name(), currentType);
             pawnGroup.getChildren().add(pawn);
             pawnList[pawnType.ordinal()] = pawn;
             currentType++;
@@ -73,19 +71,19 @@ public class Game extends Application {
         }
     }
     public void pawnMouseEvents(Pawn pawn) {
-        pawn.setOnMousePressed(event -> eventHandler.handlePawnMovement(event, pawn));
-        pawn.setOnMouseDragged(event -> eventHandler.handlePawnMovement(event, pawn));
-        pawn.setOnMouseReleased(event -> eventHandler.handlePawnMovement(event, pawn));
+        pawn.setOnMousePressed(event -> controller.handlePawnMovement(event, pawn));
+        pawn.setOnMouseDragged(event -> controller.handlePawnMovement(event, pawn));
+        pawn.setOnMouseReleased(event -> controller.handlePawnMovement(event, pawn));
     }
     public void horizontalWallMouseEvents(HorizontalWall wall) {
-        wall.setOnMouseEntered(event -> eventHandler.handleHorizontalWallMovement(event, wall));
-        wall.setOnMousePressed(event -> eventHandler.handleHorizontalWallMovement(event, wall));
-        wall.setOnMouseExited(event -> eventHandler.handleHorizontalWallMovement(event, wall));
+        wall.setOnMouseEntered(event -> controller.handleHorizontalWallMovement(event, wall));
+        wall.setOnMousePressed(event -> controller.handleHorizontalWallMovement(event, wall));
+        wall.setOnMouseExited(event -> controller.handleHorizontalWallMovement(event, wall));
     }
     public void verticalWallMouseEvents(VerticalWall wall) {
-        wall.setOnMouseEntered(event -> eventHandler.handleVerticalWallMovement(event, wall));
-        wall.setOnMousePressed(event -> eventHandler.handleVerticalWallMovement(event, wall));
-        wall.setOnMouseExited(event -> eventHandler.handleVerticalWallMovement(event, wall));
+        wall.setOnMouseEntered(event -> controller.handleVerticalWallMovement(event, wall));
+        wall.setOnMousePressed(event -> controller.handleVerticalWallMovement(event, wall));
+        wall.setOnMouseExited(event -> controller.handleVerticalWallMovement(event, wall));
     }
     private Pane createBoard() {
         Pane root = new Pane();
@@ -127,11 +125,11 @@ public class Game extends Application {
 
     public Pane generateInfoPanel() {
         Pane panel = new Pane();
-        currentTurnLabel.setText(controller.getNextPlayerName() + "'s turn");
-        currentTurnLabel.setTextFill(Color.valueOf(controller.getNextPlayerColor()));
+        currentTurnLabel.setText(controller.getCurrentPlayerName() + "'s turn");
+        currentTurnLabel.setTextFill(Color.valueOf(controller.getCurrentPlayerColor()));
         currentTurnLabel.setFont(Font.font("Verdana", FontWeight.BOLD, 12));
-        wallLabel.setText("Walls left: " + controller.getNextPlayerWalls());
-        wallLabel.setTextFill(Color.valueOf(controller.getNextPlayerColor()));
+        wallLabel.setText("Walls left: " + controller.getCurrentPlayerWalls());
+        wallLabel.setTextFill(Color.valueOf(controller.getCurrentPlayerColor()));
         currentTurnLabel.setTranslateY(10);
         wallLabel.setTranslateY(20);
         panel.setTranslateX(BOARD_DIMENSION*TILE_SIZE +10);
@@ -139,10 +137,10 @@ public class Game extends Application {
         return panel;
     }
     public void updateInfoPanel() {
-        currentTurnLabel.setText(controller.getNextPlayerName() + "'s turn");
-        currentTurnLabel.setTextFill(Color.valueOf(controller.getNextPlayerColor()));
-        wallLabel.setText("Walls left: " + controller.getNextPlayerWalls());
-        wallLabel.setTextFill(Color.valueOf(controller.getNextPlayerColor()));
+        currentTurnLabel.setText(controller.getCurrentPlayerName() + "'s turn");
+        currentTurnLabel.setTextFill(Color.valueOf(controller.getCurrentPlayerColor()));
+        wallLabel.setText("Walls left: " + controller.getCurrentPlayerWalls());
+        wallLabel.setTextFill(Color.valueOf(controller.getCurrentPlayerColor()));
 
     }
 

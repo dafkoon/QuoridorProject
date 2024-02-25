@@ -1,13 +1,14 @@
 package Controller;
+
 import Model.Gamestate.Square;
 
 import java.util.*;
 
-import static Controller.GameSession.BOARD_DIMENSION;
+import static Model.Gamestate.GameState.BOARD_DIMENSION;
 
 public class Utility {
-    public static List<String> shortestPathBFS(List<Square>[] currentGraph, Square srcSq, int destRow) {
-        List<String> path = new LinkedList<>();
+    public static List<Square> shortestPathBFS(List<Square>[] currentGraph, Square srcSq, int destRow) {
+        List<Square> path = new LinkedList<>();
         Queue<Square> queue = new LinkedList<>();
         HashMap<Square, Square> parentNode = new HashMap<>();
         queue.add(srcSq);
@@ -17,7 +18,7 @@ public class Utility {
             Square curr = queue.poll();
             if (curr.getRow() == destRow) {
                 while (!curr.equals(srcSq)) {
-                    path.add(curr.toString());
+                    path.add(curr);
                     curr = parentNode.get(curr);
                 }
                 Collections.reverse(path);
@@ -39,4 +40,5 @@ public class Utility {
         int sq_col = sq.getCol();
         return sq_row*BOARD_DIMENSION+sq_col;
     }
+
 }

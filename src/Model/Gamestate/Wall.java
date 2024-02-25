@@ -35,6 +35,11 @@ public class Wall {
         }
     }
 
+    public Wall(Wall original) {
+        this.startingSq = new Square(original.startingSq);
+        this.orientation = original.orientation;
+    }
+
     public Wall neighbor(int row, int column, Orientation orientation) {
         Square neighborSq = new Square(startingSq.getRow()+row, startingSq.getCol()+column);
         Wall wall = new Wall(neighborSq, orientation);

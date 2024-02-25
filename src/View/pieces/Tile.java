@@ -1,7 +1,6 @@
 package View.pieces;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.text.Text;
 
 import static Controller.Controller.BOARD_DIMENSION;
 import static Controller.Controller.TILE_SIZE;

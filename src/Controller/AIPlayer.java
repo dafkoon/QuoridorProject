@@ -1,7 +1,5 @@
 package Controller;
-import Model.Gamestate.Player;
-import Model.Gamestate.Square;
-import Model.Gamestate.Wall;
+import Model.Gamestate.*;
 
 import static Controller.Utility.shortestPathBFS;
 
@@ -9,47 +7,84 @@ import java.util.*;
 
 public class AIPlayer {
     public static final int BOARD_DIMENSION = 9;
-    private GameSession gameSession;
-    private Player player;
+    private int playerID;
     private int destRow;
+    private Controller controller;
+    private Player player;
+    private List<Square>[] graph;
 
-    public AIPlayer(Player player, int destRow, GameSession gameSession) {
-        this.player = player;
+    public AIPlayer(int id, int destRow, Controller controller) {
+        this.playerID = id;
         this.destRow = destRow;
-        this.gameSession = gameSession;
+        this.controller = controller;
+        this.player = controller.getPlayer(id);
     }
 
-    public String generateMove(List<Square>[] currentGraph, Square playerSquare, Square otherPlayer) {
+    public String generateMove(List<Square>[] graph, Square playerSquare, Square opponentSquare) {
+        setGraph(graph);
         String move;
-        if(this.player.getWallsLeft() > 0) {
-            List<String> shortestPath = shortestPathBFS(currentGraph, playerSquare, this.destRow);
-            if(shortestPath.contains(otherPlayer.toString()) && shortestPath.size() == 1)
+        if(player.getWallsLeft() > 0) {
+            List<Square> shortestPath = shortestPathBFS(graph, playerSquare, destRow);
+            if(shortestPath.contains(opponentSquare) && shortestPath.size() == 1)
                 shortestPath = generatePawnMoves(playerSquare);
-            if(shortestPath.contains(otherPlayer.toString()) && shortestPath.size() > 1)
-                shortestPath.remove(otherPlayer.toString());
-            move = shortestPath.get(0);
+            if(shortestPath.contains(opponentSquare) && shortestPath.size() > 1)
+                shortestPath.remove(opponentSquare);
+            move = shortestPath.get(0).toString();
 
         }
         else {
-            move = bestMove(currentGraph, playerSquare, otherPlayer);
+            move = bestMove(playerSquare, opponentSquare);
         }
         return move;
     }
 
-    public String bestMove(List<Square>[] currentGraph, Square src, Square other) {
-        List<String> pawnMoves = generatePawnMoves(src);
+    public String bestMove(Square src, Square other) {
+        List<Square> pawnMoves = generatePawnMoves(src);
         List<String> wallMoves = generateWallMoves();
-        System.out.println(pawnMoves);
-        System.out.println(wallMoves);
-        return pawnMoves.get(0);
+        List<Double> pawnMoveEval = simulatePawnMove(pawnMoves);
+        return pawnMoves.get(0).toString();
     }
 
+    public List<Double> simulatePawnMove(List<Square> moves) {
+        Square originalSquare = player.getPos();
+        List<Double> evalList = new LinkedList<Double>();
+        for(Square move: moves) {
+            controller.movePawn(move);
+            evalList.add(evalState());
+        }
+        controller.movePawn(originalSquare);
+        return evalList;
+    }
 
-    public List<String> generatePawnMoves(Square playerPos) {
-        List<String> validMoves = new LinkedList<String>();
+    public double evalState() {
+        double score = 0;
+        if(controller.gameOver()) {
+            return Double.POSITIVE_INFINITY;
+        };
+        Player opponent = controller.getPlayer((this.playerID +1)%2);
+        List<Square> playerBFS = shortestPathBFS(getGraph(), player.getPos(), player.getDestRow());
+        List<Square> opponentBFS = shortestPathBFS(getGraph(), opponent.getPos(), opponent.getDestRow());
+
+        return 0;
+    }
+
+    private void setGraph(List<Square>[] graph) {
+        this.graph = graph;
+    }
+    private List<Square>[] getGraph() { return this.graph; }
+
+
+
+
+
+
+
+
+    public List<Square> generatePawnMoves(Square playerPos) {
+        List<Square> validMoves = new LinkedList<Square>();
         for (Square sq:playerPos.neighbourhood(2)) {
-            if (gameSession.isValidTraversal(sq)) {
-                validMoves.add(sq.toString());
+            if (controller.isValidTraversal(sq)) {
+                validMoves.add(sq);
             }
         }
         return validMoves;
@@ -62,7 +97,7 @@ public class AIPlayer {
                 Square sq = new Square(i,j);
                 for (Wall.Orientation o: Wall.Orientation.values()) {
                     Wall wall = new Wall(sq, o);
-                    if (gameSession.isValidWallPlacement(wall)) {
+                    if (controller.isValidWallPlacement(wall)) {
                         validMoves.add(wall.toString());
                     }
                 }
