@@ -1,10 +1,8 @@
 package Model.Gamestate;
 
-import Controller.AIPlayer;
+import Controller.AI;
 
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 
 /**
@@ -20,7 +18,7 @@ public class GameState {
     private Square player1; // AI
     private Player winner;
     private int turn;
-    private AIPlayer ai;
+    private AI ai;
 
 //    public GameState() {
 //        this.board = new Board();

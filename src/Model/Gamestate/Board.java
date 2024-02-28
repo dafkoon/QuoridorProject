@@ -1,15 +1,14 @@
 package Model.Gamestate;
 
-import sun.awt.image.ImageWatched;
+import Controller.Utility;
 
-import static Controller.Utility.shortestPathBFS;
-
+import java.sql.SQLOutput;
 import java.util.*;
 
 public class Board {
     private final int BOARD_DIMENSION = 9;
     public List<Square>[] graph;
-    private List<Wall> walls;
+    public List<Wall> walls;
 
     public Board() {
         this.graph = new LinkedList[BOARD_DIMENSION*BOARD_DIMENSION];
@@ -52,28 +51,46 @@ public class Board {
     }
     public boolean isValidWallPlacement(Wall wall, Player player0, Player player1) {
         if(wall.getOrientation() == Wall.Orientation.HORIZONTAL) { // Check Horizontal wall not intersecting others.
+//            System.out.println(wall + ": \n"
+//                    + wall.neighbor(1, 0, Wall.Orientation.VERTICAL) +
+//                    " " + wall.neighbor(0, -1, Wall.Orientation.HORIZONTAL) +
+//                    " " + wall.neighbor(0, 1, Wall.Orientation.HORIZONTAL));
+//            System.out.println();
             if (walls.contains(wall) ||
-                    walls.contains(wall.neighbor(0, 0, Wall.Orientation.VERTICAL)) || // Through it
+                    walls.contains(wall.neighbor(1, 0, Wall.Orientation.VERTICAL)) || // Through it
                     walls.contains(wall.neighbor(0, -1, Wall.Orientation.HORIZONTAL)) || //
                     walls.contains(wall.neighbor(0, 1, Wall.Orientation.HORIZONTAL))) {
                 return false;
             }
         }
         else { // Check Vertical wall not intersecting others.
+//            System.out.println(wall + ": \n"
+//                    + wall.neighbor(-1, 0, Wall.Orientation.HORIZONTAL) +
+//                    " " + wall.neighbor(-1, 0, Wall.Orientation.VERTICAL) +
+//                    " " + wall.neighbor(1, 0, Wall.Orientation.VERTICAL));
+//            System.out.println();
+
             if (walls.contains(wall) ||
-                    walls.contains(wall.neighbor(0, 0, Wall.Orientation.HORIZONTAL)) ||
+                    walls.contains(wall.neighbor(-1, 0, Wall.Orientation.HORIZONTAL)) ||
                     walls.contains(wall.neighbor(-1, 0, Wall.Orientation.VERTICAL)) ||
                     walls.contains(wall.neighbor(1, 0, Wall.Orientation.VERTICAL))) {
                 return false;
             }
         }
         if(wall.getOrientation() == Wall.Orientation.HORIZONTAL) {
+
+//            System.out.print("\n\n\n\n" + wall.startingSq + " " + wall.startingSq.neighbor(1, 0) + " ");
+//            System.out.print(wall.startingSq.neighbor(0, 1) + " " + wall.startingSq.neighbor(1, 1));
+
             removeEdge(wall.startingSq, wall.startingSq.neighbor(1, 0));
             removeEdge(wall.startingSq.neighbor(0, 1), wall.startingSq.neighbor(1, 1)); //
         }
         else {
+//            System.out.print("\n\n\n\n" + wall.startingSq + " " + wall.startingSq.neighbor(0, 1) + " ");
+//            System.out.print(wall.startingSq.neighbor(-1, 0) + " " + wall.startingSq.neighbor(-1, 1));
+
             removeEdge(wall.startingSq, wall.startingSq.neighbor(0, 1)); // remove connecting between startingSq and the wall to the left of it
-            removeEdge(wall.startingSq.neighbor(1, 0), wall.startingSq.neighbor(1, 1)); // remove the connection between squares on the next rank.
+            removeEdge(wall.startingSq.neighbor(-1, 0), wall.startingSq.neighbor(-1, 1)); // remove the connection between squares on the next rank.
         }
         boolean hasPath = hasPathToGoal(player0, player1);
         if(wall.getOrientation() == Wall.Orientation.HORIZONTAL) {
@@ -82,7 +99,7 @@ public class Board {
         }
         else {
             addEdge(wall.startingSq, wall.startingSq.neighbor(0, 1));
-            addEdge(wall.startingSq.neighbor(1, 0), wall.startingSq.neighbor(1, 1));
+            addEdge(wall.startingSq.neighbor(-1, 0), wall.startingSq.neighbor(-1, 1));
         }
         return hasPath;
     }
@@ -103,7 +120,7 @@ public class Board {
         }
     }
     public boolean hasPathToGoal(Player player0, Player player1) {
-        return !(shortestPathBFS(graph, player0.getPos(), player0.getDestRow()).isEmpty() || shortestPathBFS(graph, player1.getPos(), player1.getDestRow()).isEmpty());
+        return !(Utility.shortestPathToRow(graph, player0.getPos(), player0.getDestRow()).isEmpty() || Utility.shortestPathToRow(graph, player1.getPos(), player1.getDestRow()).isEmpty());
     }
     public void placeWall(Wall wall) {
         if(wall.getOrientation() == Wall.Orientation.HORIZONTAL) {
@@ -112,9 +129,21 @@ public class Board {
         }
         else {
             removeEdge(wall.startingSq, wall.startingSq.neighbor(0, 1)); // remove connecting between startingSq and the wall to the left of it
-            removeEdge(wall.startingSq.neighbor(1, 0), wall.startingSq.neighbor(1, 1)); // remove the connection between squares on the next rank.
+            removeEdge(wall.startingSq.neighbor(-1, 0), wall.startingSq.neighbor(-1, 1)); // remove the connection between squares on the next rank.
         }
         walls.add(wall);
+    }
+
+    public void removeWall(Wall wall) {
+        if(wall.getOrientation() == Wall.Orientation.HORIZONTAL) {
+            addEdge(wall.startingSq, wall.startingSq.neighbor(1, 0));
+            addEdge(wall.startingSq.neighbor(0, 1), wall.startingSq.neighbor(1, 1)); //
+        }
+        else {
+            addEdge(wall.startingSq, wall.startingSq.neighbor(0, 1)); // remove connecting between startingSq and the wall to the left of it
+            addEdge(wall.startingSq.neighbor(-1, 0), wall.startingSq.neighbor(-1, 1)); // remove the connection between squares on the next rank.
+        }
+        walls.remove(wall);
     }
     public boolean isValidTraversal(Square dest, Square currentPlayerPos, Square otherPlayerPos){
         int currentPlayerSquareIndex = squareToIndex(currentPlayerPos);

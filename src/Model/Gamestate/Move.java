@@ -5,14 +5,9 @@ package Model.Gamestate;
  */
 public class Move {
     private String move;
-    private Player player;
 
-    public Move(String move, Player player) throws IllegalArgumentException{
-        if(player == null) {
-            throw new IllegalArgumentException("Player cannot be null");
-        }
+    public Move(String move){
         this.move = move;
-        this.player = player;
     }
 
     /**
@@ -23,12 +18,12 @@ public class Move {
         return move;
     }
 
+    public int length() {
+        return move.length();
+    }
 
-    /**
-     * Gets the player who made the move.
-     * @return player that made the move.
-     */
-    public Player getPlayer() {
-        return player;
+    @Override
+    public String toString() {
+        return move;
     }
 }

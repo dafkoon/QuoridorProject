@@ -21,7 +21,7 @@ public class Controller {
     private final Board board = new Board();
     private static int turn = 0;
     private Game view;
-    private AIPlayer aiPlayer;
+    private AI ai;
 
     public Controller(Game view) {
         this.view = view;
@@ -30,7 +30,7 @@ public class Controller {
     public void addPlayer(String name, String color, int id){
         Player player = (id == 0) ? new Player(name, color, new Square("e1"), 8) : new Player(name, color, new Square("e9"), 0);
         players[id] = player;
-        this.aiPlayer = (id == 1) ? new AIPlayer(id, 0, this) : null;
+        this.ai = (id == 1) ? new AI(id, this) : null;
 
     }
 
@@ -103,11 +103,13 @@ public class Controller {
         else
             view.updatePawn(Pawn.PawnType.HUMAN, -1, -1);
     }
+
     public void verticalWallEntered(MouseEvent event, VerticalWall wall) {
+//        System.out.println(wall.toAlgebraic());
         int row = wall.getRow();
         int col = wall.getCol();
         if(wall.getRow() > 0) {
-            if(!doesWallExist(wall.toAlgebraic(BOARD_DIMENSION - (row + 1), col), false)) {
+            if(!doesWallExist(wall.toAlgebraic(), false)) { //BOARD_DIMENSION - (row + 1), col
                 VerticalWall wallAbove = view.findVwall(row - 1, col);
                 wallAbove.setFill(Color.BLACK);
                 wall.setFill(Color.BLACK);
@@ -118,7 +120,7 @@ public class Controller {
         int row = wall.getRow();
         int col = wall.getCol();
         if(row > 0 && !wall.isPressCommit()) {
-            if(!doesWallExist(wall.toAlgebraic(BOARD_DIMENSION - (row + 1), col), false)) {
+            if(!doesWallExist(wall.toAlgebraic(), false)) {
                 VerticalWall wallAbove = view.findVwall(row - 1, col);
                 wallAbove.setFill(Color.SILVER);
                 wall.setFill(Color.SILVER);
@@ -128,22 +130,24 @@ public class Controller {
     public void verticalWallPressed(MouseEvent event, VerticalWall wall) {
         int row = wall.getRow();
         int col = wall.getCol();
+
         if(row == 0 || getCurrentPlayerWalls() == 0 || getTurn() != 0)
             return;
-        if(doesWallExist(wall.toAlgebraic(BOARD_DIMENSION - (row + 1), col), false)) {
+        if(doesWallExist(wall.toAlgebraic(), false)) {
             System.out.println("There is already a wall here.");
         }
         else {
-            createWallMove(wall.toAlgebraic(BOARD_DIMENSION - (row + 1), col), false);
+            addWall(wall.toAlgebraic(), false); // BOARD_DIMENSION - (row + 1), col
             VerticalWall wallAbove = view.findVwall(row - 1, col);
             view.updateVertWall(wall, wallAbove);
         }
     }
     public void horizontalWallEntered(MouseEvent event, HorizontalWall wall) {
+//        System.out.println(wall.toAlgebraic());
         int row = wall.getRow();
         int col = wall.getCol();
         if(col < BOARD_DIMENSION-1) {
-            if(!doesWallExist(wall.toAlgebraic(BOARD_DIMENSION - (row + 1), col), true)) {
+            if(!doesWallExist(wall.toAlgebraic(), true)) {
                 HorizontalWall rightWall = view.findHwall(row, col+1);
                 rightWall.setFill(Color.BLACK);
                 wall.setFill(Color.BLACK);
@@ -155,7 +159,7 @@ public class Controller {
         int row = wall.getRow();
         int col = wall.getCol();
         if(col < BOARD_DIMENSION-1 && !wall.isPressCommit()) {
-            if(!doesWallExist(wall.toAlgebraic(BOARD_DIMENSION - (row + 1), col), true)) {
+            if(!doesWallExist(wall.toAlgebraic(), true)) {
                 HorizontalWall rightWall = view.findHwall(row, col+1);
                 rightWall.setFill(Color.SILVER);
                 wall.setFill(Color.SILVER);
@@ -167,11 +171,11 @@ public class Controller {
         int col = wall.getCol();
         if(col == BOARD_DIMENSION-1 || getCurrentPlayerWalls() == 0 || getTurn() != 0)
             return;
-        if(doesWallExist(wall.toAlgebraic(BOARD_DIMENSION - (row + 1), col), true)) {
+        if(doesWallExist(wall.toAlgebraic(), true)) {
             System.out.println("There is already a wall here.");
         }
         else {
-            createWallMove(wall.toAlgebraic(BOARD_DIMENSION - (row + 1), col), true);
+            addWall(wall.toAlgebraic(), true); // BOARD_DIMENSION - (row + 1), col
             HorizontalWall rightWall = view.findHwall(row, col + 1);
             view.updateHorzWall(wall, rightWall);
         }
@@ -183,7 +187,7 @@ public class Controller {
         Wall wall = new Wall(sq, orientation);
         return !isValidWallPlacement(wall);
     }
-    public void createWallMove(String squareLocation, boolean isHorizontal) {
+    public void addWall(String squareLocation, boolean isHorizontal) {
         char orientation = isHorizontal ? 'h' : 'v';
         Square thisSquare = new Square(squareLocation);
         Wall wall = new Wall(thisSquare, orientation);
@@ -210,11 +214,17 @@ public class Controller {
         board.placeWall(wall);
         players[getTurn()].decWalls();
     }
+    public void removeWall(Wall wall) {
+        board.removeWall(wall);
+        players[getTurn()].incWalls();
+    }
     public boolean isValidTraversal(Square dest) {
         return board.isValidTraversal(dest, getCurrentPlayerPos(), getOtherPlayerPos());
     }
-    public void movePawn(Square sq) {
+    public Square movePawn(Square sq) {
+        Square original = players[getTurn()].getPos();
         players[getTurn()].setPos(sq);
+        return original;
     }
     public boolean moveValidator(String move) {
         boolean flag = gameOver();
@@ -240,29 +250,33 @@ public class Controller {
     }
     public void triggerAI() {
         if(getTurn() != 0) {
-            String aiMove = aiPlayer.generateMove(board.graph ,getCurrentPlayerPos(), getOtherPlayerPos());
+            String aiMove = ai.generateMove(board.graph, board.walls);
             if(aiMove != null) {
-                moveValidator(aiMove);
                 if(aiMove.length() == 2) {
                     Square sq = new Square(aiMove);
                     view.updatePawn(Pawn.PawnType.AI, boardToPixel(sq.getCol()), boardToPixel(BOARD_DIMENSION-(sq.getRow()+1)));
                 }
                 else if(aiMove.length() == 3) {
                     Wall wall = new Wall(aiMove);
+                    System.out.println(aiMove + ": " + moveValidator(aiMove) + " " + wall);;
+                    int row = wall.getStartingSq().getRow();
+                    int col = wall.getStartingSq().getCol();
+
                     if(aiMove.charAt(2) == 'h') {
-                        HorizontalWall wall1 = new HorizontalWall(wall.getStartingSq().getCol(), wall.getStartingSq().getRow());
-                        HorizontalWall wall2 = view.findHwall(wall.getStartingSq().getRow(), wall.getStartingSq().getCol() + 1);
+                        HorizontalWall wall1 = view.findHwall(row, col);
+                        HorizontalWall wall2 = view.findHwall(row, col + 1);
                         view.updateHorzWall(wall1, wall2);
                     }
                     else if(aiMove.charAt(2) == 'v') {
-                        VerticalWall wall1 = new VerticalWall(wall.getStartingSq().getCol(), wall.getStartingSq().getRow());
-                        VerticalWall wall2 = view.findVwall(wall.getStartingSq().getRow() - 1, wall.getStartingSq().getCol());
+                        VerticalWall wall1 = view.findVwall(row, col);
+                        VerticalWall wall2 = view.findVwall(row - 1, col);
                         view.updateVertWall(wall1, wall2);
                     }
                 }
             }
         }
     }
+//    public int toNumeric()
     public int boardToPixel(int boardIndex) { return boardIndex*TILE_SIZE; }
     public int pixelToBoard(double pixel) {
         return (int)(pixel+ TILE_SIZE/2)/TILE_SIZE;

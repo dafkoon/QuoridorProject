@@ -7,7 +7,6 @@ public class Player {
     private String playerName;
     private String playerColor;
     private int destRow;
-
     private Square pos;
 
     private int walls;
@@ -55,6 +54,11 @@ public class Player {
     public void decWalls() {
         if(walls > 0)
             walls--;
+    }
+
+    public void incWalls() {
+        if(walls < 10)
+            walls++;
     }
 
 

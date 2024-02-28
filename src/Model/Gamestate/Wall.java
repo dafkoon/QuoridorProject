@@ -47,6 +47,12 @@ public class Wall {
     }
 
     public Square getStartingSq() { return startingSq; }
+//    public Square getSecondarySq() {
+//        if(getOrientation() == Orientation.HORIZONTAL)
+//            return getStartingSq().neighbor(0, 1);
+//        else
+//            return getStartingSq().neighbor(-1, 0);
+//    }
 
     public Orientation getOrientation() { return orientation; }
 

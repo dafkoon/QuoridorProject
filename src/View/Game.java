@@ -16,10 +16,12 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 
+import java.sql.SQLOutput;
 
 
 public class Game extends Application {
@@ -76,11 +78,13 @@ public class Game extends Application {
         pawn.setOnMouseReleased(event -> controller.handlePawnMovement(event, pawn));
     }
     public void horizontalWallMouseEvents(HorizontalWall wall) {
+//        System.out.print(wall.toAlgebraic() + " ");
         wall.setOnMouseEntered(event -> controller.handleHorizontalWallMovement(event, wall));
         wall.setOnMousePressed(event -> controller.handleHorizontalWallMovement(event, wall));
         wall.setOnMouseExited(event -> controller.handleHorizontalWallMovement(event, wall));
     }
     public void verticalWallMouseEvents(VerticalWall wall) {
+//        System.out.print(wall.toAlgebraic() + " ");
         wall.setOnMouseEntered(event -> controller.handleVerticalWallMovement(event, wall));
         wall.setOnMousePressed(event -> controller.handleVerticalWallMovement(event, wall));
         wall.setOnMouseExited(event -> controller.handleVerticalWallMovement(event, wall));
@@ -89,37 +93,36 @@ public class Game extends Application {
         Pane root = new Pane();
         root.setPrefSize((BOARD_DIMENSION * TILE_SIZE) + 120, BOARD_DIMENSION * TILE_SIZE);
 
-        //Add tiles to the board
-        for (int row = BOARD_DIMENSION - 1; row >= 0; row--) {
-            for (int col = 0; col < BOARD_DIMENSION; col++) {
+        for(int row = 0; row < BOARD_DIMENSION; row++) {
+            for(int col = 0; col < BOARD_DIMENSION; col++) {
                 Tile tile = new Tile(col, row);
-                NotationLabel label = new NotationLabel(col, row);
                 tileGroup.getChildren().add(tile);
-                labelGroup.getChildren().add(label);
             }
         }
-        // Add vertical walls.
-        for (int row = BOARD_DIMENSION-1; row >= 0; row--) { // from top to bottom
-            for (int col = 0; col < BOARD_DIMENSION-1; col++) { // from left to right
-                int thisRow = row;
-                int thisCol = col;
-                VerticalWall wall = new VerticalWall(thisCol, thisRow);
+        for(int row = 0; row < BOARD_DIMENSION; row++) { // 0-8
+            for(int col = 0; col < BOARD_DIMENSION-1; col++) { // a-i
+                VerticalWall wall = new VerticalWall(col, row);
                 verticalWallGroup.getChildren().add(wall);
                 verticalWallMouseEvents(wall);
             }
         }
-        // Add horizontal walls.
-        for (int row = BOARD_DIMENSION-1; row > 0; row--) { // from top to bottom
-            for (int col = 0; col < BOARD_DIMENSION; col++) { // from left to right
-                int thisRow = row;
-                int thisCol = col;
-                HorizontalWall wall = new HorizontalWall(thisCol, thisRow);
+        for(int row = 0; row < BOARD_DIMENSION; row++) {
+            for(int col = 0; col < BOARD_DIMENSION-1; col++) {
+                HorizontalWall wall = new HorizontalWall(col, row);
                 horizontalWallGroup.getChildren().add(wall);
                 horizontalWallMouseEvents(wall);
-
             }
         }
-        root.getChildren().addAll(tileGroup, labelGroup , pawnGroup, horizontalWallGroup, verticalWallGroup, generateInfoPanel());
+
+        System.out.println();
+//        Rectangle rect = new Rectangle();
+//        rect.setWidth(10);
+//        rect.setHeight(10);
+//        rect.relocate(0.0, 0.0);
+//        rect.setFill(Color.BLUE);
+//        rect.setStroke(Color.BLACK);
+        root.getChildren().addAll(tileGroup, pawnGroup, horizontalWallGroup, verticalWallGroup, generateInfoPanel());
+//        root.getChildren().addAll(tileGroup, labelGroup , pawnGroup, horizontalWallGroup, verticalWallGroup, generateInfoPanel());
         return root;
     }
 
@@ -141,7 +144,6 @@ public class Game extends Application {
         currentTurnLabel.setTextFill(Color.valueOf(controller.getCurrentPlayerColor()));
         wallLabel.setText("Walls left: " + controller.getCurrentPlayerWalls());
         wallLabel.setTextFill(Color.valueOf(controller.getCurrentPlayerColor()));
-
     }
 
 
@@ -179,15 +181,19 @@ public class Game extends Application {
         }
     }
     public void updateVertWall(VerticalWall wall1, VerticalWall wall2) {
+        System.out.println("Added walls: " + wall1.toAlgebraic() + "," + wall2.toAlgebraic());
         wall1.setFill(Color.BLACK);
         wall2.setFill(Color.BLACK);
         wall1.setPressCommit(true);
+        wall2.setPressCommit(true);
         updateInfoPanel();
     }
     public void updateHorzWall(HorizontalWall wall1, HorizontalWall wall2) {
+        System.out.println("Added walls: " + wall1.toAlgebraic() + "," + wall2.toAlgebraic());
         wall1.setFill(Color.BLACK);
         wall2.setFill(Color.BLACK);
         wall1.setPressCommit(true);
+        wall2.setPressCommit(true);
         updateInfoPanel();
     }
 

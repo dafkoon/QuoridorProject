@@ -22,8 +22,8 @@ public class Square {
      * @param col index of column.
      */
     public Square(int row, int col) {
-        this.col = col;
         this.row = row;
+        this.col = col;
 
     }
 
@@ -55,7 +55,7 @@ public class Square {
      * @throws IllegalArgumentException
      */
     public Square neighbor(int row, int col) throws IllegalArgumentException{
-        if(row < 0 || col < 0) throw new IllegalArgumentException("Paramters cannot be negative.");
+//        if(row < 0 || col < 0) throw new IllegalArgumentException("Paramters cannot be negative.");
         return new Square(this.row+row, this.col+col);
     }
 
