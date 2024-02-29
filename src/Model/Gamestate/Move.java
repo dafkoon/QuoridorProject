@@ -1,29 +1,20 @@
 package Model.Gamestate;
 
+import java.util.Stack;
+
 /**
  * Represents a move taken during the game.
  */
 public class Move {
-    private String move;
+    private static Stack<String> moves;
 
-    public Move(String move){
-        this.move = move;
+
+
+    public void addMove(String move) {
+        moves.add(move);
     }
 
-    /**
-     * Gets the move that was preformed.
-     * @return move in game notation.
-     */
-    public String getMove() {
-        return move;
-    }
-
-    public int length() {
-        return move.length();
-    }
-
-    @Override
-    public String toString() {
-        return move;
+    public Stack<String> getMoves() {
+        return moves;
     }
 }

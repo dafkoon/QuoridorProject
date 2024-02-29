@@ -48,7 +48,7 @@ public class Controller {
                     break;
             }
         }
-        triggerAI();
+        executeAIMove();
     }
     public void handleVerticalWallMovement(MouseEvent event, VerticalWall wall) {
         switch(event.getEventType().getName()) {
@@ -62,7 +62,7 @@ public class Controller {
                 verticalWallExited(event, wall);
                 break;
         }
-        triggerAI();
+        executeAIMove();
     }
     public void handleHorizontalWallMovement(MouseEvent event, HorizontalWall wall) {
         switch(event.getEventType().getName()) {
@@ -76,7 +76,7 @@ public class Controller {
                 horizontalWallExited(event, wall);
                 break;
         }
-        triggerAI();
+        executeAIMove();
     }
     public void pawnMousePressed(MouseEvent event, Pawn pawn) {
         pawn.mouseX = event.getSceneX();
@@ -248,10 +248,11 @@ public class Controller {
         }
         return flag;
     }
-    public void triggerAI() {
-        if(getTurn() != 0) {
+    public void executeAIMove() {
+        if(getTurn() != 0 && !gameOver()) {
             String aiMove = ai.generateMove(board.graph, board.walls);
             if(aiMove != null) {
+                moveValidator(aiMove);
                 if(aiMove.length() == 2) {
                     Square sq = new Square(aiMove);
                     view.updatePawn(Pawn.PawnType.AI, boardToPixel(sq.getCol()), boardToPixel(BOARD_DIMENSION-(sq.getRow()+1)));

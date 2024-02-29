@@ -7,8 +7,8 @@ import java.util.*;
 import static Model.Gamestate.GameState.BOARD_DIMENSION;
 
 public class Utility {
-    public static List<String> shortestPathToRow(List<Square>[] currentGraph, Square srcSq, int destRow) {
-        List<String> path = new LinkedList<>();
+    public static ArrayList<Square> shortestPathToRow(List<Square>[] currentGraph, Square srcSq, int destRow) {
+        ArrayList<Square> path = new ArrayList<>();
         Queue<Square> queue = new LinkedList<>();
         HashMap<Square, Square> parentNode = new HashMap<>();
         queue.add(srcSq);
@@ -18,7 +18,7 @@ public class Utility {
             Square curr = queue.poll();
             if (curr.getRow() == destRow) {
                 while (!curr.equals(srcSq)) {
-                    path.add(curr.toString());
+                    path.add(curr);
                     curr = parentNode.get(curr);
                 }
                 Collections.reverse(path);
@@ -35,8 +35,8 @@ public class Utility {
         return path;
     }
 
-    public static List<String> shortestPathToPlayer(List<Square>[] currentGraph, Square src, Square dest) {
-        List<String> path = new LinkedList<>();
+    public static ArrayList<Square> shortestPathToPlayer(List<Square>[] currentGraph, Square src, Square dest) {
+        ArrayList<Square> path = new ArrayList<>();
         Queue<Square> queue = new LinkedList<>();
         HashMap<Square, Square> parentNode = new HashMap<>();
         queue.add(src);
@@ -46,7 +46,7 @@ public class Utility {
             Square curr = queue.poll();
             if (curr.equals(dest)) {
                 while (!curr.equals(src)) {
-                    path.add(curr.toString());
+                    path.add(curr);
                     curr = parentNode.get(curr);
                 }
                 Collections.reverse(path);

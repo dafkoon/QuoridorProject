@@ -2,11 +2,9 @@ package Controller;
 import Model.Gamestate.*;
 
 import static Controller.Utility.shortestPathToRow;
-import static Controller.Utility.shortestPathToPlayer;
 //import static Controller.Utility.countOpenPathsToGoal;
 
 
-import java.sql.SQLOutput;
 import java.util.*;
 
 public class AI {
@@ -16,6 +14,8 @@ public class AI {
     private Player agent;
     private Player opponent;
     private List<Square>[] graph;
+    private static int totalScore = 0;
+    private static int totalMoves;
 
     public AI(int id, Controller controller) {
         this.agentID = id;
@@ -29,12 +29,12 @@ public class AI {
         setGraph(graph);
         String move;
         if(agent.getWallsLeft() == 0) {
-            List<String> shortestPath = shortestPathToRow(graph, agent.getPos(), agent.getDestRow());
-            if(shortestPath.contains(opponent.getPos().toString()) && shortestPath.size() == 1)
-                shortestPath = generateValidMoves(agent.getPos());
-            if(shortestPath.contains(opponent.getPos().toString()) && shortestPath.size() > 1)
-                shortestPath.remove(opponent.getPos().toString());
-            move = shortestPath.get(0);
+            ArrayList<Square> shortestPath = shortestPathToRow(graph, agent.getPos(), agent.getDestRow());
+            if(shortestPath.contains(opponent.getPos()) && shortestPath.size() == 1)
+                shortestPath = generatePawnMoves(agent.getPos());
+            if(shortestPath.contains(opponent.getPos()) && shortestPath.size() > 1)
+                shortestPath.remove(opponent.getPos());
+            move = shortestPath.get(0).toString();
         }
         else {
             move = determineMove(agent.getPos(), opponent.getPos());
@@ -43,79 +43,80 @@ public class AI {
     }
 
     public String determineMove(Square src, Square other) {
-        List<String> validMoves = generateValidMoves(src);
-        Move bestMove = null;
-//        validMoves = screenUselessMoves(validMoves);
+        ArrayList<Wall> wallMoves = generateWallMoves();
+        totalMoves = wallMoves.size();
+        wallMoves = removeUselessWalls(wallMoves);
+        System.out.println(totalScore + " " + totalMoves + " " + (totalScore/totalMoves) + " " + wallMoves.size());
+        totalScore = 0;
+        totalMoves = 0;
+        ArrayList<Square> pawnMoves = generatePawnMoves(src);
         double bestEval = Double.NEGATIVE_INFINITY;
         double postMoveEval;
+        int bestMoveIndex = 0;
+        boolean isPawnMove = false;
 
-        for(String move : validMoves) {
-            if(move.length() == 3) {
-                controller.placeWall(new Wall(move));
-                postMoveEval = evaluate();
-                if(postMoveEval > bestEval) {
-                    bestEval = postMoveEval;
-                    bestMove = new Move(move);
-                }
-                controller.removeWall(new Wall(move));
+        for(int i = 0; i < pawnMoves.size(); i++) {
+            Square prev = controller.movePawn(pawnMoves.get(i));
+            postMoveEval = evaluate();
+            if(postMoveEval > bestEval) {
+                bestEval = postMoveEval;
+                isPawnMove = true;
+                bestMoveIndex = i;
             }
-//            if(move.length() == 2) {
-//                Square previous = controller.movePawn(new Square(move));
-//                postMoveEval = evaluate();
-//                if(postMoveEval > bestEval) {
-//                    bestEval = postMoveEval;
-//                    bestMove = new Move(move);
-//                }
-//                controller.movePawn(previous);
-//            }
+            controller.movePawn(prev);
         }
-        return bestMove.toString();
+        for(int j = 0; j < wallMoves.size(); j++) {
+            controller.placeWall(wallMoves.get(j));
+            postMoveEval = evaluate();
+            if(postMoveEval > bestEval) {
+                bestEval = postMoveEval;
+                isPawnMove = false;
+                bestMoveIndex = j;
+            }
+            controller.removeWall(wallMoves.get(j));
+        }
+        return (isPawnMove) ? pawnMoves.get(bestMoveIndex).toString() : wallMoves.get(bestMoveIndex).toString();
     }
 
-//    public List<String> screenUselessMoves(List<String> moves) {
-//        List<String> agentPath = shortestPathToRow(getGraph(), agent.getPos(), agent.getDestRow());
-//        List<String> opponentPath = shortestPathToRow(getGraph(), opponent.getPos(), opponent.getDestRow());
-//        List<String> usefulMoves = new LinkedList<>();
-//        for(String move : moves) {
-//            if(move.length() == 3) {
-//                if ((isUsefulWall(move, agentPath, opponentPath))) {
-//                    usefulMoves.add(move);
-//                }
-//            }
-//            else
-//                usefulMoves.add(move);
-//        }
-//        return usefulMoves;
-//    }
-//
-//    public boolean isUsefulWall(String wall, List<String> agentPath, List<String> opponentPath) {
-//        double blockingEfficency = 1;
-//        Wall wallToPlace = new Wall(wall);
-//        String startingSq = wallToPlace.getStartingSq().toString();
-//        String secondarySq = wallToPlace.getSecondarySq().toString();
-//        List<Square> wallSurroundings = wallToPlace.getStartingSq().neighbourhood(3);
-//
-//        if(opponentPath.contains(startingSq) || opponentPath.contains(secondarySq)) { // checks if wall is interacting opponent path.
-//            int startingSqIndex = opponentPath.indexOf(startingSq);
-//            int secondarySqIndex = opponentPath.indexOf(secondarySq);
-//            blockingEfficency *= 2*(startingSqIndex + secondarySqIndex);
-//        }
-//        if(agentPath.contains(startingSq) || agentPath.contains(secondarySq)) { // checks if wall is interacting agent path.
-//            int startingSqIndex = agentPath.indexOf(startingSq);
-//            int secondarySqIndex = agentPath.indexOf(secondarySq);
-//            blockingEfficency /= 1.5 * (startingSqIndex + secondarySqIndex);
-//        }
-//        if(wallSurroundings.contains(opponent.getPos())) // checks if wall is near the opponent.
-//            blockingEfficency*=1.3;
-//
-//        /*
-//        TODO add proximity to other walls
-//             blocking potential escape routes for opponent
-//             Creating traps/funneling for opponent
-//             Wall chaining
-//         */
-//        return blockingEfficency > 2; // large number = good        small number = bad
-//    }
+    public ArrayList<Wall> removeUselessWalls(ArrayList<Wall> walls) {
+        ArrayList<Square> agentPath = shortestPathToRow(getGraph(), agent.getPos(), agent.getDestRow());
+        ArrayList<Square> opponentPath = shortestPathToRow(getGraph(), opponent.getPos(), opponent.getDestRow());
+        ArrayList<Wall> usefulWalls = new ArrayList<>();
+        for(Wall wall : walls) {
+            if(isUsefulWall(wall, agentPath, opponentPath))
+                usefulWalls.add(wall);
+        }
+        return usefulWalls;
+    }
+
+    public boolean isUsefulWall(Wall wall, ArrayList<Square> agentPath, ArrayList<Square> opponentPath) {
+        double score = 0.0;
+        controller.placeWall(wall);
+        ArrayList<Square> newAgentPath = shortestPathToRow(getGraph(), agent.getPos(), agent.getDestRow());
+        ArrayList<Square> newOpponentPath = shortestPathToRow(getGraph(), opponent.getPos(), opponent.getDestRow());
+        controller.removeWall(wall);
+        Square startingSq = wall.getStartingSq();
+        int agentPathSize = agentPath.size();
+        int newAgentPathSize = newAgentPath.size();
+        int opponentPathSize = opponentPath.size();
+        int newOpponentPathSize = newOpponentPath.size();
+        int distanceFromAgent = Math.abs(startingSq.getRow() - agent.getPos().getRow())
+                + Math.abs(startingSq.getCol() - agent.getPos().getCol());
+        int distanceFromOpponent = Math.abs(startingSq.getRow() - opponent.getPos().getRow())
+                + Math.abs(startingSq.getCol() - opponent.getPos().getCol());
+        score += (newAgentPathSize-agentPathSize > 0) ? -10*(newAgentPathSize-agentPathSize) : 10;
+        score += (newOpponentPathSize-opponentPathSize > 0) ? 10*(newOpponentPathSize-opponentPathSize) : -10;
+        score+= (distanceFromOpponent > distanceFromAgent) ? 10*(distanceFromOpponent-distanceFromAgent)
+                : -10*(distanceFromOpponent-distanceFromAgent);
+        totalScore += score;
+        /*
+        TODO add proximity to other walls
+             blocking potential escape routes for opponent
+             Creating traps/funneling for opponent
+             Wall chaining
+         */
+        return score > 50;
+    }
 
     public double evaluate() {
         double score = 0.0;
@@ -148,7 +149,7 @@ public class AI {
         //double score = minBFS[0] - maxBFS[0] + (maxWalls - minWalls);
 
         int[] featureScores = new int[6];
-        double[] mFeatureWeights = {-1.5, 1.5, 1, -1, -0.7, +0.7};
+        double[] mFeatureWeights = {1.5, -1.5, 1, -1, 0.7, -0.7};
         featureScores[0] = agentDistToGoal;
         featureScores[1] = opponentManDist;
         featureScores[2] = agentWallsLeft;
@@ -169,19 +170,24 @@ public class AI {
         this.graph = graph;
     }
     private List<Square>[] getGraph() { return this.graph; }
-    public List<String> generateValidMoves(Square playerPos) {
-        List<String> validMoves = new LinkedList<>();
-        for (Square sq:playerPos.neighbourhood(2)) {
+
+    public ArrayList<Square> generatePawnMoves(Square src) {
+        ArrayList<Square> validMoves = new ArrayList<>();
+        for (Square sq: src.neighbourhood(2)) {
             if (controller.isValidTraversal(sq)) {
-                validMoves.add(sq.toString());
+                validMoves.add(sq);
             }
         }
+        return validMoves;
+    }
+    public ArrayList<Wall> generateWallMoves() {
+        ArrayList<Wall> validMoves = new ArrayList<>();
         for(int row = 0; row < BOARD_DIMENSION-1; row++) {
             for(int col = 0; col < BOARD_DIMENSION-1; col++) {
                 Square sq = new Square(row, col);
                 Wall wall = new Wall(sq, Wall.Orientation.HORIZONTAL);
                 if(controller.isValidWallPlacement(wall))
-                    validMoves.add(wall.toString());
+                    validMoves.add(wall);
             }
         }
         for(int row = 1; row < BOARD_DIMENSION; row++) {
@@ -189,45 +195,12 @@ public class AI {
                 Square sq = new Square(row, col);
                 Wall wall = new Wall(sq, Wall.Orientation.VERTICAL);
                 if(controller.isValidWallPlacement(wall))
-                    validMoves.add(wall.toString());
+                    validMoves.add(wall);
             }
         }
-
-//        for (int row = 0; row < BOARD_DIMENSION ; row++) {
-//            for (int col = 0; col < BOARD_DIMENSION; col++) {
-//                Square sq = new Square(row,col);
-//                System.out.print(sq + " ");
-//                for (Wall.Orientation o: Wall.Orientation.values()) {
-//                    Wall wall = new Wall(sq, o);
-//                    if (controller.isValidWallPlacement(wall)) {
-//                        validMoves.add(wall.toString());
-//                    }
-//                }
-//            }
-//            System.out.println();
-//        }
-
         return validMoves;
     }
 
 
-
-    public List<String> generateWallMoves() {
-        List<String> validMoves = new LinkedList<String>();
-        for (int row = 0; row < BOARD_DIMENSION ; row++) {
-            for (int col = 0; col < BOARD_DIMENSION; col++) {
-                Square sq = new Square(row,col);
-                System.out.print(sq + " ");
-                for (Wall.Orientation o: Wall.Orientation.values()) {
-                    Wall wall = new Wall(sq, o);
-                    if (controller.isValidWallPlacement(wall)) {
-                        validMoves.add(wall.toString());
-                    }
-                }
-            }
-            System.out.println();
-        }
-        return validMoves;
-    }
 
 }
