@@ -28,15 +28,14 @@ public class Game extends Application {
     public static final int BOARD_SIZE = TILE_SIZE * BOARD_DIMENSION;
 
     private final Controller controller = new Controller(this); // Access to controller class
-    private Pawn pawnList[];
     private final Group tileGroup = new Group();
     private final Group pawnGroup = new Group();
     private final Group horizontalWallGroup = new Group();
     private final Group verticalWallGroup = new Group();
-    private final Group labelGroup = new Group();
     private Label currentTurnLabel;
     private Label wallLabel;
     private Pane root;
+    private Pawn pawnList[];
 
 
     public void start(Stage primaryStage) {
@@ -95,13 +94,13 @@ public class Game extends Application {
 
         for(int row = 0; row < BOARD_DIMENSION; row++) {
             for(int col = 0; col < BOARD_DIMENSION; col++) {
-                Tile tile = new Tile(col, row);
+                Tile tile = new Tile(row, col);
                 tileGroup.getChildren().add(tile);
             }
         }
         for(int row = 0; row < BOARD_DIMENSION; row++) { // 0-8
             for(int col = 0; col < BOARD_DIMENSION-1; col++) { // a-i
-                VerticalWall wall = new VerticalWall(col, row);
+                VerticalWall wall = new VerticalWall(row, col);
                 verticalWallGroup.getChildren().add(wall);
                 verticalWallMouseEvents(wall);
             }
@@ -113,16 +112,7 @@ public class Game extends Application {
                 horizontalWallMouseEvents(wall);
             }
         }
-
-        System.out.println();
-//        Rectangle rect = new Rectangle();
-//        rect.setWidth(10);
-//        rect.setHeight(10);
-//        rect.relocate(0.0, 0.0);
-//        rect.setFill(Color.BLUE);
-//        rect.setStroke(Color.BLACK);
         root.getChildren().addAll(tileGroup, pawnGroup, horizontalWallGroup, verticalWallGroup, generateInfoPanel());
-//        root.getChildren().addAll(tileGroup, labelGroup , pawnGroup, horizontalWallGroup, verticalWallGroup, generateInfoPanel());
         return root;
     }
 
@@ -167,11 +157,7 @@ public class Game extends Application {
     }
 
     public void updatePawn(PawnType type, double xPixel, double yPixel) {
-        Pawn pawn = null;
-        for(int i = 0; i < pawnList.length; i++) {
-            if(i == type.ordinal())
-                pawn = pawnList[i];
-        }
+        Pawn pawn = pawnList[type.ordinal()];
         if(xPixel != -1 && yPixel != -1) {
             pawn.move(xPixel, yPixel);
             updateInfoPanel();
@@ -181,7 +167,7 @@ public class Game extends Application {
         }
     }
     public void updateVertWall(VerticalWall wall1, VerticalWall wall2) {
-        System.out.println("Added walls: " + wall1.toAlgebraic() + "," + wall2.toAlgebraic());
+//        System.out.println("updated walls: " + wall1.toAlgebraic() + " " + wall2.toAlgebraic());
         wall1.setFill(Color.BLACK);
         wall2.setFill(Color.BLACK);
         wall1.setPressCommit(true);
@@ -189,7 +175,7 @@ public class Game extends Application {
         updateInfoPanel();
     }
     public void updateHorzWall(HorizontalWall wall1, HorizontalWall wall2) {
-        System.out.println("Added walls: " + wall1.toAlgebraic() + "," + wall2.toAlgebraic());
+//        System.out.println("updated walls: " + wall1.toAlgebraic() + " " + wall2.toAlgebraic());
         wall1.setFill(Color.BLACK);
         wall2.setFill(Color.BLACK);
         wall1.setPressCommit(true);

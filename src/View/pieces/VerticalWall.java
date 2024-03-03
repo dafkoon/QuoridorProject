@@ -8,7 +8,7 @@ public class VerticalWall extends Rectangle{
     private int row;
     private int col;
     private boolean pressCommit;
-    public VerticalWall(int col, int row) {
+    public VerticalWall(int row, int col) {
         this.col = col;
         this.row = row;
         setWidth(((double) TILE_SIZE / 10));

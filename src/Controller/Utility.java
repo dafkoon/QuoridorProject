@@ -9,6 +9,8 @@ import static Model.Gamestate.GameState.BOARD_DIMENSION;
 public class Utility {
     public static ArrayList<Square> shortestPathToRow(List<Square>[] currentGraph, Square srcSq, int destRow) {
         ArrayList<Square> path = new ArrayList<>();
+        if(currentGraph == null)
+            return path;
         Queue<Square> queue = new LinkedList<>();
         HashMap<Square, Square> parentNode = new HashMap<>();
         queue.add(srcSq);
