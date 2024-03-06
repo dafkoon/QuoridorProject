@@ -6,11 +6,15 @@ package Model.Gamestate;
 public class Player {
     private String playerName;
     private String playerColor;
-    private int walls;
+    private int destRow;
+    private Square pos;
 
-    public Player(String name, String color) {
+    private int walls;
+    public Player(String name, String color, Square pos, int destRow) {
         this.playerName = name;
         this.playerColor = color;
+        this.pos = pos;
+        this.destRow = destRow;
         this.walls = 10; // Default number of walls.
     }
 
@@ -33,12 +37,28 @@ public class Player {
      */
     public int getWallsLeft() { return walls; }
 
+
+    public Square getPos() {
+        return pos;
+    }
+
+    public void setPos(Square pos) {
+        this.pos = pos;
+    }
+
+    public int getDestRow() { return destRow; }
+
     /**
      * Decreased the amount of walls a player has.
      */
     public void decWalls() {
         if(walls > 0)
             walls--;
+    }
+
+    public void incWalls() {
+        if(walls < 10)
+            walls++;
     }
 
 

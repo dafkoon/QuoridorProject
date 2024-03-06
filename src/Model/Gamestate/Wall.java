@@ -23,6 +23,11 @@ public class Wall {
         this.orientation = (orientation == 'h') ? Orientation.HORIZONTAL : Orientation.VERTICAL;
     }
 
+    public Wall(int row, int col, char orientation) {
+        this.startingSq = new Square(row, col);
+        this.orientation = (orientation == 'h') ? Orientation.HORIZONTAL : Orientation.VERTICAL;
+    }
+
     /** Constructor for Wall using a string.
      * example: Vertical wall between column e and f spanning rows 3 and 4 is e3v.
      * @param s string constructor
@@ -35,6 +40,11 @@ public class Wall {
         }
     }
 
+    public Wall(Wall original) {
+        this.startingSq = new Square(original.startingSq);
+        this.orientation = original.orientation;
+    }
+
     public Wall neighbor(int row, int column, Orientation orientation) {
         Square neighborSq = new Square(startingSq.getRow()+row, startingSq.getCol()+column);
         Wall wall = new Wall(neighborSq, orientation);
@@ -42,6 +52,12 @@ public class Wall {
     }
 
     public Square getStartingSq() { return startingSq; }
+//    public Square getSecondarySq() {
+//        if(getOrientation() == Orientation.HORIZONTAL)
+//            return getStartingSq().neighbor(0, 1);
+//        else
+//            return getStartingSq().neighbor(-1, 0);
+//    }
 
     public Orientation getOrientation() { return orientation; }
 

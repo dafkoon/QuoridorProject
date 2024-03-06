@@ -1,13 +1,16 @@
 package Controller;
+
 import Model.Gamestate.Square;
 
 import java.util.*;
 
-import static Controller.GameSession.BOARD_DIMENSION;
+import static Model.Gamestate.GameState.BOARD_DIMENSION;
 
 public class Utility {
-    public static List<String> shortestPathBFS(List<Square>[] currentGraph, Square srcSq, int destRow) {
-        List<String> path = new LinkedList<>();
+    public static ArrayList<Square> shortestPathToRow(List<Square>[] currentGraph, Square srcSq, int destRow) {
+        ArrayList<Square> path = new ArrayList<>();
+        if(currentGraph == null)
+            return path;
         Queue<Square> queue = new LinkedList<>();
         HashMap<Square, Square> parentNode = new HashMap<>();
         queue.add(srcSq);
@@ -17,7 +20,7 @@ public class Utility {
             Square curr = queue.poll();
             if (curr.getRow() == destRow) {
                 while (!curr.equals(srcSq)) {
-                    path.add(curr.toString());
+                    path.add(curr);
                     curr = parentNode.get(curr);
                 }
                 Collections.reverse(path);
@@ -34,9 +37,57 @@ public class Utility {
         return path;
     }
 
+    public static ArrayList<Square> shortestPathToPlayer(List<Square>[] currentGraph, Square src, Square dest) {
+        ArrayList<Square> path = new ArrayList<>();
+        Queue<Square> queue = new LinkedList<>();
+        HashMap<Square, Square> parentNode = new HashMap<>();
+        queue.add(src);
+        parentNode.put(src, null);
+
+        while (!queue.isEmpty()) {
+            Square curr = queue.poll();
+            if (curr.equals(dest)) {
+                while (!curr.equals(src)) {
+                    path.add(curr);
+                    curr = parentNode.get(curr);
+                }
+                Collections.reverse(path);
+                return path;
+            }
+            int i = squareToIndex(curr);
+            for (Square e : currentGraph[i]) {
+                if (!parentNode.containsKey(e)) {
+                    parentNode.put(e, curr);
+                    queue.add(e);
+                }
+            }
+        }
+        return path;
+    }
+
+//    public static int countOpenPathsToGoal(Square currentPos, int goalRow) {
+//        int openPaths = 0;
+//        List<Square> neighbors = currentPos.neighbourhood(2);
+//
+//        for (Square neighbor : neighbors) {
+//            // Check if neighbor is not blocked and leads towards the goal row
+//            if (!neighbor.hasWall() && neighbor.getRow() == currentPos.getRow() + (goalRow - currentPos.getRow() > 0 ? 1 : -1)) {
+//                // If neighbor is the goal, count it as a path and stop searching
+//                if (neighbor.getRow() == goalRow) {
+//                    return 1;
+//                }
+//
+//                // Recursively explore open paths from the neighbor
+//                openPaths += countOpenPathsToGoal(neighbor, goalRow);
+//            }
+//        }
+//        return openPaths;
+//    }
+
     public static int squareToIndex(Square sq) {
         int sq_row = sq.getRow();
         int sq_col = sq.getCol();
         return sq_row*BOARD_DIMENSION+sq_col;
     }
+
 }

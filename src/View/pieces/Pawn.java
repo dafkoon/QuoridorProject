@@ -5,15 +5,9 @@ import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
-import javafx.scene.input.MouseEvent;
 
 import static Controller.Controller.TILE_SIZE;
-import static Controller.Controller.BOARD_DIMENSION;
 import static View.Game.BOARD_SIZE;
-
-import javafx.scene.input.MouseEvent;
-
-import java.sql.SQLOutput;
 
 
 /**

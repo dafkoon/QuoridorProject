@@ -3,8 +3,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
-import static Controller.Controller.BOARD_DIMENSION;
-
 /**
  * Represents a Tile on the "Board" class.
  */
@@ -24,8 +22,8 @@ public class Square {
      * @param col index of column.
      */
     public Square(int row, int col) {
-        this.col = col;
         this.row = row;
+        this.col = col;
 
     }
 
@@ -57,7 +55,7 @@ public class Square {
      * @throws IllegalArgumentException
      */
     public Square neighbor(int row, int col) throws IllegalArgumentException{
-        if(row < 0 || col < 0) throw new IllegalArgumentException("Paramters cannot be negative.");
+//        if(row < 0 || col < 0) throw new IllegalArgumentException("Paramters cannot be negative.");
         return new Square(this.row+row, this.col+col);
     }
 
