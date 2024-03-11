@@ -7,7 +7,7 @@
 //    private Validator validator;
 //    private Player[] players;
 //    public ViewUpdater() {
-//        validator = Validator.getInstance();
+//        validaor = Validator.getInstance();
 //        System.out.println(validator);
 //        players = validator.getPlayers();
 //    }
