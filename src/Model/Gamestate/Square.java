@@ -77,7 +77,7 @@ public class Square {
         return neighbors;
     }
 
-    /** TODO remove if not used.
+    /**
      * @param sq square to check if current Square is on the same row or column as sq but not both.
      * @return checks if square is on same the same row or column of current square.
      */
@@ -85,7 +85,7 @@ public class Square {
         return (row - sq.row != 0) ^ (col - sq.col != 0);
     }
 
-    /** TODO remove if not used.
+    /**
      * @param sq square to get a square opposite to it (for jumping)
      * @return square that 2 squares away from current square
      */

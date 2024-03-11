@@ -4,7 +4,8 @@ import View.pieces.*;
 import View.pieces.Pawn.PawnType;
 import View.pieces.Pawn.PawnColor;
 
-import Controller.Controller;
+import Controller.HumanInputHandler;
+
 import static Controller.Controller.TILE_SIZE;
 import static Controller.Controller.BOARD_DIMENSION;
 
@@ -12,83 +13,101 @@ import javafx.application.Application;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.Image;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 
 import java.util.Scanner;
 
-public class Game extends Application {
+
+
+
+public class Game extends Application{
     public static final int BOARD_SIZE = TILE_SIZE * BOARD_DIMENSION;
-    private Controller controller; // Access to controller class
+    public static int startingPlayer;
     private final Group tileGroup = new Group();
     private final Group pawnGroup = new Group();
     private final Group horizontalWallGroup = new Group();
     private final Group verticalWallGroup = new Group();
-    private Label currentTurnLabel;
-    private Label wallLabel;
-    private Pane root;
-    private Pawn pawnList[];
+    private InfoPane infoPane;
+    private Pawn[] pawnList;
+    private HumanInputHandler humanInputHandler;
 
 
     public void start(Stage primaryStage) {
 //        Scanner scanner = new Scanner(System.in);
-//        System.out.println("0 for HUMAN VS AI      1 for AI VS AI");
-//        int gameType = scanner.nextInt();
-        controller = new Controller(this);
+//        System.out.println("Pick who's starting \n0 - Human\t1 - AI");
+//        startingPlayer = scanner.nextInt();
+        startingPlayer = 0;
+
+        humanInputHandler = new HumanInputHandler(this, startingPlayer);
         initPawns();
 
-        currentTurnLabel = new Label();
-        wallLabel = new Label();
-        root = createBoard();
+        Pane root = createBoard();
         Scene scene = new Scene(root);
         primaryStage.getIcons().add(new Image("zres/icon.png"));
         primaryStage.setTitle("Quoridor");
         primaryStage.setScene(scene);
+        primaryStage.setResizable(false);
         primaryStage.show();
+
+        if(startingPlayer == PawnType.AI.ordinal())
+            humanInputHandler.onHumanMoveCompleted();
     }
+
 
     /**
      * Initializes the pawn's location and calls for a method to create the pawn.
      * Calls the setupPawns method.
      */
     public void initPawns() {
-        int currentType = 0;
+        int currentPlayer = startingPlayer;
         int[] xPixel = new int[]{BOARD_SIZE/2-TILE_SIZE/2, BOARD_SIZE/2-TILE_SIZE/2};
         int[] yPixel = new int[]{0, BOARD_SIZE-TILE_SIZE};
         pawnList = new Pawn[xPixel.length];
-        PawnType[] pawnTypes = PawnType.values();
-        for(PawnType pawnType : pawnTypes) {
-            PawnColor color = (pawnType == PawnType.AI) ? PawnColor.RED : PawnColor.BLUE;
-            Pawn pawn = new Pawn(pawnType, color, xPixel[currentType], yPixel[currentType]);
-            controller.addPlayer(pawnType.name(), color.name(), currentType);
+        for(int i = 0; i < pawnList.length; i++) {
+            PawnType pawnType = Pawn.intToType(currentPlayer);
+            PawnColor pawnColor = Pawn.intToColor(currentPlayer);
+            Pawn pawn = new Pawn(pawnType, pawnColor, xPixel[currentPlayer], yPixel[currentPlayer]);
+            humanInputHandler.addPlayer(pawnType.name(), pawnColor.name(), currentPlayer);
             pawnGroup.getChildren().add(pawn);
-            pawnList[pawnType.ordinal()] = pawn;
-            currentType++;
-            if(pawn.getType() == PawnType.HUMAN)
+            pawnList[currentPlayer] = pawn;
+            if(pawn.getType() == PawnType.HUMAN) {
                 pawnMouseEvents(pawn);
+            }
+            currentPlayer = (currentPlayer + 1) % 2;
         }
+        humanInputHandler.addOpponent(PawnType.AI.ordinal());
+//        for(PawnType pawnType : pawnTypes) {
+//            PawnColor color = (pawnType == PawnType.AI) ? PawnColor.RED : PawnColor.BLUE;
+//            Pawn pawn = new Pawn(pawnType, color, xPixel[currentPlayer], yPixel[currentPlayer]);
+//            pawnGroup.getChildren().add(pawn);
+//            pawnList[pawnType.ordinal()] = pawn;
+//            humanInputHandler.addPlayer(pawnType.name(), color.name(), currentPlayer);
+//            currentPlayer = (currentPlayer + 1) % 2;
+//            if(pawn.getType() == PawnType.HUMAN) {
+//                pawnMouseEvents(pawn);
+//            }
+//        }
     }
     public void pawnMouseEvents(Pawn pawn) {
-        pawn.setOnMousePressed(event -> controller.handlePawnMovement(event, pawn));
-        pawn.setOnMouseDragged(event -> controller.handlePawnMovement(event, pawn));
-        pawn.setOnMouseReleased(event -> controller.handlePawnMovement(event, pawn));
+        pawn.setOnMousePressed(event -> humanInputHandler.handlePawnMovement(event, pawn));
+        pawn.setOnMouseDragged(event -> humanInputHandler.handlePawnMovement(event, pawn));
+        pawn.setOnMouseReleased(event -> humanInputHandler.handlePawnMovement(event, pawn));
     }
     public void horizontalWallMouseEvents(HorizontalWall wall) {
 //        System.out.print(wall.toAlgebraic() + " ");
-        wall.setOnMouseEntered(event -> controller.handleHorizontalWallMovement(event, wall));
-        wall.setOnMousePressed(event -> controller.handleHorizontalWallMovement(event, wall));
-        wall.setOnMouseExited(event -> controller.handleHorizontalWallMovement(event, wall));
+        wall.setOnMouseEntered(event -> humanInputHandler.handleHorizontalWallMovement(event, wall));
+        wall.setOnMousePressed(event -> humanInputHandler.handleHorizontalWallMovement(event, wall));
+        wall.setOnMouseExited(event -> humanInputHandler.handleHorizontalWallMovement(event, wall));
     }
     public void verticalWallMouseEvents(VerticalWall wall) {
-//        System.out.print(wall.toAlgebraic() + " ");
-        wall.setOnMouseEntered(event -> controller.handleVerticalWallMovement(event, wall));
-        wall.setOnMousePressed(event -> controller.handleVerticalWallMovement(event, wall));
-        wall.setOnMouseExited(event -> controller.handleVerticalWallMovement(event, wall));
+        wall.setOnMouseEntered(event -> humanInputHandler.handleVerticalWallMovement(event, wall));
+        wall.setOnMousePressed(event -> humanInputHandler.handleVerticalWallMovement(event, wall));
+        wall.setOnMouseExited(event -> humanInputHandler.handleVerticalWallMovement(event, wall));
     }
     private Pane createBoard() {
         Pane root = new Pane();
@@ -114,32 +133,35 @@ public class Game extends Application {
                 horizontalWallMouseEvents(wall);
             }
         }
-        root.getChildren().addAll(tileGroup, pawnGroup, horizontalWallGroup, verticalWallGroup, generateInfoPanel());
+        infoPane = generateInfoPanel();
+        root.getChildren().addAll(tileGroup, pawnGroup, horizontalWallGroup, verticalWallGroup, infoPane);
         return root;
     }
 
-    public Pane generateInfoPanel() {
-        Pane panel = new Pane();
-        currentTurnLabel.setText(controller.getCurrentPlayerName() + "'s turn");
-        currentTurnLabel.setTextFill(Color.valueOf(controller.getCurrentPlayerColor()));
-        currentTurnLabel.setFont(Font.font("Verdana", FontWeight.BOLD, 12));
-        wallLabel.setText("Walls left: " + controller.getCurrentPlayerWalls());
-        wallLabel.setTextFill(Color.valueOf(controller.getCurrentPlayerColor()));
-        currentTurnLabel.setTranslateY(10);
-        wallLabel.setTranslateY(20);
+    public InfoPane generateInfoPanel() {
+        InfoPane panel = new InfoPane();
+        for(Pawn pawn : pawnList) {
+            int id = pawn.getType().ordinal();
+            panel.addInfo(humanInputHandler.getPlayerName(id),
+                    humanInputHandler.getPlayerWallsLeft(id),
+                    humanInputHandler.getPlayerColor(id));
+        }
         panel.setTranslateX(BOARD_DIMENSION*TILE_SIZE +10);
-        panel.getChildren().addAll(currentTurnLabel, wallLabel);
         return panel;
     }
-    public void updateInfoPanel() {
-        currentTurnLabel.setText(controller.getCurrentPlayerName() + "'s turn");
-        currentTurnLabel.setTextFill(Color.valueOf(controller.getCurrentPlayerColor()));
-        wallLabel.setText("Walls left: " + controller.getCurrentPlayerWalls());
-        wallLabel.setTextFill(Color.valueOf(controller.getCurrentPlayerColor()));
+    public void updateInfoPanel(int playerTurn) {
+        for(Pawn pawn : pawnList) {
+            int pawnId = pawn.getType().ordinal();
+            if(pawnId == playerTurn) { // each infoText corresponds to a pawn in pawnList
+                infoPane.updateInfo(pawnId, humanInputHandler.getPlayerName(playerTurn),
+                        humanInputHandler.getPlayerWallsLeft(playerTurn),
+                        humanInputHandler.getPlayerColor(playerTurn));
+                break;
+            }
+        }
     }
 
-
-    public VerticalWall findVwall(int row, int col) {
+    public VerticalWall findVerticalWallObject(int row, int col) {
         for(Node node : verticalWallGroup.getChildren()) {
             VerticalWall wall = (VerticalWall) node;
             if (wall.getCol() == col && wall.getRow() == row) {
@@ -148,7 +170,7 @@ public class Game extends Application {
         }
         return null;
     }
-    public HorizontalWall findHwall(int row, int col) {
+    public HorizontalWall findHorizontalWallObject(int row, int col) {
         for(Node node : horizontalWallGroup.getChildren()) {
             HorizontalWall wall = (HorizontalWall) node;
             if (wall.getCol() == col && wall.getRow() == row) {
@@ -158,34 +180,54 @@ public class Game extends Application {
         return null;
     }
 
-    public void updatePawn(int id, double xPixel, double yPixel) {
+    public void updatePawnLocation(int id, double xPixel, double yPixel) {
         Pawn pawn = pawnList[id];
         if(xPixel != -1 && yPixel != -1) {
             pawn.move(xPixel, yPixel);
-            updateInfoPanel();
+            updateInfoPanel(id);
         }
         else {
             pawn.reverse();
         }
     }
-    public void updateVertWall(VerticalWall wall1, VerticalWall wall2) {
-//        System.out.println("updated walls: " + wall1.toAlgebraic() + " " + wall2.toAlgebraic());
+
+    public void decideWinner(int winnerID) {
+        Alert alert = new Alert(AlertType.INFORMATION);
+
+        alert.setTitle("GAME OVER!");
+        alert.setHeaderText("WINNER");
+        alert.setContentText(pawnList[winnerID].toString());
+        alert.showAndWait();
+    }
+    public void fillVerticalWall(VerticalWall wall1, VerticalWall wall2, boolean isPressed) {
         wall1.setFill(Color.BLACK);
         wall2.setFill(Color.BLACK);
-        wall1.setPressCommit(true);
-        wall2.setPressCommit(true);
-        updateInfoPanel();
+        if(isPressed) {
+            wall1.setPressCommit(true);
+            wall2.setPressCommit(true);
+        }
     }
-    public void updateHorzWall(HorizontalWall wall1, HorizontalWall wall2) {
-//        System.out.println("updated walls: " + wall1.toAlgebraic() + " " + wall2.toAlgebraic());
+    public void removeFillVerticalWall(VerticalWall wall1, VerticalWall wall2) {
+        wall1.setFill(Color.SILVER);
+        wall2.setFill(Color.SILVER);
+    }
+    public void fillHorizontalWall(HorizontalWall wall1, HorizontalWall wall2, boolean isPressed) {
         wall1.setFill(Color.BLACK);
         wall2.setFill(Color.BLACK);
-        wall1.setPressCommit(true);
-        wall2.setPressCommit(true);
-        updateInfoPanel();
+        if(isPressed) {
+            wall1.setPressCommit(true);
+            wall2.setPressCommit(true);
+        }
     }
+    public void removeFillVerticalWall(HorizontalWall wall1, HorizontalWall wall2) {
+        wall1.setFill(Color.SILVER);
+        wall2.setFill(Color.SILVER);
+    }
+
     public static void main(String[] args) {
         launch(args);
     }
+
+
 }
 

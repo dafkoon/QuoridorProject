@@ -4,6 +4,7 @@ package Model.Gamestate;
  * Represents a player in the game.
  */
 public class Player {
+    private static final int MAX_WALLS = 10;
     private String playerName;
     private String playerColor;
     private int destRow;
@@ -15,7 +16,7 @@ public class Player {
         this.playerColor = color;
         this.pos = pos;
         this.destRow = destRow;
-        this.walls = 10; // Default number of walls.
+        this.walls = MAX_WALLS;
     }
 
     /**
@@ -29,7 +30,7 @@ public class Player {
      * Gets the Color of the player (BLUE / RED).
      * @return A string of the player color.
      */
-    public String getPlayerColor() { return playerColor; }
+    public String getColor() { return playerColor; }
 
     /**
      * Gets the amount of walls a player has left.
@@ -57,7 +58,7 @@ public class Player {
     }
 
     public void incWalls() {
-        if(walls < 10)
+        if(walls < MAX_WALLS)
             walls++;
     }
 
