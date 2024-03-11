@@ -1,8 +1,7 @@
 package Model.Gamestate;
 
-import Controller.Utility;
+import Controller.ShortestPath;
 
-import java.sql.SQLOutput;
 import java.util.*;
 
 public class Board {
@@ -120,9 +119,9 @@ public class Board {
         }
     }
     public boolean hasPathToGoal(Player player0, Player player1) {
-        return !(Utility.shortestPathToRow(graph, player0.getPos(), player0.getDestRow()).isEmpty() || Utility.shortestPathToRow(graph, player1.getPos(), player1.getDestRow()).isEmpty());
+        return !(ShortestPath.shortestPathToRow(graph, player0.getPos(), player0.getDestRow()).isEmpty() || ShortestPath.shortestPathToRow(graph, player1.getPos(), player1.getDestRow()).isEmpty());
     }
-    public void placeWall(Wall wall) {
+    public void addWall(Wall wall) {
         if(wall.getOrientation() == Wall.Orientation.HORIZONTAL) {
             removeEdge(wall.startingSq, wall.startingSq.neighbor(1, 0));
             removeEdge(wall.startingSq.neighbor(0, 1), wall.startingSq.neighbor(1, 1)); //
@@ -154,8 +153,8 @@ public class Board {
         else if (graph[currentPlayerSquareIndex].contains(dest)) { // If the player's square is connected to dest.
             return true;
         }
-        else if(graph[currentPlayerSquareIndex].contains(otherPlayerPos)) { // If players are adjacent.
-            if(graph[currentPlayerSquareIndex].contains(currentPlayerPos.opposite(otherPlayerPos))) {
+        else if(graph[currentPlayerSquareIndex].contains(otherPlayerPos)) { // If square of current is directly connected to square of other.
+            if(graph[currentPlayerSquareIndex].contains(currentPlayerPos.opposite(otherPlayerPos))) { // If Square of current contains
                 return graph[otherPlayerSquareIndex].contains(dest) && otherPlayerPos.isCardinalTo(dest);
             }
             else {

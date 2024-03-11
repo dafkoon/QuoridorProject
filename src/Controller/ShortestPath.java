@@ -1,12 +1,16 @@
 package Controller;
 
 import Model.Gamestate.Square;
+import View.pieces.HorizontalWall;
+import View.pieces.VerticalWall;
 
 import java.util.*;
 
-import static Model.Gamestate.GameState.BOARD_DIMENSION;
+public class ShortestPath {
+    public static final int TILE_SIZE = 50;
+    public static final int BOARD_DIMENSION = 9;
+    public static final int BOARD_SIZE = TILE_SIZE*BOARD_DIMENSION;
 
-public class Utility {
     public static ArrayList<Square> shortestPathToRow(List<Square>[] currentGraph, Square srcSq, int destRow) {
         ArrayList<Square> path = new ArrayList<>();
         if(currentGraph == null)
@@ -36,7 +40,6 @@ public class Utility {
         }
         return path;
     }
-
     public static ArrayList<Square> shortestPathToPlayer(List<Square>[] currentGraph, Square src, Square dest) {
         ArrayList<Square> path = new ArrayList<>();
         Queue<Square> queue = new LinkedList<>();

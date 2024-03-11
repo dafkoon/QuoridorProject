@@ -20,6 +20,13 @@ public class Pawn extends StackPane{
     public double mouseX, mouseY;
     private double oldX, oldY;
 
+    @Override
+    public String toString() {
+        return "Pawn{" + type.name() +
+                " " + color.name() +
+                '}';
+    }
+
     public PawnColor getColor() { return color;}
     public PawnType getType() {
         return type;
@@ -70,6 +77,24 @@ public class Pawn extends StackPane{
         oldX = xPixel;
         oldY = yPixel;
         relocate(xPixel, yPixel);
+    }
+
+    public static PawnColor intToColor(int num) {
+        PawnColor[] colors = PawnColor.values();
+        PawnColor enumVal = PawnColor.BLUE;
+        if(num >= 0 && num < PawnColor.values().length) {
+            enumVal = colors[num];
+        }
+        return enumVal;
+    }
+
+    public static PawnType intToType(int num) {
+        PawnType[] types = PawnType.values();
+        PawnType enumVal = PawnType.HUMAN;
+        if(num >= 0 && num < PawnType.values().length) {
+            enumVal = types[num];
+        }
+        return enumVal;
     }
 
     public enum PawnType {
