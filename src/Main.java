@@ -1,55 +1,59 @@
-import java.util.HashMap;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Scanner;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;  // Import the Scanner class
+
+
+// Step 1: Define Observable (Subject)
+class Model {
+    private List<Observer> observers = new ArrayList<>();
+    private int data;
+
+    public void addObserver(Observer observer) {
+        observers.add(observer);
+    }
+
+    public void removeObserver(Observer observer) {
+        observers.remove(observer);
+    }
+
+    public void setData(int newData) {
+        this.data = newData;
+        notifyObservers();
+    }
+
+    private void notifyObservers() {
+        for (Observer observer : observers) {
+            observer.update(data);
+        }
+    }
+}
+
+// Step 2: Define Observer Interface
+interface Observer {
+    void update(int data);
+}
+
+// Step 3: Implement Observable (Subject)
+// Step 4: Implement Observer(s)
+class View implements Observer {
+    @Override
+    public void update(int data) {
+        System.out.println("View updated with new data: " + data);
+    }
+}
 
 public class Main {
+    public static void main(String[] args) {
+        Model model = new Model();
+        View view = new View();
 
-    static Scanner myObj = new Scanner(System.in);
-    static HashMap<String, Method> automate;
+        // Register the view as an observer
+        model.addObserver(view);
+        Scanner myObj = new Scanner(System.in);  // Create a Scanner object
+        System.out.println("Enter number:");
 
-    public static void main(String args[]) {
-        automate = new HashMap<String, Method>();
-        try {
-            automate.put("start", Main.class.getMethod("fun1",String.class));
-            automate.put("move", Main.class.getMethod("fun2",String.class));
-            automate.put("check", Main.class.getMethod("fun3",String.class));
-            automate.put("end", Main.class.getMethod("fun4",String.class));
-        }
-        catch (NoSuchMethodException | SecurityException e1) {}
-        Game();
+        int data = myObj.nextInt();  // Read user input
+        // Change data in the model
+        model.setData(data); // This should trigger an update in the view
     }
-
-    private static void Game()
-    {
-        String operation = myObj.nextLine();
-        while ( !operation.equals("quit") )
-            try {
-                automate.get(operation).invoke(new Main(), operation);
-            }
-            catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {}
-
-    }
-
-
-    public static void fun4(String n)
-    {
-        System.out.println(n);
-    }
-
-    public static  void fun3(String n)
-    {
-        System.out.println(n);
-    }
-
-    public static void fun2(String n)
-    {
-        System.out.println(n);
-    }
-
-    public static void fun1(String n)
-    {
-        System.out.println(n);
-    }
-
 }

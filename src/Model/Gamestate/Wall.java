@@ -33,7 +33,6 @@ public class Wall {
      * @param s string constructor
      */
     public Wall(String s) {
-        // TODO Should probably have preconditions to check the string is valid though that may be the job of isValidMove
         if (s.length() > 2) {
             this.startingSq = new Square (s.substring(0, 2));
             this.orientation = s.charAt(2) == 'h' ? Orientation.HORIZONTAL : Orientation.VERTICAL;
@@ -63,6 +62,7 @@ public class Wall {
 
     @Override
     public String toString() {
+//        System.out.println(startingSq + orientation.name().toLowerCase());
         return startingSq.toString() + orientation.name().toLowerCase().charAt(0);
     }
 

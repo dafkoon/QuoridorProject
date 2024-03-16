@@ -1,7 +1,7 @@
 package View.pieces;
 
-import static Controller.Controller.BOARD_DIMENSION;
-import static Controller.Controller.TILE_SIZE;
+import static Controller.HumanInputHandler.TILE_SIZE;
+import static Controller.HumanInputHandler.BOARD_DIMENSION;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
@@ -15,14 +15,12 @@ public class HorizontalWall extends Rectangle {
     public HorizontalWall(int row, int col) {
         this.row = row;
         this.col = col;
-        setWidth(((double) TILE_SIZE / 5) + 40);
+        setWidth(TILE_SIZE);
         setHeight((double) TILE_SIZE / 10);
-//        relocate(col * TILE_SIZE, row * TILE_SIZE);
-        relocate(col * TILE_SIZE, (BOARD_DIMENSION-(row+1)) * TILE_SIZE);
-//        System.out.print((col*TILE_SIZE) + "," + (row * TILE_SIZE) + " ");
+        relocate((col-1) * TILE_SIZE, (BOARD_DIMENSION-row) * TILE_SIZE);
 
         setFill(Color.SILVER);
-        setStrokeWidth(0.1);
+        setStrokeWidth(1);
     }
 
     public int getCol() {
@@ -39,8 +37,8 @@ public class HorizontalWall extends Rectangle {
     }
     public String toAlgebraic() {
 //        char row = (char) ('1' + BOARD_DIMENSION-(this.row+1));
-        char row = (char) ('1' + this.row);
-        char col = (char) ('a' + this.col);
+        char row = (char) ('0' + this.row);
+        char col = (char) ('`' + this.col);
         return ""+col+row;
     }
 

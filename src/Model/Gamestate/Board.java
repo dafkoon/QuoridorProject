@@ -49,12 +49,16 @@ public class Board {
         }
     }
     public boolean isValidWallPlacement(Wall wall, Player player0, Player player1) {
+
         if(wall.getOrientation() == Wall.Orientation.HORIZONTAL) { // Check Horizontal wall not intersecting others.
-//            System.out.println(wall + ": \n"
-//                    + wall.neighbor(1, 0, Wall.Orientation.VERTICAL) +
-//                    " " + wall.neighbor(0, -1, Wall.Orientation.HORIZONTAL) +
-//                    " " + wall.neighbor(0, 1, Wall.Orientation.HORIZONTAL));
-//            System.out.println();
+//            System.out.println(wall + " " +
+//                    wall.neighbor(1, 0, Wall.Orientation.VERTICAL) + " " +
+//                    wall.neighbor(0, -1, Wall.Orientation.HORIZONTAL) + " " +
+//                    wall.neighbor(0, 1, Wall.Orientation.HORIZONTAL) + "\n\n");
+//            System.out.println(wall + " " +
+//                    walls.contains(wall.neighbor(1, 0, Wall.Orientation.VERTICAL)) + " " +
+//                    walls.contains(wall.neighbor(0, -1, Wall.Orientation.HORIZONTAL) )+ " " +
+//                    walls.contains(wall.neighbor(0, 1, Wall.Orientation.HORIZONTAL)) + "\n\n");
             if (walls.contains(wall) ||
                     walls.contains(wall.neighbor(1, 0, Wall.Orientation.VERTICAL)) || // Through it
                     walls.contains(wall.neighbor(0, -1, Wall.Orientation.HORIZONTAL)) || //
@@ -62,13 +66,7 @@ public class Board {
                 return false;
             }
         }
-        else { // Check Vertical wall not intersecting others.
-//            System.out.println(wall + ": \n"
-//                    + wall.neighbor(-1, 0, Wall.Orientation.HORIZONTAL) +
-//                    " " + wall.neighbor(-1, 0, Wall.Orientation.VERTICAL) +
-//                    " " + wall.neighbor(1, 0, Wall.Orientation.VERTICAL));
-//            System.out.println();
-
+        else {
             if (walls.contains(wall) ||
                     walls.contains(wall.neighbor(-1, 0, Wall.Orientation.HORIZONTAL)) ||
                     walls.contains(wall.neighbor(-1, 0, Wall.Orientation.VERTICAL)) ||
@@ -77,16 +75,10 @@ public class Board {
             }
         }
         if(wall.getOrientation() == Wall.Orientation.HORIZONTAL) {
-
-//            System.out.print("\n\n\n\n" + wall.startingSq + " " + wall.startingSq.neighbor(1, 0) + " ");
-//            System.out.print(wall.startingSq.neighbor(0, 1) + " " + wall.startingSq.neighbor(1, 1));
-
             removeEdge(wall.startingSq, wall.startingSq.neighbor(1, 0));
             removeEdge(wall.startingSq.neighbor(0, 1), wall.startingSq.neighbor(1, 1)); //
         }
         else {
-//            System.out.print("\n\n\n\n" + wall.startingSq + " " + wall.startingSq.neighbor(0, 1) + " ");
-//            System.out.print(wall.startingSq.neighbor(-1, 0) + " " + wall.startingSq.neighbor(-1, 1));
 
             removeEdge(wall.startingSq, wall.startingSq.neighbor(0, 1)); // remove connecting between startingSq and the wall to the left of it
             removeEdge(wall.startingSq.neighbor(-1, 0), wall.startingSq.neighbor(-1, 1)); // remove the connection between squares on the next rank.
@@ -119,6 +111,7 @@ public class Board {
         }
     }
     public boolean hasPathToGoal(Player player0, Player player1) {
+//        System.out.println(!(ShortestPath.shortestPathToRow(graph, player0.getPos(), player0.getDestRow()).isEmpty() || ShortestPath.shortestPathToRow(graph, player1.getPos(), player1.getDestRow()).isEmpty()));
         return !(ShortestPath.shortestPathToRow(graph, player0.getPos(), player0.getDestRow()).isEmpty() || ShortestPath.shortestPathToRow(graph, player1.getPos(), player1.getDestRow()).isEmpty());
     }
     public void addWall(Wall wall) {

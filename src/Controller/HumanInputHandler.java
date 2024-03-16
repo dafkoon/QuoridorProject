@@ -10,8 +10,6 @@ import View.pieces.VerticalWall;
 import javafx.scene.input.MouseEvent;
 import View.Game;
 
-import java.sql.SQLOutput;
-
 public class HumanInputHandler {
     public static final int TILE_SIZE = 50;
     public static final int BOARD_DIMENSION = 9;
@@ -99,6 +97,9 @@ public class HumanInputHandler {
         pawn.mouseX = event.getSceneX();
         pawn.mouseY = event.getSceneY();
     }
+
+
+
     public void pawnMouseDragged(MouseEvent event, Pawn pawn) {
         if(pawn.getType() == Pawn.PawnType.HUMAN) {
             // e.getSceneX()-mouseX continually calculates horizontal distance mouse has moved since last update.
@@ -120,8 +121,8 @@ public class HumanInputHandler {
     public void verticalWallEntered(MouseEvent event, VerticalWall wall) {
         int row = wall.getRow();
         int col = wall.getCol();
-        if(wall.getRow() > 0) {
-            if(!validator.doesWallExist(wall.toAlgebraic(), false)) { //BOARD_DIMENSION - (row + 1), col
+        if(row > 1) {
+            if(validator.isWallLegal(wall.toAlgebraic(), false)) { //BOARD_DIMENSION - (row + 1), col
                 VerticalWall secondWall = view.findVerticalWallObject(row - 1, col);
                 view.fillVerticalWall(wall, secondWall, false);
             }
@@ -130,8 +131,8 @@ public class HumanInputHandler {
     public void verticalWallExited(MouseEvent event, VerticalWall wall) {
         int row = wall.getRow();
         int col = wall.getCol();
-        if(row > 0 && !wall.isPressCommit()) {
-            if(!validator.doesWallExist(wall.toAlgebraic(), false)) {
+        if(row > 1 && !wall.isPressCommit()) {
+            if(validator.isWallLegal(wall.toAlgebraic(), false)) {
                 VerticalWall secondWall = view.findVerticalWallObject(row - 1, col);
                 view.removeFillVerticalWall(wall, secondWall);
             }
@@ -140,7 +141,7 @@ public class HumanInputHandler {
     public void verticalWallPressed(MouseEvent event, VerticalWall wall) {
         int row = wall.getRow();
         int col = wall.getCol();
-        Wall newWall = new Wall(row, col, 'v');
+        Wall newWall = new Wall(wall.toAlgebraic() + 'v');
         if(validator.wallMoveProcess(newWall)) {
             updateVerticalWall(row, col);
 
@@ -150,8 +151,8 @@ public class HumanInputHandler {
     public void horizontalWallEntered(MouseEvent event, HorizontalWall wall) {
         int row = wall.getRow();
         int col = wall.getCol();
-        if(col < BOARD_DIMENSION-1) {
-            if(!validator.doesWallExist(wall.toAlgebraic(), true)) {
+        if(col < BOARD_DIMENSION) {
+            if(validator.isWallLegal(wall.toAlgebraic(), true)) {
                 HorizontalWall secondWall = view.findHorizontalWallObject(row, col+1);
                 view.fillHorizontalWall(wall, secondWall, false);
             }
@@ -161,8 +162,8 @@ public class HumanInputHandler {
     public void horizontalWallExited(MouseEvent event, HorizontalWall wall) {
         int row = wall.getRow();
         int col = wall.getCol();
-        if(col < BOARD_DIMENSION-1 && !wall.isPressCommit()) {
-            if(!validator.doesWallExist(wall.toAlgebraic(), true)) {
+        if(col < BOARD_DIMENSION && !wall.isPressCommit()) {
+            if(validator.isWallLegal(wall.toAlgebraic(), true)) {
                 HorizontalWall secondWall = view.findHorizontalWallObject(row, col+1);
                 view.removeFillVerticalWall(wall, secondWall);
             }
@@ -171,7 +172,7 @@ public class HumanInputHandler {
     public void horizontalWallPressed(MouseEvent event, HorizontalWall wall) {
         int row = wall.getRow();
         int col = wall.getCol();
-        Wall newWall = new Wall(row, col, 'h');
+        Wall newWall = new Wall(wall.toAlgebraic() + 'h');
         if(validator.wallMoveProcess(newWall)) {
             updateHorizontalWall(row, col);
         }

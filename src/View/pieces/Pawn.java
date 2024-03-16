@@ -1,4 +1,5 @@
 package View.pieces;
+import javafx.scene.image.Image;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -6,8 +7,8 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 
-import static Controller.Controller.TILE_SIZE;
-import static View.Game.BOARD_SIZE;
+import static Controller.HumanInputHandler.TILE_SIZE;
+import static Controller.HumanInputHandler.BOARD_SIZE;
 
 
 /**
@@ -54,6 +55,9 @@ public class Pawn extends StackPane{
      * Allows moving the pawn across the board and when released positions them in the center of Square.
      */
     public void addPawn() {
+//        Image pawnImage = new Image("quoridor/zres/pawn_image.png");
+
+
         Circle ellipse = new Circle(TILE_SIZE * 0.3125);
         ellipse.setFill(Color.web(color.name()));
         ellipse.setStroke(Color.BLACK);
@@ -62,11 +66,11 @@ public class Pawn extends StackPane{
         ellipse.setTranslateY((TILE_SIZE - TILE_SIZE * 0.3125 * 2) / 2);
 
         Text text = new Text(type.name());
-        text.setTranslateX(8);
-        text.setTranslateY(-10);
-        text.setFont(Font.font("Verdana", FontWeight.BOLD, 10));
-        getChildren().add(text);
-        getChildren().addAll(ellipse);
+        text.setTranslateX((TILE_SIZE - TILE_SIZE * 0.3125 * 2) / 2);
+        text.setTranslateY((TILE_SIZE - TILE_SIZE * 0.3125 * 2) / 2);
+        text.setFont(Font.font("Verdana", FontWeight.BOLD, 8));
+        text.setFill(Color.BEIGE);
+        getChildren().addAll(ellipse, text);
     }
 
     public void reverse() {
@@ -81,7 +85,7 @@ public class Pawn extends StackPane{
 
     public static PawnColor intToColor(int num) {
         PawnColor[] colors = PawnColor.values();
-        PawnColor enumVal = PawnColor.BLUE;
+        PawnColor enumVal = null;
         if(num >= 0 && num < PawnColor.values().length) {
             enumVal = colors[num];
         }

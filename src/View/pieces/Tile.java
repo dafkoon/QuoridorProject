@@ -4,32 +4,27 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
-import static Controller.Controller.BOARD_DIMENSION;
-import static Controller.Controller.TILE_SIZE;
+import static Controller.HumanInputHandler.TILE_SIZE;
+import static Controller.HumanInputHandler.BOARD_DIMENSION;
+
 public class Tile extends StackPane {
-    private int col;
-    private int row;
-    private Rectangle rectangle;
-    private Label notationLabel;
+    private final int col;
+    private final int row;
 
     public Tile(int col, int row) {
         this.col = col;
         this.row = row;
-        rectangle = new Rectangle(TILE_SIZE, TILE_SIZE);
+        Rectangle rectangle = new Rectangle(TILE_SIZE, TILE_SIZE);
         rectangle.setFill(Color.BURLYWOOD);
         rectangle.setStroke(Color.BLACK);
         rectangle.setStrokeWidth(1.0);
-        notationLabel = new Label(notation());
+        Label notationLabel = new Label(toString());
         getChildren().addAll(rectangle, notationLabel);
-        relocate(col * TILE_SIZE, (BOARD_DIMENSION-(row+1)) * TILE_SIZE);
-
-
+        relocate((col-1) * TILE_SIZE, (BOARD_DIMENSION-row) * TILE_SIZE);
     }
-
-
-    public String notation() {
-        char row = (char) ('1' + this.row);
-        char col = (char) ('a' + this.col);
+    public String toString() {
+        char row = (char) ('0' + this.row);
+        char col = (char) ('`' + this.col);
         return ""+col+row;
     }
 }

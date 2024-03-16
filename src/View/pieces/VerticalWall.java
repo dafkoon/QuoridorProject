@@ -2,7 +2,8 @@ package View.pieces;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
-import static Controller.Controller.*;
+import static Controller.HumanInputHandler.TILE_SIZE;
+import static Controller.HumanInputHandler.BOARD_DIMENSION;
 
 public class VerticalWall extends Rectangle{
     private int row;
@@ -12,11 +13,11 @@ public class VerticalWall extends Rectangle{
         this.col = col;
         this.row = row;
         setWidth(((double) TILE_SIZE / 10));
-        setHeight(((double) TILE_SIZE / 5) + 40);
+        setHeight(TILE_SIZE);
         setFill(Color.SILVER);
-        setStrokeWidth(0.1);
-        relocate(col * TILE_SIZE, (BOARD_DIMENSION-(row+1)) * TILE_SIZE);
-        setTranslateX(46);
+        setStrokeWidth(1);
+        relocate(col * TILE_SIZE, (BOARD_DIMENSION-row) * TILE_SIZE);
+//        setTranslateX(46);
     }
 
     public int getCol() {
@@ -34,8 +35,8 @@ public class VerticalWall extends Rectangle{
 
     public String toAlgebraic() {
 //        char row = (char) ('1' + BOARD_DIMENSION-(this.row+1));
-        char row = (char) ('1' + this.row);
-        char col = (char) ('a' + this.col);
+        char row = (char) ('0' + this.row);
+        char col = (char) ('`' + this.col);
         return ""+col+row;
     }
 

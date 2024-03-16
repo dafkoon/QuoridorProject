@@ -23,12 +23,6 @@ public class Validator {
         turn = startingPlayer;
     }
 
-//    public static Validator getInstance() {
-//        if(instance == null)
-//            instance = new Validator();
-//        return instance;
-//    }
-
 
     public void addPlayer(String name, String color, Square pos, int destRow, int id){
         Player player = new Player(name, color, pos, destRow);
@@ -36,11 +30,13 @@ public class Validator {
     }
 
 
-    public boolean doesWallExist(String squareLocation, boolean isHorizontal) {
+    public boolean isWallLegal(String squareLocation, boolean isHorizontal) {
         char orientation = isHorizontal ? 'h' : 'v';
         Square sq = new Square(squareLocation);
         Wall wall = new Wall(sq, orientation);
-        return !isValidWallPlacement(wall);
+        if(players[getTurn()].getWallsLeft() <= 0)
+            return false;
+        return board.isValidWallPlacement(wall, players[0], players[1]);
     }
 
     public boolean wallMoveProcess(Wall wall) {
@@ -48,22 +44,21 @@ public class Validator {
         int row = wall.getStartingSq().getRow();
         int col = wall.getStartingSq().getCol();
         if(isHorizontal) {
-            if(col == BOARD_DIMENSION-1 || players[getTurn()].getWallsLeft() == 0)
+            if(col == BOARD_DIMENSION-1 || players[getTurn()].getWallsLeft() == 0) {
                 return false;
-            else if(doesWallExist(wall.toString(), true)) {
+            } else if(!isWallLegal(wall.toString(), true)) {
                 System.out.println("There is already a wall here.");
                 return false;
-            }
-            else return makeMove(wall.toString());
+            } else return makeMove(wall.toString());
         }
         else {
-            if(row == 0 || players[getTurn()].getWallsLeft() == 0)
+            System.out.println(row);
+            if(row == 0 || players[getTurn()].getWallsLeft() == 0) {
                 return false;
-            else if(doesWallExist(wall.toString(), false)) {
+            } else if(!isWallLegal(wall.toString(), false)) {
                 System.out.println("There is already a wall here");
                 return false;
-            }
-            else return makeMove(wall.toString());
+            } else return makeMove(wall.toString());
         }
     }
 

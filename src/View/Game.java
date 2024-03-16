@@ -6,8 +6,9 @@ import View.pieces.Pawn.PawnColor;
 
 import Controller.HumanInputHandler;
 
-import static Controller.Controller.TILE_SIZE;
-import static Controller.Controller.BOARD_DIMENSION;
+import static Controller.HumanInputHandler.TILE_SIZE;
+import static Controller.HumanInputHandler.BOARD_DIMENSION;
+import static Controller.HumanInputHandler.BOARD_SIZE;
 
 import javafx.application.Application;
 import javafx.scene.Group;
@@ -20,13 +21,8 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
-import java.util.Scanner;
-
-
-
 
 public class Game extends Application{
-    public static final int BOARD_SIZE = TILE_SIZE * BOARD_DIMENSION;
     public static int startingPlayer;
     private final Group tileGroup = new Group();
     private final Group pawnGroup = new Group();
@@ -35,6 +31,7 @@ public class Game extends Application{
     private InfoPane infoPane;
     private Pawn[] pawnList;
     private HumanInputHandler humanInputHandler;
+    private Pane root;
 
 
     public void start(Stage primaryStage) {
@@ -46,9 +43,9 @@ public class Game extends Application{
         humanInputHandler = new HumanInputHandler(this, startingPlayer);
         initPawns();
 
-        Pane root = createBoard();
+        root = createBoard();
         Scene scene = new Scene(root);
-        primaryStage.getIcons().add(new Image("zres/icon.png"));
+//        primaryStage.getIcons().add(new Image("images/icon.png"));
         primaryStage.setTitle("Quoridor");
         primaryStage.setScene(scene);
         primaryStage.setResizable(false);
@@ -57,7 +54,6 @@ public class Game extends Application{
         if(startingPlayer == PawnType.AI.ordinal())
             humanInputHandler.onHumanMoveCompleted();
     }
-
 
     /**
      * Initializes the pawn's location and calls for a method to create the pawn.
@@ -72,26 +68,15 @@ public class Game extends Application{
             PawnType pawnType = Pawn.intToType(currentPlayer);
             PawnColor pawnColor = Pawn.intToColor(currentPlayer);
             Pawn pawn = new Pawn(pawnType, pawnColor, xPixel[currentPlayer], yPixel[currentPlayer]);
-            humanInputHandler.addPlayer(pawnType.name(), pawnColor.name(), currentPlayer);
-            pawnGroup.getChildren().add(pawn);
-            pawnList[currentPlayer] = pawn;
             if(pawn.getType() == PawnType.HUMAN) {
                 pawnMouseEvents(pawn);
             }
+            humanInputHandler.addPlayer(pawnType.name(), pawnColor.name(), currentPlayer);
+            pawnGroup.getChildren().add(pawn);
+            pawnList[currentPlayer] = pawn;
             currentPlayer = (currentPlayer + 1) % 2;
         }
         humanInputHandler.addOpponent(PawnType.AI.ordinal());
-//        for(PawnType pawnType : pawnTypes) {
-//            PawnColor color = (pawnType == PawnType.AI) ? PawnColor.RED : PawnColor.BLUE;
-//            Pawn pawn = new Pawn(pawnType, color, xPixel[currentPlayer], yPixel[currentPlayer]);
-//            pawnGroup.getChildren().add(pawn);
-//            pawnList[pawnType.ordinal()] = pawn;
-//            humanInputHandler.addPlayer(pawnType.name(), color.name(), currentPlayer);
-//            currentPlayer = (currentPlayer + 1) % 2;
-//            if(pawn.getType() == PawnType.HUMAN) {
-//                pawnMouseEvents(pawn);
-//            }
-//        }
     }
     public void pawnMouseEvents(Pawn pawn) {
         pawn.setOnMousePressed(event -> humanInputHandler.handlePawnMovement(event, pawn));
@@ -99,7 +84,6 @@ public class Game extends Application{
         pawn.setOnMouseReleased(event -> humanInputHandler.handlePawnMovement(event, pawn));
     }
     public void horizontalWallMouseEvents(HorizontalWall wall) {
-//        System.out.print(wall.toAlgebraic() + " ");
         wall.setOnMouseEntered(event -> humanInputHandler.handleHorizontalWallMovement(event, wall));
         wall.setOnMousePressed(event -> humanInputHandler.handleHorizontalWallMovement(event, wall));
         wall.setOnMouseExited(event -> humanInputHandler.handleHorizontalWallMovement(event, wall));
@@ -112,23 +96,23 @@ public class Game extends Application{
     private Pane createBoard() {
         Pane root = new Pane();
         root.setPrefSize((BOARD_DIMENSION * TILE_SIZE) + 120, BOARD_DIMENSION * TILE_SIZE);
-
-        for(int row = 0; row < BOARD_DIMENSION; row++) {
-            for(int col = 0; col < BOARD_DIMENSION; col++) {
+        for(int row = 1; row <= BOARD_DIMENSION; row++) {  // 1-9
+            for(int col = 1; col <= BOARD_DIMENSION; col++) { // a-i
                 Tile tile = new Tile(row, col);
                 tileGroup.getChildren().add(tile);
             }
         }
-        for(int row = 0; row < BOARD_DIMENSION; row++) { // 0-8
-            for(int col = 0; col < BOARD_DIMENSION-1; col++) { // a-i
+        for(int row = 1; row <= BOARD_DIMENSION; row++) { // 1-9
+            for(int col = 1; col < BOARD_DIMENSION; col++) { // a-i
                 VerticalWall wall = new VerticalWall(row, col);
                 verticalWallGroup.getChildren().add(wall);
                 verticalWallMouseEvents(wall);
             }
         }
-        for(int row = 0; row < BOARD_DIMENSION; row++) {
-            for(int col = 0; col < BOARD_DIMENSION-1; col++) {
-                HorizontalWall wall = new HorizontalWall(col, row);
+
+        for(int row = 1; row < BOARD_DIMENSION; row++) {
+            for(int col = 1; col <= BOARD_DIMENSION; col++) {
+                HorizontalWall wall = new HorizontalWall(row, col);
                 horizontalWallGroup.getChildren().add(wall);
                 horizontalWallMouseEvents(wall);
             }
@@ -193,9 +177,11 @@ public class Game extends Application{
 
     public void decideWinner(int winnerID) {
         Alert alert = new Alert(AlertType.INFORMATION);
-
+        if(winnerID == PawnType.HUMAN.ordinal())
+            alert.setHeaderText("WINNER");
+        else
+            alert.setHeaderText("LOSER");
         alert.setTitle("GAME OVER!");
-        alert.setHeaderText("WINNER");
         alert.setContentText(pawnList[winnerID].toString());
         alert.showAndWait();
     }
@@ -210,6 +196,7 @@ public class Game extends Application{
     public void removeFillVerticalWall(VerticalWall wall1, VerticalWall wall2) {
         wall1.setFill(Color.SILVER);
         wall2.setFill(Color.SILVER);
+
     }
     public void fillHorizontalWall(HorizontalWall wall1, HorizontalWall wall2, boolean isPressed) {
         wall1.setFill(Color.BLACK);
