@@ -52,7 +52,6 @@ public class Validator {
             } else return makeMove(wall.toString());
         }
         else {
-            System.out.println(row);
             if(row == 0 || players[getTurn()].getWallsLeft() == 0) {
                 return false;
             } else if(!isWallLegal(wall.toString(), false)) {
@@ -87,9 +86,10 @@ public class Validator {
         board.removeWall(wall);
         players[getTurn()].incWalls();
     }
-    public boolean isValidTraversal(Square dest) {
-        return board.isValidTraversal(dest, getCurrentPlayerPos(), getOtherPlayerPos());
+    public boolean isValidTraversal(Square dest, Square from) {
+        return board.isValidTraversal(dest, from, getOtherPlayerPos());
     }
+
     public void setCurrentPlayerPos(Square sq) {
         players[getTurn()].setPos(sq);
     }
@@ -107,15 +107,18 @@ public class Validator {
             }
         }
         else {
-            Square sq = new Square(move);
-            flag = isValidTraversal(sq);
+            Square dest = new Square(move);
+            Square currentSquare = getCurrentPlayerPos();
+            flag = isValidTraversal(dest, currentSquare);
             if (flag) {
-                setCurrentPlayerPos(sq);
+                setCurrentPlayerPos(dest);
                 turn++;
             }
         }
         return flag;
     }
+
+
 
     //    public int toNumeric()
     public int boardToPixel(int boardIndex) { return boardIndex*TILE_SIZE; }

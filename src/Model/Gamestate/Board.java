@@ -49,7 +49,8 @@ public class Board {
         }
     }
     public boolean isValidWallPlacement(Wall wall, Player player0, Player player1) {
-
+        if(squareToIndex(wall.startingSq) > graph.length)
+            return false;
         if(wall.getOrientation() == Wall.Orientation.HORIZONTAL) { // Check Horizontal wall not intersecting others.
 //            System.out.println(wall + " " +
 //                    wall.neighbor(1, 0, Wall.Orientation.VERTICAL) + " " +
@@ -140,6 +141,8 @@ public class Board {
     public boolean isValidTraversal(Square dest, Square currentPlayerPos, Square otherPlayerPos){
         int currentPlayerSquareIndex = squareToIndex(currentPlayerPos);
         int otherPlayerSquareIndex = squareToIndex(otherPlayerPos);
+        if(currentPlayerSquareIndex > graph.length || otherPlayerSquareIndex > graph.length)
+            return false;
         if(dest.equals(currentPlayerPos) || dest.equals(otherPlayerPos)) { // If dest equals any of the player's positions.
             return false;
         }
@@ -157,32 +160,8 @@ public class Board {
         return false;
     }
 
-
-    public List<Square> shortestPathToRow(Square src, int destRow) {
-        List<Square> path = new LinkedList<Square>();
-        Queue <Square> queue = new LinkedList<Square>();
-        HashMap <Square,Square> parentNode = new HashMap<Square,Square>();
-        queue.add(src);
-        parentNode.put(src, null);
-        while (!queue.isEmpty()) {
-            Square curr = queue.poll();
-            if (curr.getRow() == destRow) {
-                while (!curr.equals(src)) {
-                    path.add(curr);
-                    curr = parentNode.get(curr);
-                }
-                Collections.reverse(path);
-                return path;
-            }
-            int i = squareToIndex(curr);
-            for (Square e: graph[i]) {
-                if (!parentNode.containsKey(e)) {
-                    parentNode.put(e, curr);
-                    queue.add(e);
-                }
-            }
-        }
-        return path;
+    public boolean isValidSquare(Square sq) {
+        return squareToIndex(sq) <= graph.length;
     }
 
     /**
