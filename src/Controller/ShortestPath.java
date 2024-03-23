@@ -13,23 +13,29 @@ public class ShortestPath {
 
     public static ArrayList<Square> shortestPathToRow(List<Square>[] currentGraph, Square srcSq, int destRow) {
         ArrayList<Square> path = new ArrayList<>();
-        if(currentGraph == null)
+        if (currentGraph == null)
             return path;
+
         Queue<Square> queue = new LinkedList<>();
         HashMap<Square, Square> parentNode = new HashMap<>();
         queue.add(srcSq);
         parentNode.put(srcSq, null);
 
+        // Perform BFS search
+        Square destination = bfsSearch(currentGraph, destRow, queue, parentNode);
+
+        // If destination found, construct the path
+        if (destination != null)
+            path = constructPath(srcSq, destination, parentNode);
+        return path;
+    }
+
+    private static Square bfsSearch(List<Square>[] currentGraph, int destRow, Queue<Square> queue, HashMap<Square, Square> parentNode) {
         while (!queue.isEmpty()) {
             Square curr = queue.poll();
-            if (curr.getRow() == destRow) {
-                while (!curr.equals(srcSq)) {
-                    path.add(curr);
-                    curr = parentNode.get(curr);
-                }
-                Collections.reverse(path);
-                return path;
-            }
+            if (curr.getRow() == destRow)
+                return curr;
+
             int i = squareToIndex(curr);
             for (Square e : currentGraph[i]) {
                 if (!parentNode.containsKey(e)) {
@@ -38,54 +44,23 @@ public class ShortestPath {
                 }
             }
         }
-        return path;
+        return null; // Destination not found
     }
-    public static ArrayList<Square> shortestPathToPlayer(List<Square>[] currentGraph, Square src, Square dest) {
+
+    private static ArrayList<Square> constructPath(Square srcSq, Square destination, HashMap<Square, Square> parentNode) {
         ArrayList<Square> path = new ArrayList<>();
-        Queue<Square> queue = new LinkedList<>();
-        HashMap<Square, Square> parentNode = new HashMap<>();
-        queue.add(src);
-        parentNode.put(src, null);
-
-        while (!queue.isEmpty()) {
-            Square curr = queue.poll();
-            if (curr.equals(dest)) {
-                while (!curr.equals(src)) {
-                    path.add(curr);
-                    curr = parentNode.get(curr);
-                }
-                Collections.reverse(path);
-                return path;
-            }
-            int i = squareToIndex(curr);
-            for (Square e : currentGraph[i]) {
-                if (!parentNode.containsKey(e)) {
-                    parentNode.put(e, curr);
-                    queue.add(e);
-                }
-            }
+        Square curr = destination;
+        while (!curr.equals(srcSq)) {
+            path.add(curr);
+            curr = parentNode.get(curr);
         }
+        path.add(srcSq);
+        Collections.reverse(path);
         return path;
     }
 
-//    public static int countOpenPathsToGoal(Square currentPos, int goalRow) {
-//        int openPaths = 0;
-//        List<Square> neighbors = currentPos.neighbourhood(2);
-//
-//        for (Square neighbor : neighbors) {
-//            // Check if neighbor is not blocked and leads towards the goal row
-//            if (!neighbor.hasWall() && neighbor.getRow() == currentPos.getRow() + (goalRow - currentPos.getRow() > 0 ? 1 : -1)) {
-//                // If neighbor is the goal, count it as a path and stop searching
-//                if (neighbor.getRow() == goalRow) {
-//                    return 1;
-//                }
-//
-//                // Recursively explore open paths from the neighbor
-//                openPaths += countOpenPathsToGoal(neighbor, goalRow);
-//            }
-//        }
-//        return openPaths;
-//    }
+
+
 
     public static int squareToIndex(Square sq) {
         int sq_row = sq.getRow();

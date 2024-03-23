@@ -8,8 +8,8 @@ import java.util.regex.Pattern;
 /**
  * Represents a game session consisting of 2 players.
  */
-public class Validator {
-    private static Validator instance = null;
+public class Model {
+    private static Model instance = null;
 
     public static final int TILE_SIZE = 50;
     public static final int BOARD_DIMENSION = 9;
@@ -17,10 +17,13 @@ public class Validator {
     public static final int MAX_PLAYERS = 2;
     private final Player[] players = new Player[MAX_PLAYERS];
     private final Board board = new Board();
-    private static int turn;
+    private final Stack<MoveInfo> moveStack = new Stack<>();
+    private final int startingPlayer;
+    private int turn;
 
-    public Validator(int startingPlayer) {
-        turn = startingPlayer;
+    public Model(int startingPlayer) {
+        this.startingPlayer = startingPlayer;
+        this.turn = startingPlayer;
     }
 
 
@@ -29,17 +32,18 @@ public class Validator {
         players[id] = player;
     }
 
+    public boolean doesWallBlockGoal(Wall wall) {
+        return !board.isWallIntersecting(wall) && board.isPathBlockingWall(wall, players[0], players[1]);
+    }
 
     public boolean isWallLegal(String squareLocation, boolean isHorizontal) {
         char orientation = isHorizontal ? 'h' : 'v';
         Square sq = new Square(squareLocation);
         Wall wall = new Wall(sq, orientation);
-        if(players[getTurn()].getWallsLeft() <= 0)
-            return false;
-        return board.isValidWallPlacement(wall, players[0], players[1]);
+        return isValidWallPlacement(wall);
     }
 
-    public boolean wallMoveProcess(Wall wall) {
+    public boolean placeWall(Wall wall) {
         boolean isHorizontal = (wall.toString().charAt(2) == 'h');
         int row = wall.getStartingSq().getRow();
         int col = wall.getStartingSq().getCol();
@@ -49,7 +53,8 @@ public class Validator {
             } else if(!isWallLegal(wall.toString(), true)) {
                 System.out.println("There is already a wall here.");
                 return false;
-            } else return makeMove(wall.toString());
+            } else
+                return commitMove(wall.toString());
         }
         else {
             if(row == 0 || players[getTurn()].getWallsLeft() == 0) {
@@ -57,7 +62,8 @@ public class Validator {
             } else if(!isWallLegal(wall.toString(), false)) {
                 System.out.println("There is already a wall here");
                 return false;
-            } else return makeMove(wall.toString());
+            } else
+                return commitMove(wall.toString());
         }
     }
 
@@ -65,16 +71,17 @@ public class Validator {
         return players[0].getPos().getRow() == players[0].getDestRow() || players[1].getPos().getRow() == players[1].getDestRow();
     }
 
-    private boolean isValidSyntax(String move) {
+    private boolean isValidMoveSyntax(String move) {
         Pattern p = Pattern.compile("[a-i][0-9][hv]?");
         Matcher m = p.matcher(move);
         return m.matches();
     }
     private boolean isWallMove(String move) {
-        return isValidSyntax(move) && move.length() == 3;
+        return isValidMoveSyntax(move) && move.length() == 3;
     }
+
     public boolean isValidWallPlacement(Wall wall) {
-        if(players[getTurn()].getWallsLeft() <= 0)
+        if(players[getTurn()].getWallsLeft() <= 0 || !isWallMove(wall.toString()))
             return false;
         return board.isValidWallPlacement(wall, players[0], players[1]);
     }
@@ -94,7 +101,7 @@ public class Validator {
         players[getTurn()].setPos(sq);
     }
 
-    public boolean makeMove(String move) {
+    public boolean commitMove(String move) {
         boolean flag = gameOver();
         if(flag) // Game over.
             return false;
@@ -103,6 +110,7 @@ public class Validator {
             flag = isValidWallPlacement(wall); // Check validity of wall move.
             if (flag) {
                 addWall(wall); // Update player walls and add wall to walls list.
+                moveStack.add(new MoveInfo(turn, wall.toString()));
                 turn++;
             }
         }
@@ -112,6 +120,7 @@ public class Validator {
             flag = isValidTraversal(dest, currentSquare);
             if (flag) {
                 setCurrentPlayerPos(dest);
+                moveStack.add(new MoveInfo(turn, dest.toString()));
                 turn++;
             }
         }
@@ -156,5 +165,13 @@ public class Validator {
         return players[id];
     }
     public Player[] getPlayers() { return players; }
+
+    public int getStartingPlayer() {
+        return this.startingPlayer;
+    }
+
+    public int getMoveNum() {
+        return moveStack.peek().getMoveNum();
+    }
 
 }

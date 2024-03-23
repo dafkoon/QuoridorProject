@@ -48,18 +48,53 @@ public class Board {
             }
         }
     }
+
+    public boolean isWallIntersecting(Wall wall) {
+        if(squareToIndex(wall.startingSq) > graph.length || squareToIndex(wall.startingSq) < 0)
+            return true;
+        if(wall.getOrientation() == Wall.Orientation.HORIZONTAL) { // Check Horizontal wall not intersecting others.
+            if (walls.contains(wall) ||
+                    walls.contains(wall.neighbor(1, 0, Wall.Orientation.VERTICAL)) || // Through it
+                    walls.contains(wall.neighbor(0, -1, Wall.Orientation.HORIZONTAL)) || //
+                    walls.contains(wall.neighbor(0, 1, Wall.Orientation.HORIZONTAL))) {
+                return true;
+            }
+        }
+        else {
+            if (walls.contains(wall) ||
+                    walls.contains(wall.neighbor(-1, 0, Wall.Orientation.HORIZONTAL)) ||
+                    walls.contains(wall.neighbor(-1, 0, Wall.Orientation.VERTICAL)) ||
+                    walls.contains(wall.neighbor(1, 0, Wall.Orientation.VERTICAL))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isPathBlockingWall(Wall wall, Player player0, Player player1) {
+        if(wall.getOrientation() == Wall.Orientation.HORIZONTAL) {
+            removeEdge(wall.startingSq, wall.startingSq.neighbor(1, 0));
+            removeEdge(wall.startingSq.neighbor(0, 1), wall.startingSq.neighbor(1, 1)); //
+        }
+        else {
+            removeEdge(wall.startingSq, wall.startingSq.neighbor(0, 1)); // remove connecting between startingSq and the wall to the left of it
+            removeEdge(wall.startingSq.neighbor(-1, 0), wall.startingSq.neighbor(-1, 1)); // remove the connection between squares on the next rank.
+        }
+        boolean hasPath = hasPathToGoal(player0, player1);
+        if(wall.getOrientation() == Wall.Orientation.HORIZONTAL) {
+            addEdge(wall.startingSq, wall.startingSq.neighbor(1, 0));
+            addEdge(wall.startingSq.neighbor(0, 1), wall.startingSq.neighbor(1, 1));
+        }
+        else {
+            addEdge(wall.startingSq, wall.startingSq.neighbor(0, 1));
+            addEdge(wall.startingSq.neighbor(-1, 0), wall.startingSq.neighbor(-1, 1));
+        }
+        return hasPath;
+    }
     public boolean isValidWallPlacement(Wall wall, Player player0, Player player1) {
-        if(squareToIndex(wall.startingSq) > graph.length)
+        if(squareToIndex(wall.startingSq) > graph.length || squareToIndex(wall.startingSq) < 0)
             return false;
         if(wall.getOrientation() == Wall.Orientation.HORIZONTAL) { // Check Horizontal wall not intersecting others.
-//            System.out.println(wall + " " +
-//                    wall.neighbor(1, 0, Wall.Orientation.VERTICAL) + " " +
-//                    wall.neighbor(0, -1, Wall.Orientation.HORIZONTAL) + " " +
-//                    wall.neighbor(0, 1, Wall.Orientation.HORIZONTAL) + "\n\n");
-//            System.out.println(wall + " " +
-//                    walls.contains(wall.neighbor(1, 0, Wall.Orientation.VERTICAL)) + " " +
-//                    walls.contains(wall.neighbor(0, -1, Wall.Orientation.HORIZONTAL) )+ " " +
-//                    walls.contains(wall.neighbor(0, 1, Wall.Orientation.HORIZONTAL)) + "\n\n");
             if (walls.contains(wall) ||
                     walls.contains(wall.neighbor(1, 0, Wall.Orientation.VERTICAL)) || // Through it
                     walls.contains(wall.neighbor(0, -1, Wall.Orientation.HORIZONTAL)) || //
@@ -80,7 +115,6 @@ public class Board {
             removeEdge(wall.startingSq.neighbor(0, 1), wall.startingSq.neighbor(1, 1)); //
         }
         else {
-
             removeEdge(wall.startingSq, wall.startingSq.neighbor(0, 1)); // remove connecting between startingSq and the wall to the left of it
             removeEdge(wall.startingSq.neighbor(-1, 0), wall.startingSq.neighbor(-1, 1)); // remove the connection between squares on the next rank.
         }

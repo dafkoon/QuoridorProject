@@ -1,6 +1,6 @@
 package Controller;
 import Model.Gamestate.Square;
-import Model.Gamestate.Validator;
+import Model.Gamestate.Model;
 import Model.Gamestate.Wall;
 import Model.Gamestate.Player;
 
@@ -14,42 +14,42 @@ public class HumanInputHandler {
     public static final int TILE_SIZE = 50;
     public static final int BOARD_DIMENSION = 9;
     public static final int BOARD_SIZE = TILE_SIZE*BOARD_DIMENSION;
-    private Validator validator;
+    private Model model;
     private Game view;
     private AI ai;
 
     public HumanInputHandler(Game view, int startingPlayer) {
         this.view = view;
-        this.validator = new Validator(startingPlayer);
+        this.model = new Model(startingPlayer);
     }
 
     public void addPlayer(String name, String color, int id) {
         if (name.equals("HUMAN")) {
-            validator.addPlayer(name, color, new Square("e1"), 8, id);
+            model.addPlayer(name, color, new Square("e1"), 8, id);
         } else {
-            validator.addPlayer(name, color, new Square("e9"), 0, id);
+            model.addPlayer(name, color, new Square("e9"), 0, id);
         }
     }
 
     public void addOpponent(int id) {
-        ai = new AI(id, validator, view);
+        ai = new AI(id, model, view);
     }
 
     public String getPlayerName(int id) {
-        Player player = this.validator.getPlayer(id);
+        Player player = this.model.getPlayer(id);
         return player.getName();
     }
     public int getPlayerWallsLeft(int id) {
-        Player player = this.validator.getPlayer(id);
+        Player player = this.model.getPlayer(id);
         return player.getWallsLeft();
     }
     public String getPlayerColor(int id) {
-        Player player = this.validator.getPlayer(id);
+        Player player = this.model.getPlayer(id);
         return player.getColor();
     }
 
     public void handlePawnMovement(MouseEvent event, Pawn pawn) {
-        if(validator.getTurn() == pawn.getType().ordinal()){
+        if(model.getTurn() == pawn.getType().ordinal()){
             switch(event.getEventType().getName()) {
                 case "MOUSE_PRESSED":
                     pawnMousePressed(event, pawn);
@@ -115,14 +115,14 @@ public class HumanInputHandler {
         int newCol = pixelToBoard(xPixel);
         int newRow = pixelToBoard(yPixel);
         Square dest = new Square(newRow, newCol);
-        updatePawnPosition(validator.getTurn(), dest);
+        updatePawnPosition(model.getTurn(), dest);
     }
 
     public void verticalWallEntered(MouseEvent event, VerticalWall wall) {
         int row = wall.getRow();
         int col = wall.getCol();
         if(row > 1) {
-            if(validator.isWallLegal(wall.toAlgebraic(), false)) { //BOARD_DIMENSION - (row + 1), col
+            if(model.isWallLegal(wall.toAlgebraic(), false)) { //BOARD_DIMENSION - (row + 1), col
                 VerticalWall secondWall = view.findVerticalWallObject(row - 1, col);
                 view.fillVerticalWall(wall, secondWall, false);
             }
@@ -132,7 +132,7 @@ public class HumanInputHandler {
         int row = wall.getRow();
         int col = wall.getCol();
         if(row > 1 && !wall.isPressCommit()) {
-            if(validator.isWallLegal(wall.toAlgebraic(), false)) {
+            if(model.isWallLegal(wall.toAlgebraic(), false)) {
                 VerticalWall secondWall = view.findVerticalWallObject(row - 1, col);
                 view.removeFillVerticalWall(wall, secondWall);
             }
@@ -142,7 +142,7 @@ public class HumanInputHandler {
         int row = wall.getRow();
         int col = wall.getCol();
         Wall newWall = new Wall(wall.toAlgebraic() + 'v');
-        if(validator.wallMoveProcess(newWall)) {
+        if(model.placeWall(newWall)) {
             updateVerticalWall(row, col);
 
         }
@@ -152,7 +152,7 @@ public class HumanInputHandler {
         int row = wall.getRow();
         int col = wall.getCol();
         if(col < BOARD_DIMENSION) {
-            if(validator.isWallLegal(wall.toAlgebraic(), true)) {
+            if(model.isWallLegal(wall.toAlgebraic(), true)) {
                 HorizontalWall secondWall = view.findHorizontalWallObject(row, col+1);
                 view.fillHorizontalWall(wall, secondWall, false);
             }
@@ -163,7 +163,7 @@ public class HumanInputHandler {
         int row = wall.getRow();
         int col = wall.getCol();
         if(col < BOARD_DIMENSION && !wall.isPressCommit()) {
-            if(validator.isWallLegal(wall.toAlgebraic(), true)) {
+            if(model.isWallLegal(wall.toAlgebraic(), true)) {
                 HorizontalWall secondWall = view.findHorizontalWallObject(row, col+1);
                 view.removeFillVerticalWall(wall, secondWall);
             }
@@ -173,7 +173,7 @@ public class HumanInputHandler {
         int row = wall.getRow();
         int col = wall.getCol();
         Wall newWall = new Wall(wall.toAlgebraic() + 'h');
-        if(validator.wallMoveProcess(newWall)) {
+        if(model.placeWall(newWall)) {
             updateHorizontalWall(row, col);
         }
     }
@@ -186,22 +186,22 @@ public class HumanInputHandler {
         HorizontalWall wall1 = view.findHorizontalWallObject(row, col);
         HorizontalWall wall2 = view.findHorizontalWallObject(row, col + 1);
         view.fillHorizontalWall(wall1, wall2, true);
-        view.updateInfoPanel((validator.getTurn()+1)%2);
+        view.updateInfoPanel((model.getTurn()+1)%2);
     }
 
     public void updateVerticalWall(int row, int col) {
         VerticalWall wall1 = view.findVerticalWallObject(row, col);
         VerticalWall wall2 = view.findVerticalWallObject(row - 1, col);
         view.fillVerticalWall(wall1, wall2, true);
-        view.updateInfoPanel((validator.getTurn()+1)%2);
+        view.updateInfoPanel((model.getTurn()+1)%2);
     }
 
     public void updatePawnPosition(int playerTurn, Square move) {
         if(move == null)
             return;
-        if(validator.makeMove(move.toString())) {
+        if(model.commitMove(move.toString())) {
             view.updatePawnLocation(playerTurn, move.getCol()*TILE_SIZE, (BOARD_SIZE-TILE_SIZE)-move.getRow()*TILE_SIZE);
-            if(validator.gameOver()) {
+            if(model.gameOver()) {
                 System.out.println("winner");
                 view.decideWinner(playerTurn);
             }
