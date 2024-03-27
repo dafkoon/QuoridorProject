@@ -173,21 +173,6 @@ public class HumanInputHandler {
         return (int)(pixel+ TILE_SIZE/2)/TILE_SIZE;
     }
 
-
-    public void updatePawnPosition(int playerTurn, Square move) {
-        if(move == null)
-            return;
-        if(model.commitMove(move.toString())) {
-            view.updatePawnLocation(playerTurn, move.getCol()*TILE_SIZE, (BOARD_SIZE-TILE_SIZE)-move.getRow()*TILE_SIZE);
-            if(model.gameOver()) {
-                System.out.println("winner");
-                view.decideWinner(playerTurn);
-            }
-        }
-        else
-            view.updatePawnLocation(playerTurn, -1, -1);
-    }
-
     public void onHumanMoveCompleted() {
         ai.AiTurn();
     }

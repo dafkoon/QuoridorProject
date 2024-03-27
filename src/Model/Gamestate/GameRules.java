@@ -73,7 +73,7 @@ public class GameRules {
     }
 
     private boolean isValidMoveSyntax(String move) {
-        Pattern p = Pattern.compile("[a-i][0-9][hv]?");
+        Pattern p = Pattern.compile("[a-h][2-9][hv]?");
         Matcher m = p.matcher(move);
         return m.matches();
     }
@@ -130,7 +130,7 @@ public class GameRules {
                     turn++;
             }
         }
-        else {
+        if(move.length() == 2) {
             Square dest = new Square(move);
             Square from = getCurrentPlayerPos();
             flag = isValidTraversal(from, dest);
