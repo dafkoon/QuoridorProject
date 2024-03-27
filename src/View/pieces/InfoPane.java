@@ -48,12 +48,5 @@ public class InfoPane extends Pane {
         this.currentPlayerColor = currentPlayerColor;
     }
 
-    public String getCurrentPlayerName() {
-        return currentPlayerName;
-    }
-
-    public String getCurrentPlayerColor() {
-        return currentPlayerColor;
-    }
 
 }

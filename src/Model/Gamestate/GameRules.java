@@ -8,8 +8,8 @@ import java.util.regex.Pattern;
 /**
  * Represents a game session consisting of 2 players.
  */
-public class Model {
-    private static Model instance = null;
+public class GameRules {
+    private static GameRules instance = null;
 
     public static final int TILE_SIZE = 50;
     public static final int BOARD_DIMENSION = 9;
@@ -20,8 +20,9 @@ public class Model {
     private final Stack<MoveInfo> moveStack = new Stack<>();
     private final int startingPlayer;
     private int turn;
+    private static int headstart = 0;
 
-    public Model(int startingPlayer) {
+    public GameRules(int startingPlayer) {
         this.startingPlayer = startingPlayer;
         this.turn = startingPlayer;
     }
@@ -33,10 +34,10 @@ public class Model {
     }
 
     public boolean doesWallBlockGoal(Wall wall) {
-        return !board.isWallIntersecting(wall) && board.isPathBlockingWall(wall, players[0], players[1]);
+        return !board.doesWallIntersectOther(wall) && board.doesWallCompletelyBlock(wall, players[0], players[1]);
     }
 
-    public boolean isWallLegal(String squareLocation, boolean isHorizontal) {
+    public boolean isLegalWallPlacement(String squareLocation, boolean isHorizontal) {
         char orientation = isHorizontal ? 'h' : 'v';
         Square sq = new Square(squareLocation);
         Wall wall = new Wall(sq, orientation);
@@ -50,7 +51,7 @@ public class Model {
         if(isHorizontal) {
             if(col == BOARD_DIMENSION-1 || players[getTurn()].getWallsLeft() == 0) {
                 return false;
-            } else if(!isWallLegal(wall.toString(), true)) {
+            } else if(!isLegalWallPlacement(wall.toString(), true)) {
                 System.out.println("There is already a wall here.");
                 return false;
             } else
@@ -59,7 +60,7 @@ public class Model {
         else {
             if(row == 0 || players[getTurn()].getWallsLeft() == 0) {
                 return false;
-            } else if(!isWallLegal(wall.toString(), false)) {
+            } else if(!isLegalWallPlacement(wall.toString(), false)) {
                 System.out.println("There is already a wall here");
                 return false;
             } else
@@ -85,20 +86,31 @@ public class Model {
             return false;
         return board.isValidWallPlacement(wall, players[0], players[1]);
     }
-    public void addWall(Wall wall) {;
+    public void addWallToBoard(Wall wall) {
         board.addWall(wall);
         players[getTurn()].decWalls();
     }
-    public void removeWall(Wall wall) {
+
+    public void removeWallFromBoard(Wall wall) {
         board.removeWall(wall);
         players[getTurn()].incWalls();
     }
-    public boolean isValidTraversal(Square dest, Square from) {
+    public boolean isValidTraversal(Square from, Square dest) {
         return board.isValidTraversal(dest, from, getOtherPlayerPos());
     }
 
-    public void setCurrentPlayerPos(Square sq) {
+    public void movePlayerToSquare(Square sq) {
         players[getTurn()].setPos(sq);
+    }
+
+    public ArrayList<Square> generatePawnMoves(Square src) {
+        ArrayList<Square> validMoves = new ArrayList<>();
+        for (Square sq: src.neighbourhood(2)) {
+            if (isValidTraversal(src, sq)) {
+                validMoves.add(sq);
+            }
+        }
+        return validMoves;
     }
 
     public boolean commitMove(String move) {
@@ -109,19 +121,27 @@ public class Model {
             Wall wall = new Wall(move);
             flag = isValidWallPlacement(wall); // Check validity of wall move.
             if (flag) {
-                addWall(wall); // Update player walls and add wall to walls list.
+                addWallToBoard(wall); // Update player walls and add wall to walls list.
                 moveStack.add(new MoveInfo(turn, wall.toString()));
-                turn++;
+                if(headstart != 0) {
+                    headstart--;
+                }
+                else
+                    turn++;
             }
         }
         else {
             Square dest = new Square(move);
-            Square currentSquare = getCurrentPlayerPos();
-            flag = isValidTraversal(dest, currentSquare);
+            Square from = getCurrentPlayerPos();
+            flag = isValidTraversal(from, dest);
             if (flag) {
-                setCurrentPlayerPos(dest);
+                movePlayerToSquare(dest);
                 moveStack.add(new MoveInfo(turn, dest.toString()));
-                turn++;
+                if(headstart != 0) {
+                    headstart--;
+                }
+                else
+                    turn++;
             }
         }
         return flag;
@@ -129,7 +149,6 @@ public class Model {
 
 
 
-    //    public int toNumeric()
     public int boardToPixel(int boardIndex) { return boardIndex*TILE_SIZE; }
     public int pixelToBoard(double pixel) {
         return (int)(pixel+ TILE_SIZE/2)/TILE_SIZE;

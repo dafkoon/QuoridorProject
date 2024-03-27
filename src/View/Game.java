@@ -16,7 +16,6 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.image.Image;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
@@ -35,9 +34,6 @@ public class Game extends Application{
 
 
     public void start(Stage primaryStage) {
-//        Scanner scanner = new Scanner(System.in);
-//        System.out.println("Pick who's starting \n0 - Human\t1 - AI");
-//        startingPlayer = scanner.nextInt();
         startingPlayer = 0;
 
         humanInputHandler = new HumanInputHandler(this, startingPlayer);
@@ -206,7 +202,7 @@ public class Game extends Application{
             wall2.setPressCommit(true);
         }
     }
-    public void removeFillVerticalWall(HorizontalWall wall1, HorizontalWall wall2) {
+    public void removeFillHorizontalWall(HorizontalWall wall1, HorizontalWall wall2) {
         wall1.setFill(Color.SILVER);
         wall2.setFill(Color.SILVER);
     }

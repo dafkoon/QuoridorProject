@@ -1,6 +1,6 @@
 package Controller;
 import Model.Gamestate.Square;
-import Model.Gamestate.Model;
+import Model.Gamestate.GameRules;
 import Model.Gamestate.Wall;
 import Model.Gamestate.Player;
 
@@ -14,13 +14,15 @@ public class HumanInputHandler {
     public static final int TILE_SIZE = 50;
     public static final int BOARD_DIMENSION = 9;
     public static final int BOARD_SIZE = TILE_SIZE*BOARD_DIMENSION;
-    private Model model;
-    private Game view;
+    private final GameRules model;
+    private final ViewUpdater viewUpdater;
+    private final Game view;
     private AI ai;
 
     public HumanInputHandler(Game view, int startingPlayer) {
         this.view = view;
-        this.model = new Model(startingPlayer);
+        this.viewUpdater = ViewUpdater.getInstance(view);
+        this.model = new GameRules(startingPlayer);
     }
 
     public void addPlayer(String name, String color, int id) {
@@ -115,66 +117,55 @@ public class HumanInputHandler {
         int newCol = pixelToBoard(xPixel);
         int newRow = pixelToBoard(yPixel);
         Square dest = new Square(newRow, newCol);
-        updatePawnPosition(model.getTurn(), dest);
+        int turn = model.getTurn();
+        if(model.commitMove(dest.toString()))
+            viewUpdater.updatePawnPosition(turn, newRow, newCol);
+        else
+            viewUpdater.updatePawnPosition(turn, -1, -1);
     }
 
     public void verticalWallEntered(MouseEvent event, VerticalWall wall) {
-        int row = wall.getRow();
-        int col = wall.getCol();
-        if(row > 1) {
-            if(model.isWallLegal(wall.toAlgebraic(), false)) { //BOARD_DIMENSION - (row + 1), col
-                VerticalWall secondWall = view.findVerticalWallObject(row - 1, col);
-                view.fillVerticalWall(wall, secondWall, false);
+        if(wall.getRow() > 1) {
+            if(model.isLegalWallPlacement(wall.toAlgebraic(), false)) { //BOARD_DIMENSION - (row + 1), col
+                viewUpdater.fillVerticalWall(wall, false);
             }
         }
     }
     public void verticalWallExited(MouseEvent event, VerticalWall wall) {
-        int row = wall.getRow();
-        int col = wall.getCol();
-        if(row > 1 && !wall.isPressCommit()) {
-            if(model.isWallLegal(wall.toAlgebraic(), false)) {
-                VerticalWall secondWall = view.findVerticalWallObject(row - 1, col);
-                view.removeFillVerticalWall(wall, secondWall);
+        if(wall.getRow() > 1 && !wall.isPressCommit()) {
+            if(model.isLegalWallPlacement(wall.toAlgebraic(), false)) {
+                viewUpdater.removeFillVerticalWall(wall);
             }
         }
     }
     public void verticalWallPressed(MouseEvent event, VerticalWall wall) {
-        int row = wall.getRow();
-        int col = wall.getCol();
         Wall newWall = new Wall(wall.toAlgebraic() + 'v');
-        if(model.placeWall(newWall)) {
-            updateVerticalWall(row, col);
-
+        int turn = model.getTurn();
+        if(model.commitMove(newWall.toString())) {
+            viewUpdater.updateVerticalWall(wall.getRow(), wall.getCol(), turn);
         }
     }
 
     public void horizontalWallEntered(MouseEvent event, HorizontalWall wall) {
-        int row = wall.getRow();
-        int col = wall.getCol();
-        if(col < BOARD_DIMENSION) {
-            if(model.isWallLegal(wall.toAlgebraic(), true)) {
-                HorizontalWall secondWall = view.findHorizontalWallObject(row, col+1);
-                view.fillHorizontalWall(wall, secondWall, false);
+        if(wall.getCol() < BOARD_DIMENSION) {
+            if(model.isLegalWallPlacement(wall.toAlgebraic(), true)) {
+                viewUpdater.fillHorizontalWall(wall, false);
             }
 
         }
     }
     public void horizontalWallExited(MouseEvent event, HorizontalWall wall) {
-        int row = wall.getRow();
-        int col = wall.getCol();
-        if(col < BOARD_DIMENSION && !wall.isPressCommit()) {
-            if(model.isWallLegal(wall.toAlgebraic(), true)) {
-                HorizontalWall secondWall = view.findHorizontalWallObject(row, col+1);
-                view.removeFillVerticalWall(wall, secondWall);
+        if(wall.getCol() < BOARD_DIMENSION && !wall.isPressCommit()) {
+            if(model.isLegalWallPlacement(wall.toAlgebraic(), true)) {
+                viewUpdater.removeFillHorizontalWall(wall);
             }
         }
     }
     public void horizontalWallPressed(MouseEvent event, HorizontalWall wall) {
-        int row = wall.getRow();
-        int col = wall.getCol();
         Wall newWall = new Wall(wall.toAlgebraic() + 'h');
-        if(model.placeWall(newWall)) {
-            updateHorizontalWall(row, col);
+        int turn = model.getTurn();
+        if(model.commitMove(newWall.toString())) {
+            viewUpdater.updateHorizontalWall(wall.getRow(), wall.getCol(), turn);
         }
     }
 
@@ -182,19 +173,6 @@ public class HumanInputHandler {
         return (int)(pixel+ TILE_SIZE/2)/TILE_SIZE;
     }
 
-    public void updateHorizontalWall(int row, int col) {
-        HorizontalWall wall1 = view.findHorizontalWallObject(row, col);
-        HorizontalWall wall2 = view.findHorizontalWallObject(row, col + 1);
-        view.fillHorizontalWall(wall1, wall2, true);
-        view.updateInfoPanel((model.getTurn()+1)%2);
-    }
-
-    public void updateVerticalWall(int row, int col) {
-        VerticalWall wall1 = view.findVerticalWallObject(row, col);
-        VerticalWall wall2 = view.findVerticalWallObject(row - 1, col);
-        view.fillVerticalWall(wall1, wall2, true);
-        view.updateInfoPanel((model.getTurn()+1)%2);
-    }
 
     public void updatePawnPosition(int playerTurn, Square move) {
         if(move == null)

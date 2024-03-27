@@ -15,18 +15,6 @@ public class Board {
         initializeGraph();
     }
 
-    public Board(Board board) {
-        this.graph = new LinkedList[board.graph.length];
-        for(int i = 0; i < board.graph.length; i++) {
-            this.graph[i] = new LinkedList<>();
-            for (Square square : board.graph[i]) {
-                this.graph[i].add(new Square(square.getRow(), square.getCol()));
-            }
-        }
-        this.walls = new LinkedList<>(board.walls); // Shallow copy of walls
-
-    }
-
     /**
      * Build the adjacency list.
      * Uses a 1D array that contains a LinkedList of type Square, The index represents the Square index.
@@ -37,41 +25,46 @@ public class Board {
             for(int col = 0; col < BOARD_DIMENSION; col++) {
                 int i = row * BOARD_DIMENSION + col;
                 graph[i] = new LinkedList<>();
-                if(col > 0)
+                if (col > 0)
                     graph[i].add(new Square(row, col - 1)); // left.
-                if(col < BOARD_DIMENSION -1)
+//                else
+//                    graph[i].add(null);
+
+                if (col < BOARD_DIMENSION - 1)
                     graph[i].add(new Square(row, col + 1)); // right.
-                if(row > 0)
+//                else
+//                    graph[i].add(null);
+
+                if (row > 0)
                     graph[i].add(new Square(row - 1, col)); // up.
-                if(row < BOARD_DIMENSION - 1)
+//                else
+//                    graph[i].add(null);
+
+                if (row < BOARD_DIMENSION - 1)
                     graph[i].add(new Square(row + 1, col)); // down.
+//                else
+//                    graph[i].add(null);
             }
         }
     }
 
-    public boolean isWallIntersecting(Wall wall) {
+    public boolean doesWallIntersectOther(Wall wall) {
         if(squareToIndex(wall.startingSq) > graph.length || squareToIndex(wall.startingSq) < 0)
             return true;
         if(wall.getOrientation() == Wall.Orientation.HORIZONTAL) { // Check Horizontal wall not intersecting others.
-            if (walls.contains(wall) ||
+            return walls.contains(wall) ||
                     walls.contains(wall.neighbor(1, 0, Wall.Orientation.VERTICAL)) || // Through it
                     walls.contains(wall.neighbor(0, -1, Wall.Orientation.HORIZONTAL)) || //
-                    walls.contains(wall.neighbor(0, 1, Wall.Orientation.HORIZONTAL))) {
-                return true;
-            }
+                    walls.contains(wall.neighbor(0, 1, Wall.Orientation.HORIZONTAL));
         }
         else {
-            if (walls.contains(wall) ||
+            return walls.contains(wall) ||
                     walls.contains(wall.neighbor(-1, 0, Wall.Orientation.HORIZONTAL)) ||
                     walls.contains(wall.neighbor(-1, 0, Wall.Orientation.VERTICAL)) ||
-                    walls.contains(wall.neighbor(1, 0, Wall.Orientation.VERTICAL))) {
-                return true;
-            }
+                    walls.contains(wall.neighbor(1, 0, Wall.Orientation.VERTICAL));
         }
-        return false;
     }
-
-    public boolean isPathBlockingWall(Wall wall, Player player0, Player player1) {
+    public boolean doesWallCompletelyBlock(Wall wall, Player player0, Player player1) {
         if(wall.getOrientation() == Wall.Orientation.HORIZONTAL) {
             removeEdge(wall.startingSq, wall.startingSq.neighbor(1, 0));
             removeEdge(wall.startingSq.neighbor(0, 1), wall.startingSq.neighbor(1, 1)); //
@@ -146,13 +139,12 @@ public class Board {
         }
     }
     public boolean hasPathToGoal(Player player0, Player player1) {
-//        System.out.println(!(ShortestPath.shortestPathToRow(graph, player0.getPos(), player0.getDestRow()).isEmpty() || ShortestPath.shortestPathToRow(graph, player1.getPos(), player1.getDestRow()).isEmpty()));
         return !(ShortestPath.shortestPathToRow(graph, player0.getPos(), player0.getDestRow()).isEmpty() || ShortestPath.shortestPathToRow(graph, player1.getPos(), player1.getDestRow()).isEmpty());
     }
     public void addWall(Wall wall) {
         if(wall.getOrientation() == Wall.Orientation.HORIZONTAL) {
             removeEdge(wall.startingSq, wall.startingSq.neighbor(1, 0));
-            removeEdge(wall.startingSq.neighbor(0, 1), wall.startingSq.neighbor(1, 1)); //
+            removeEdge(wall.startingSq.neighbor(0, 1), wall.startingSq.neighbor(1, 1));
         }
         else {
             removeEdge(wall.startingSq, wall.startingSq.neighbor(0, 1)); // remove connecting between startingSq and the wall to the left of it
@@ -160,7 +152,6 @@ public class Board {
         }
         walls.add(wall);
     }
-
     public void removeWall(Wall wall) {
         if(wall.getOrientation() == Wall.Orientation.HORIZONTAL) {
             addEdge(wall.startingSq, wall.startingSq.neighbor(1, 0));
@@ -184,8 +175,8 @@ public class Board {
             return true;
         }
         else if(graph[currentPlayerSquareIndex].contains(otherPlayerPos)) { // If square of current is directly connected to square of other.
-            if(graph[currentPlayerSquareIndex].contains(currentPlayerPos.opposite(otherPlayerPos))) { // If Square of current contains
-                return graph[otherPlayerSquareIndex].contains(dest) && otherPlayerPos.isCardinalTo(dest);
+            if(graph[otherPlayerSquareIndex].contains(currentPlayerPos.opposite(otherPlayerPos))) {
+                return graph[otherPlayerSquareIndex].contains(dest) && currentPlayerPos.isCardinalTo(dest);
             }
             else {
                 return graph[otherPlayerSquareIndex].contains(dest); // Other's square is connected to dest.
@@ -194,9 +185,6 @@ public class Board {
         return false;
     }
 
-    public boolean isValidSquare(Square sq) {
-        return squareToIndex(sq) <= graph.length;
-    }
 
     /**
      * Turns a Square object to its index components which is used to find its location in the adjacency list.

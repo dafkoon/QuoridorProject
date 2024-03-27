@@ -62,7 +62,6 @@ public class Wall {
 
     @Override
     public String toString() {
-//        System.out.println(startingSq + orientation.name().toLowerCase());
         return startingSq.toString() + orientation.name().toLowerCase().charAt(0);
     }
 

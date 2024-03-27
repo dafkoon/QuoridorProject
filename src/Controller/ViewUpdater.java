@@ -1,49 +1,67 @@
-//package Controller;
-//
-//import Model.Gamestate.Player;
-//import Model.Gamestate.Validator;
-//
-//public class ViewUpdater {
-//    private Validator validator;
-//    private Player[] players;
-//    public ViewUpdater() {
-//        validaor = Validator.getInstance();
-//        System.out.println(validator);
-//        players = validator.getPlayers();
-//    }
-//
-//    public String getCurrentPlayerName() {
-//        int turn = this.validator.getTurn();
-//        Player player = this.validator.getPlayer(turn);
-//        return player.getName();
-//    }
-//
-//    public String getCurrentPlayerColor() {
-//        int turn = this.validator.getTurn();
-//        Player player = this.validator.getPlayer(turn);
-//        return player.getColor();
-//    }
-//
-//    public int getCurrentPlayerWallsLeft() {
-//        int turn = this.validator.getTurn();
-//        Player player = this.validator.getPlayer(turn);
-//        return player.getWallsLeft();
-//
-//    }
-//
-//    public String getPlayerName(int id) {
-//        Player player = this.validator.getPlayer(id);
-//        return player.getName();
-//    }
-//
-//    public int getPlayerWallsLeft(int id) {
-//        Player player = this.validator.getPlayer(id);
-//        return player.getWallsLeft();
-//    }
-//
-//    public String getPlayerColor(int id) {
-//        Player player = this.validator.getPlayer(id);
-//        return player.getColor();
-//    }
-//
-//}
+package Controller;
+
+import View.Game;
+import View.pieces.HorizontalWall;
+import View.pieces.VerticalWall;
+
+import static Controller.AI.BOARD_SIZE;
+import static Controller.AI.TILE_SIZE;
+
+public class ViewUpdater {
+    private static ViewUpdater instance;
+    private Game view;
+    private ViewUpdater(Game view) {
+        this.view = view;
+    }
+
+    public static ViewUpdater getInstance(Game view) {
+        if(instance == null)
+            instance = new ViewUpdater(view);
+        return instance;
+    }
+    // These are for human side
+    public void fillVerticalWall(VerticalWall wall1, boolean isPressed) {
+        int row = wall1.getRow();
+        int col = wall1.getCol();
+        VerticalWall wall2 = view.findVerticalWallObject(row - 1, col);
+        view.fillVerticalWall(wall1, wall2, isPressed);
+    }
+    public void removeFillVerticalWall(VerticalWall wall1) {
+        int row = wall1.getRow();
+        int col = wall1.getCol();
+        VerticalWall wall2 = view.findVerticalWallObject(row - 1, col);
+        view.removeFillVerticalWall(wall1, wall2);
+    }
+    public void fillHorizontalWall(HorizontalWall wall1, boolean isPressed) {
+        int row = wall1.getRow();
+        int col = wall1.getCol();
+        HorizontalWall wall2 = view.findHorizontalWallObject(row, col+1);
+        view.fillHorizontalWall(wall1, wall2, isPressed);
+    }
+    public void removeFillHorizontalWall(HorizontalWall wall1) {
+        int row = wall1.getRow();
+        int col = wall1.getCol();
+        HorizontalWall wall2 = view.findHorizontalWallObject(row, col+1);
+        view.removeFillHorizontalWall(wall1, wall2);
+    }
+
+    // These are for both
+    public void updateHorizontalWall(int row, int col, int playerTurn) {
+        HorizontalWall wall1 = view.findHorizontalWallObject(row, col);
+        HorizontalWall wall2 = view.findHorizontalWallObject(row, col + 1);
+        view.fillHorizontalWall(wall1, wall2, true);
+        view.updateInfoPanel(playerTurn);
+    }
+    public void updateVerticalWall(int row, int col, int playerTurn) {
+        VerticalWall wall1 = view.findVerticalWallObject(row, col);
+        VerticalWall wall2 = view.findVerticalWallObject(row - 1, col);
+        view.fillVerticalWall(wall1, wall2, true);
+        view.updateInfoPanel(playerTurn);
+    }
+    public void updatePawnPosition(int playerTurn, int row, int col) {
+        if(row == -1 || col == -1) {
+            view.updatePawnLocation(playerTurn, -1, -1);
+        } else
+            view.updatePawnLocation(playerTurn, col*TILE_SIZE, (BOARD_SIZE-TILE_SIZE)-row*TILE_SIZE);
+    }
+}

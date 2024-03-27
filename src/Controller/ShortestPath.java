@@ -13,49 +13,33 @@ public class ShortestPath {
 
     public static ArrayList<Square> shortestPathToRow(List<Square>[] currentGraph, Square srcSq, int destRow) {
         ArrayList<Square> path = new ArrayList<>();
-        if (currentGraph == null)
+        if(currentGraph == null)
             return path;
-
         Queue<Square> queue = new LinkedList<>();
         HashMap<Square, Square> parentNode = new HashMap<>();
         queue.add(srcSq);
         parentNode.put(srcSq, null);
 
-        // Perform BFS search
-        Square destination = bfsSearch(currentGraph, destRow, queue, parentNode);
-
-        // If destination found, construct the path
-        if (destination != null)
-            path = constructPath(srcSq, destination, parentNode);
-        return path;
-    }
-
-    private static Square bfsSearch(List<Square>[] currentGraph, int destRow, Queue<Square> queue, HashMap<Square, Square> parentNode) {
         while (!queue.isEmpty()) {
             Square curr = queue.poll();
-            if (curr.getRow() == destRow)
-                return curr;
-
-            int i = squareToIndex(curr);
-            for (Square e : currentGraph[i]) {
-                if (!parentNode.containsKey(e)) {
-                    parentNode.put(e, curr);
-                    queue.add(e);
+            if(curr != null) {
+                if (curr.getRow() == destRow) {
+                    while (!curr.equals(srcSq)) {
+                        path.add(curr);
+                        curr = parentNode.get(curr);
+                    }
+                    Collections.reverse(path);
+                    return path;
+                }
+                int i = squareToIndex(curr);
+                for (Square e : currentGraph[i]) {
+                    if (!parentNode.containsKey(e)) {
+                        parentNode.put(e, curr);
+                        queue.add(e);
+                    }
                 }
             }
         }
-        return null; // Destination not found
-    }
-
-    private static ArrayList<Square> constructPath(Square srcSq, Square destination, HashMap<Square, Square> parentNode) {
-        ArrayList<Square> path = new ArrayList<>();
-        Square curr = destination;
-        while (!curr.equals(srcSq)) {
-            path.add(curr);
-            curr = parentNode.get(curr);
-        }
-        path.add(srcSq);
-        Collections.reverse(path);
         return path;
     }
 

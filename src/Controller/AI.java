@@ -3,8 +3,6 @@ package Controller;
 import static Controller.ShortestPath.shortestPathToRow;
 import Model.Gamestate.*;
 import View.Game;
-import View.pieces.HorizontalWall;
-import View.pieces.VerticalWall;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -15,20 +13,21 @@ public class AI {
     public static final int BOARD_DIMENSION = 9;
     public static final int BOARD_SIZE = TILE_SIZE*BOARD_DIMENSION;
 
-    private boolean isFirstWeakpoint = true;
+    private boolean isFirstWeakPoint = true;
     private Wall wallBlockingWeakSpot = null;
-    private final Model model;
-    private final Game view;
+    private boolean fastLaneCloser = false;
+    private final GameRules model;
+    private final ViewUpdater viewUpdater;
     private final int agentID;
     private final Player agent;
     private final Player opponent;
     private List<Square>[] graph;
     private List<Wall> walls;
 
-    public AI(int id, Model model, Game view) {
+    public AI(int id, GameRules model, Game view) {
         this.agentID = id;
         this.model = model;
-        this.view = view;
+        this.viewUpdater = ViewUpdater.getInstance(view);
 
         this.agent = model.getPlayer(id);
         this.opponent = model.getPlayer((id+1)%2);
@@ -43,102 +42,140 @@ public class AI {
                 takeShortestPath();
             else
                 comparePlayersPaths();
-
         }
     }
     private void takeShortestPath() {
-        ArrayList<Square> agentPath = calculateShortestPath(agent, opponent);
-        makeMove(agentPath.get(1).toString());
+        ArrayList<Square> path = calculateShortestPath(agent, opponent.getPos());
+        makeMove(path.get(0).toString());
     }
-    private ArrayList<Square> calculateShortestPath(Player movingPlayer, Player stander) {
-        ArrayList<Square> shorestPath = shortestPathToRow(getGraph(), movingPlayer.getPos(), movingPlayer.getDestRow());
-        if(shorestPath.contains(stander.getPos()) && shorestPath.size() == 1)
-            shorestPath = generatePawnMoves(movingPlayer.getPos());
-        if(shorestPath.contains(stander.getPos()) && shorestPath.size() > 1)
-            shorestPath.remove(stander.getPos());
-        return shorestPath;
+    private ArrayList<Square> calculateShortestPath(Player movingPlayer, Square otherPlayerPos) {
+        ArrayList<Square> shortestPath = shortestPathToRow(getGraph(), movingPlayer.getPos(), movingPlayer.getDestRow());
+        if(shortestPath.contains(otherPlayerPos) && shortestPath.size() == 1) {
+            shortestPath = generatePawnMoves(otherPlayerPos);
+        }
+        if(shortestPath.contains(otherPlayerPos) && shortestPath.size() > 1) {
+            shortestPath.remove(otherPlayerPos);
+            if(!model.isValidTraversal(movingPlayer.getPos(), shortestPath.get(0))) {
+                ArrayList<Square> possibleFirstMoves = generatePawnMoves(movingPlayer.getPos());
+                ArrayList<Square> currentPath;
+                int minPathLength = Integer.MAX_VALUE;
+                for(Square firstMove : possibleFirstMoves) {
+                    currentPath = shortestPathToRow(getGraph(), firstMove, movingPlayer.getDestRow());
+                    if(currentPath.size() < minPathLength) {
+                        minPathLength = currentPath.size();
+                        shortestPath = currentPath;
+                        shortestPath.add(0, firstMove);
+                    }
+                }
+            }
+        }
+        return shortestPath;
     }
 
     private void comparePlayersPaths() {
-        ArrayList<Square> agentShortestPath = calculateShortestPath(agent, opponent);
-        ArrayList<Square> opponentShortestPath = calculateShortestPath(opponent, agent);
-        boolean foundBlockingWall = false;
-        if (model.getStartingPlayer() == agentID || model.getMoveNum() > 10) {
-            if (agentShortestPath.size() > opponentShortestPath.size()) {
-                foundBlockingWall = searchAndPlaceWall(opponentShortestPath);
-            }
-        } else {
-            if (agentShortestPath.size() > opponentShortestPath.size() + 2) {
-                foundBlockingWall = searchAndPlaceWall(opponentShortestPath);
-            }
+        ArrayList<Square> agentShortestPath = calculateShortestPath(agent, opponent.getPos());
+        ArrayList<Square> opponentShortestPath = calculateShortestPath(opponent, agent.getPos());
+        if(isAgentStarting()) {
+            boolean decisionMade = false;
+            if(isOpponentCloser(agentShortestPath, opponentShortestPath, 0))
+                decisionMade = searchAndPlaceWall(opponentShortestPath);
+            if(!decisionMade)
+                checkIfOpponentHasWalls(agentShortestPath, opponentShortestPath);
         }
-        if (!foundBlockingWall) {
-            checkOpponentWalls(agentShortestPath, opponentShortestPath);
-        }
-    }
-
-    private void checkOpponentWalls(ArrayList<Square> agentPath, ArrayList<Square> opponentPath) {
-        if (opponent.getWallsLeft() == 0)
-            takeShortestPath();
         else {
-            if (!isOpponentQuickPath(agentPath, opponentPath)) {
-                checkAIPathWidth(agentPath, opponentPath);
-            } else {
-                searchAndPlaceWallB(opponentPath, true);
-//                if (!searchAndPlaceWallB(opponentPath, true))
-//                    checkAIPathWidth(agentPath, opponentPath);
+            if(isAfterFifthRound()) {
+                boolean decisionMade = false;
+                if(isOpponentCloser(agentShortestPath, opponentShortestPath, 0))
+                    decisionMade = searchAndPlaceWall(opponentShortestPath);
+                if(!decisionMade)
+                    checkIfOpponentHasWalls(agentShortestPath, opponentShortestPath);
+            }
+            else {
+                boolean decisionMade = false;
+                if(isOpponentCloser(agentShortestPath, opponentShortestPath, 2))
+                    decisionMade = searchAndPlaceWall(opponentShortestPath);
+                if(!decisionMade)
+                    checkIfOpponentHasWalls(agentShortestPath, opponentShortestPath);
             }
         }
     }
+    private boolean isAgentStarting() {
+        return model.getStartingPlayer() == agentID;
+    }
+    private boolean isAfterFifthRound() {
+        return model.getMoveNum() > 10;
+    }
+    private boolean isOpponentCloser(ArrayList<Square> agentPath, ArrayList<Square> opponentPath, int extraForOpponent) {
+        return agentPath.size() > opponentPath.size() + extraForOpponent;
+    }
 
-    private boolean isOpponentQuickPath(ArrayList<Square> agentPath, ArrayList<Square> opponentPath) {
-        int quickPathLength = 0;
-        int widthAtCurrentSquare;
+    private void checkIfOpponentHasWalls(ArrayList<Square> agentPath, ArrayList<Square> opponentPath) {
+        if (opponent.getWallsLeft() == 0) {
+            takeShortestPath();
+            return;
+        }
+        ArrayList<Square> opponentQuickPath = checkForQuickPath(agentPath, opponentPath);
+        if(opponentQuickPath == null) {
+            searchForWeakPoints(agentPath, opponentPath);
+            return;
+        }
+        fastLaneCloser = true;
+        boolean decisionMade = searchAndPlaceWall(opponentPath);
+        if(!decisionMade)
+            searchAndPlaceWall(opponentPath);
+    }
+
+    private ArrayList<Square> checkForQuickPath(ArrayList<Square> agentPath, ArrayList<Square> opponentPath) {
         boolean foundDeviation = false;
         boolean laneExists = true;
         ArrayList<Square> quickPath = new ArrayList<>();
+        int width;
+        opponentPath.add(0, opponent.getPos());
         for(int i = 0; i < opponentPath.size() && laneExists; i++) {
-            widthAtCurrentSquare = calculateWidth(opponentPath.get(i));
-            if(widthAtCurrentSquare <= 2) {
-                quickPathLength++;
+            width = calculateWidth(opponentPath.get(i));
+            if(width <= 2) {
                 quickPath.add(opponentPath.get(i));
             }
             else { // If the width is bigger than 2.
-                if(!foundDeviation && i != 0) // If not found a deviation yet AND the current square isn't the first in the opponent's path.
+                if(!foundDeviation && i != 0) { // If not found a deviation yet AND the current square isn't the first in the opponent's path.
                     foundDeviation = true;
-                else // If a deviation is found for a square that isn't the first, a quick path doesn't exist.
+                }
+                else
                     laneExists = false;
+                // If a deviation is found for a square that isn't the first, a quick path doesn't exist.
             }
         }
-        if(quickPathLength < 6)
-            return false;
-        if(quickPathLength > opponentPath.size()-2)
-            return false;
+        opponentPath.remove(0);
+        if(quickPath.size() < 6)
+            return null;
+        if(quickPath.size() > opponentPath.size()-2)
+            return null;
         for(Square square : quickPath) {
             if(agentPath.contains(square))
-                return false;
+                return null;
         }
-        return opponent.getPos().equals(quickPath.get(0));
+        return quickPath;
     }
+
     private boolean searchAndPlaceWall(ArrayList<Square> opponentPath) {
-        return searchAndPlaceWallB(opponentPath, false);
-    }
-    private boolean searchAndPlaceWall(ArrayList<Square> opponentPath, boolean opponentFastLane) {
-        ArrayList<Square> newAgentPath;
-        ArrayList<Square> newOpponentPath;
-        ArrayList<Wall> wallMoves = removeUselessWalls(generateWallMoves(), opponentPath);
+        int bestDifference = Integer.MAX_VALUE;
+        int newAgentPath, newOpponentPath, pathDifference;
+        ArrayList<Wall> increasePathWalls = wallsToIncreasePath(opponentPath, opponent, agent.getPos());
         Wall bestWall = null;
-        int minPathDifference = Integer.MAX_VALUE;
-        int pathDifference;
-        for(Wall wall : wallMoves) {
+        for(Wall wall : increasePathWalls) {
             doVirtualMove(wall.toString());
-            newAgentPath = shortestPathToRow(getGraph(), agent.getPos(), agent.getDestRow());
-            newOpponentPath = shortestPathToRow(getGraph(), opponent.getPos(), opponent.getDestRow());
-            pathDifference = newAgentPath.size() - newOpponentPath.size();
-            System.out.println(wall + " " + (!opponentFastLane) + " " +  (newOpponentPath.size() - opponentPath.size() > 1) + " " + (newOpponentPath.size() - opponentPath.size()));
-            if (!opponentFastLane || newOpponentPath.size() - opponentPath.size() > 1) {
-                if (pathDifference < minPathDifference) {
-                    minPathDifference = pathDifference;
+            newAgentPath = calculateShortestPath(agent, opponent.getPos()).size();
+            newOpponentPath = calculateShortestPath(opponent, agent.getPos()).size();
+            pathDifference = newAgentPath-newOpponentPath;
+            if(fastLaneCloser) {
+                if(newOpponentPath > opponentPath.size()+4) {
+                    bestWall = wall;
+                    fastLaneCloser = false;
+                }
+            }
+            else {
+                if(pathDifference < bestDifference) {
+                    bestDifference = pathDifference;
                     bestWall = wall;
                 }
             }
@@ -149,55 +186,23 @@ public class AI {
         makeMove(bestWall.toString());
         return true;
     }
-    private boolean searchAndPlaceWallB(ArrayList<Square> opponentPath, boolean opponentFastLane) {
-        int bestDifference = (opponentFastLane) ? Integer.MIN_VALUE : Integer.MAX_VALUE;
-        int newAgentPath, newOpponentPath, pathDifference;
-        ArrayList<Wall> blockingWalls;
-        Wall bestWall = null;
-        for(int i = 0; i < opponentPath.size()-1; i++) {
-            blockingWalls = blockCrossing(opponentPath.get(i), opponentPath.get(i+1));
-            for(Wall wall : blockingWalls) {
-                doVirtualMove(wall.toString());
-                newAgentPath = calculateShortestPath(agent, opponent).size();
-                newOpponentPath = calculateShortestPath(opponent, agent).size();
-                pathDifference = newAgentPath-newOpponentPath;
-                if(!opponentFastLane) {
-                    if(pathDifference < bestDifference) {
-                        bestDifference = pathDifference;
-                        bestWall = wall;
-                    }
-                }
-                else {
-                    if(pathDifference > bestDifference) {
-                        bestDifference = pathDifference;
-                        bestWall = wall;
-                    }
-                }
-                undoVirtualMove(wall.toString());
-            }
-        }
-//        System.out.println(bestWall);
-        if(bestWall == null)
-            return false;
-        makeMove(bestWall.toString());
-        return true;
-    }
 
-    private void checkAIPathWidth(ArrayList<Square> agentPath, ArrayList<Square> opponentPath) {
-        boolean decidedOnMove = false;
+    private void searchForWeakPoints(ArrayList<Square> agentPath, ArrayList<Square> opponentPath) {
+        boolean decisionMade = false;
         int width;
-        for(int i = 1; i < agentPath.size() && !decidedOnMove; i++) {
+        agentPath.add(0, agent.getPos());
+        for(int i = 0; i < agentPath.size() && !decisionMade; i++) {
             width = calculateWidth(agentPath.get(i));
-            if(width <= 2) {
-                decidedOnMove = handleWeakPoint(agentPath, i, opponentPath);
-            }
+            if(width <= 2)
+                decisionMade = handleWeakPoint(agentPath, i, opponentPath);
         }
-        if(!decidedOnMove) {
-            if(this.wallBlockingWeakSpot == null) {
+        agentPath.remove(0);
+        if(!decisionMade) {
+            if(wallBlockingWeakSpot == null) {
                 takeShortestPath();
+                return;
             }
-            else
-                makeMove(this.wallBlockingWeakSpot.toString());
+            makeMove(wallBlockingWeakSpot.toString());
         }
     }
     private boolean handleWeakPoint(ArrayList<Square> agentPath, int weakPointIndex, ArrayList<Square> originalOpponentPath) {
@@ -206,64 +211,73 @@ public class AI {
         int newOpponentPathLength;
         int width;
         Square weakPoint = agentPath.get(weakPointIndex);
-        Square prev = agentPath.get(weakPointIndex-1);
-        ArrayList<Wall> traversalBlockingWall = blockCrossing(weakPoint, prev);
-//        System.out.println(traversalBlockingWall);
-//        System.out.println(prev + "->" + weakPoint);
-        Wall traversalBlockerWall = null; // Wall that the opponent may place that creates a weak point for the agent
-        for(Wall wall : traversalBlockingWall) {
+        ArrayList<Wall> blockingWalls = wallsToIncreasePath(agentPath, agent, opponent.getPos());
+        Wall opponentWallForWeakPoint = null; // Wall that the opponent may place that creates a weak point for the agent
+        for(Wall wall : blockingWalls) {
             doVirtualMove(wall.toString());
             width = calculateWidth(weakPoint);
-            if(width == 0) {
-                newOpponentPathLength = calculateShortestPath(opponent, agent).size();
+            if(width == 1) {
+                newOpponentPathLength = calculateShortestPath(opponent, agent.getPos()).size();
                 pathDifference = newOpponentPathLength - originalOpponentPath.size();
-                if(pathDifference < minPathDifference && pathDifference <= 2) // TODO remove pathdifference <=2 if its bad
-                    traversalBlockerWall = wall;
+                if(pathDifference < minPathDifference && pathDifference <= 2)
+                    opponentWallForWeakPoint = wall;
             }
             undoVirtualMove(wall.toString());
         }
-        if(traversalBlockerWall == null)
+        if(opponentWallForWeakPoint == null)
             return false;
-        doVirtualMove(traversalBlockerWall.toString());
-        int newAgentPath = calculateShortestPath(agent, opponent).size();
-        int newOpponentPath = calculateShortestPath(opponent, agent).size();
-        undoVirtualMove(traversalBlockerWall.toString());
+        doVirtualMove(opponentWallForWeakPoint.toString());
+        int newAgentPath = calculateShortestPath(agent, opponent.getPos()).size();
+        int newOpponentPath = calculateShortestPath(opponent, agent.getPos()).size();
+        undoVirtualMove(opponentWallForWeakPoint.toString());
         if(newAgentPath <= newOpponentPath)
             return false;
         if(newAgentPath-newOpponentPath <= 2 && newOpponentPath > 5)
+            // If difference between agent path to opponent path is less/equal to two and opponent is farther away from 5 traversals (far)
             return false;
-        return blockWeakPoint(traversalBlockerWall);
+        return blockWeakPoint(opponentWallForWeakPoint);
     }
 
-    private boolean blockWeakPoint(Wall wall) {
-        if(this.wallBlockingWeakSpot == null) {
-            doVirtualMove(wall.toString());
-            ArrayList<Square> alternatePath = calculateShortestPath(agent, opponent);
-            Wall pathBlockingWall;
+    private boolean blockWeakPoint(Wall opponentWallForWeakPoint) {
+        ArrayList<Square> alternatePath;
+        if(wallBlockingWeakSpot == null) {
+            Square originalAgentSquare = agent.getPos();
+            doVirtualMove(opponentWallForWeakPoint.toString());
+            alternatePath = calculateShortestPath(agent, opponent.getPos());
+            Wall blockingWall = getPathBlockingWall();
             for(Square sq : alternatePath) {
-                Square originalPos = agent.getPos();
                 doVirtualMove(sq.toString());
-                pathBlockingWall = getPathBlockingWall();
-                undoVirtualMove(wall.toString());
-                if(pathBlockingWall != null && model.isValidWallPlacement(wall)) {
-                    this.wallBlockingWeakSpot = pathBlockingWall;
-                    undoVirtualMove(originalPos.toString());
-                    return false;
-                }
-                undoVirtualMove(originalPos.toString());
+                undoVirtualMove(opponentWallForWeakPoint.toString());
+                if(model.isValidWallPlacement(blockingWall))
+                    wallBlockingWeakSpot = blockingWall;
+                doVirtualMove(opponentWallForWeakPoint.toString());
+            }
+            undoVirtualMove(opponentWallForWeakPoint.toString());
+            undoVirtualMove(originalAgentSquare.toString());
+            if(wallBlockingWeakSpot != null) {
+                isFirstWeakPoint = false;
             }
         }
-        takeShortestPath();
-
+        if(isFirstWeakPoint) {
+        }
+        doVirtualMove(opponentWallForWeakPoint.toString());
+        if(wallBlockingWeakSpot != null)
+            return false;
+        alternatePath = calculateShortestPath(agent, opponent.getPos());
+        undoVirtualMove(opponentWallForWeakPoint.toString());
+        makeMove(alternatePath.get(0).toString());
         return true;
+
     }
+
     private Wall getPathBlockingWall() {
+        Wall pathBlocker = null;
         for(int row = 0; row < BOARD_DIMENSION-1; row++) {
             for(int col = 0; col < BOARD_DIMENSION-1; col++) {
                 Square sq = new Square(row, col);
                 Wall wall = new Wall(sq, Wall.Orientation.HORIZONTAL);
                 if(model.doesWallBlockGoal(wall))
-                    return wall;
+                    pathBlocker = wall;
             }
         }
         for(int row = 1; row < BOARD_DIMENSION; row++) {
@@ -271,10 +285,10 @@ public class AI {
                 Square sq = new Square(row, col);
                 Wall wall = new Wall(sq, Wall.Orientation.VERTICAL);
                 if(model.doesWallBlockGoal(wall))
-                    return wall;
+                    pathBlocker = wall;
             }
         }
-        return null;
+        return pathBlocker;
     }
 
     /**
@@ -287,16 +301,14 @@ public class AI {
     private ArrayList<Wall> blockCrossing(Square prev, Square next) {
         int rowDiff = prev.getRow() - next.getRow();
         int colDiff = prev.getCol() - next.getCol();
-//        System.out.println(rowDiff + " " + colDiff + "\n\n");
-//        System.out.println(prev + " " + next + "\n\n");
         ArrayList<Wall> blockWeakSpots = new ArrayList<>();
         Square startingSq1 = null, startingSq2 = null;
         if(rowDiff == 0) { // Moved horizontally
-            if(colDiff == -1) { // Moved right
+            if(colDiff < 0) { // Moved right
                 startingSq1 = prev;
                 startingSq2 = startingSq1.neighbor(1, 0); // one up
             }
-            if(colDiff == 1) { // Moved left
+            if(colDiff > 0) { // Moved left
                 startingSq1 = prev.neighbor(0, -1); // one left
                 startingSq2 = startingSq1.neighbor(-1, 0); // one up
             }
@@ -304,11 +316,11 @@ public class AI {
             blockWeakSpots.add(new Wall(startingSq2, 'v'));
         }
         if(colDiff == 0) { // Moved vertically
-            if(rowDiff == 1) { // Moved down
+            if(rowDiff > 0) { // Moved down
                 startingSq1 = prev.neighbor(-1, 0); // one down
                 startingSq2 = startingSq1.neighbor(0, -1); // one left
             }
-            if(rowDiff == -1) { // Moved up
+            if(rowDiff < 0) { // Moved up
                 startingSq1 = prev;
                 startingSq2 = startingSq1.neighbor(0, -1); // one left
             }
@@ -320,10 +332,11 @@ public class AI {
             if(model.isValidWallPlacement(wall)) weakSpotBlockers.add(wall);
         return weakSpotBlockers;
     }
+
     public int calculateWidth(Square src) {
         int steps = moveSideways(src, 1);
         steps += moveSideways(src, -1);
-        return steps;
+        return steps+1;
     }
     public int moveSideways(Square src, int direction) {
         int steps = 0;
@@ -332,7 +345,11 @@ public class AI {
 
         for (int i = 1; i < BOARD_DIMENSION && !finished; i++) {
             next = src.neighbor(0, direction * i);
-            if(model.isValidTraversal(next, prev)) {
+            if(next.equals(opponent.getPos())) {
+                i++;
+                next = src.neighbor(0, direction * i);
+            }
+            if(model.isValidTraversal(prev, next)) {
                 prev = next;
                 steps++;
             } else
@@ -341,13 +358,14 @@ public class AI {
         return steps;
     }
 
-    public ArrayList<Wall> removeUselessWalls(ArrayList<Wall> wallMoves, ArrayList<Square> opponentPath) {
+    public ArrayList<Wall> wallsToIncreasePath(ArrayList<Square> pathToLengthen, Player playerToLengthen, Square otherPlayerPos) {
+        ArrayList<Wall> wallMoves = generateWallMoves();
         ArrayList<Wall> usefulWalls = new ArrayList<>();
         for (Wall wall : wallMoves) {
             doVirtualMove(wall.toString());
-            ArrayList<Square> newOpponentPath = shortestPathToRow(getGraph(), opponent.getPos(), opponent.getDestRow());
+            ArrayList<Square> newPlayerPath = calculateShortestPath(playerToLengthen, otherPlayerPos);
             undoVirtualMove(wall.toString());
-            if(newOpponentPath.size() > opponentPath.size()) {
+            if(newPlayerPath.size() > pathToLengthen.size()) {
                 usefulWalls.add(wall);
             }
         }
@@ -356,63 +374,67 @@ public class AI {
 
     private void doVirtualMove(String move) {
         if(move.length() == 2) {
-            model.setCurrentPlayerPos(new Square(move));
+            model.movePlayerToSquare(new Square(move));
         }
         else if(move.length() == 3) {
-            model.addWall(new Wall(move));
+            model.addWallToBoard(new Wall(move));
         }
     }
     private void undoVirtualMove(String move) {
         if(move.length() == 2) {
-            model.setCurrentPlayerPos(new Square(move));
+            model.movePlayerToSquare(new Square(move));
         }
         else if(move.length() == 3) {
-            model.removeWall(new Wall(move));
+            model.removeWallFromBoard(new Wall(move));
         }
     }
 
-    public void makeMove(String move) {
+    private void makeMove(String move) {
         if(move != null) {
+            int turn = model.getTurn();
             if(move.length() == 2) {
                 Square sq = new Square(move);
-                updateViewPawnPos(model.getTurn(), sq);
+                if(model.commitMove(sq.toString()))
+                    viewUpdater.updatePawnPosition(turn, sq.getRow(), sq.getCol());
+                else
+                    viewUpdater.updatePawnPosition(turn, -1, -1);
             }
             else if(move.length() == 3) {
                 Wall wall = new Wall(move);
-                if(model.placeWall(wall)) {
+                if(model.commitMove(wall.toString())) {
                     int row = wall.getStartingSq().getRow()+1;
                     int col = wall.getStartingSq().getCol()+1;
                     if(move.charAt(2) == 'h')
-                        updateViewHorizontalWall(row, col);
+                        viewUpdater.updateHorizontalWall(row, col, turn);
                     else if(move.charAt(2) == 'v')
-                        updateViewVerticalWall(row, col);
+                        viewUpdater.updateVerticalWall(row, col, turn);
                 }
             }
         }
     }
-    public void updateViewHorizontalWall(int row, int col) {
-        HorizontalWall wall1 = view.findHorizontalWallObject(row, col);
-        HorizontalWall wall2 = view.findHorizontalWallObject(row, col + 1);
-        view.fillHorizontalWall(wall1, wall2, true);
-        view.updateInfoPanel((model.getTurn()+1)%2);
-    }
-    public void updateViewVerticalWall(int row, int col) {
-        VerticalWall wall1 = view.findVerticalWallObject(row, col);
-        VerticalWall wall2 = view.findVerticalWallObject(row - 1, col);
-        view.fillVerticalWall(wall1, wall2, true);
-        view.updateInfoPanel((model.getTurn()+1)%2);
-    }
-    public void updateViewPawnPos(int playerTurn, Square move) {
-        if(move == null)
-            return;
-        if(model.commitMove(move.toString())) {
-            view.updatePawnLocation(playerTurn, move.getCol()*TILE_SIZE, (BOARD_SIZE-TILE_SIZE)-move.getRow()*TILE_SIZE);
-            if(model.gameOver()) {
-                view.decideWinner(playerTurn);
-            }
-        } else
-            view.updatePawnLocation(playerTurn, -1, -1);
-    }
+//    public void updateViewHorizontalWall(int row, int col) {
+//        HorizontalWall wall1 = view.findHorizontalWallObject(row, col);
+//        HorizontalWall wall2 = view.findHorizontalWallObject(row, col + 1);
+//        view.fillHorizontalWall(wall1, wall2, true);
+//        view.updateInfoPanel((model.getTurn()+1)%2);
+//    }
+//    public void updateViewVerticalWall(int row, int col) {
+//        VerticalWall wall1 = view.findVerticalWallObject(row, col);
+//        VerticalWall wall2 = view.findVerticalWallObject(row - 1, col);
+//        view.fillVerticalWall(wall1, wall2, true);
+//        view.updateInfoPanel((model.getTurn()+1)%2);
+//    }
+//    public void updateViewPawnPos(int playerTurn, Square move) {
+//        if(move == null)
+//            return;
+//        if(model.commitMove(move.toString())) {
+//            view.updatePawnLocation(playerTurn, move.getCol()*TILE_SIZE, (BOARD_SIZE-TILE_SIZE)-move.getRow()*TILE_SIZE);
+//            if(model.gameOver()) {
+//                view.decideWinner(playerTurn);
+//            }
+//        } else
+//            view.updatePawnLocation(playerTurn, -1, -1);
+//    }
 
     private void setGraph(List<Square>[] graph) { this.graph = graph; }
     private void setWalls(List<Wall> walls) { this.walls = walls; }
@@ -422,7 +444,7 @@ public class AI {
     public ArrayList<Square> generatePawnMoves(Square src) {
         ArrayList<Square> validMoves = new ArrayList<>();
         for (Square sq: src.neighbourhood(2)) {
-            if (model.isValidTraversal(sq, src)) {
+            if (model.isValidTraversal(src, sq)) {
                 validMoves.add(sq);
             }
         }
