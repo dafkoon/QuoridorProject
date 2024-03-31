@@ -18,7 +18,6 @@ public class HorizontalWall extends Rectangle {
         setWidth(TILE_SIZE);
         setHeight((double) TILE_SIZE / 10);
         relocate((col-1) * TILE_SIZE, (BOARD_DIMENSION-row) * TILE_SIZE);
-
         setFill(Color.SILVER);
         setStrokeWidth(1);
     }

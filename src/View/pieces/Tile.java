@@ -14,11 +14,13 @@ public class Tile extends StackPane {
     public Tile(int col, int row) {
         this.col = col;
         this.row = row;
+
         Rectangle rectangle = new Rectangle(TILE_SIZE, TILE_SIZE);
         rectangle.setFill(Color.BURLYWOOD);
         rectangle.setStroke(Color.BLACK);
-        rectangle.setStrokeWidth(1.0);
+
         Label notationLabel = new Label(toString());
+
         getChildren().addAll(rectangle, notationLabel);
         relocate((col-1) * TILE_SIZE, (BOARD_DIMENSION-row) * TILE_SIZE);
     }

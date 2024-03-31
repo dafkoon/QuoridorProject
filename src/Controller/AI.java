@@ -15,14 +15,12 @@ public class AI {
 
     private boolean firstWeakPointThisTurn = true;
     private Wall preventWeakPoint = null;
-    private boolean fastLaneCloser = false;
     private final GameRules model;
     private final ViewUpdater viewUpdater;
     private final int agentID;
     private final Player agent;
     private final Player opponent;
     private List<Square>[] graph;
-    private List<Wall> walls;
 
     public AI(int id, GameRules model, Game view) {
         this.agentID = id;
@@ -37,8 +35,6 @@ public class AI {
     public void AiTurn() {
         if(model.getTurn() == this.agentID) {
             setGraph(model.getBoardGraph());
-            setWalls(model.getBoardWalls());
-
             if (agent.getWallsLeft() == 0)
                 takeShortestPath();
             else
@@ -110,39 +106,91 @@ public class AI {
     }
 
     private void checkIfOpponentHasWalls(ArrayList<Square> agentPath, ArrayList<Square> opponentPath) {
-        if (opponent.getWallsLeft() == 0)
+        if (opponent.getWallsLeft() == 0) {
             takeShortestPath();
-        else {
-            ArrayList<Square> quickPath = checkForQuickPath(agentPath, opponentPath);
-            if(quickPath == null) {
-                searchForWeakPoints(agentPath, opponentPath);
-            } else {
-                searchAndPlaceWall(opponentPath);
-            }
+            return;
         }
+        ArrayList<Square> quickPath = searchQuickPath(agentPath, opponentPath);
+        if (quickPath != null && blockQuickPath(opponentPath, quickPath)) {
+            return;
+        }
+        searchForWeakPoints(agentPath, opponentPath);
+//        if(quickPath == null) {
+//            searchForWeakPoints(agentPath, opponentPath);
+//        } else {
+//            if(!blockQuickPath(opponentPath, quickPath)) {
+//                searchForWeakPoints(agentPath, opponentPath);
+//            }
+//        }
     }
-    private void blockQuickPath(ArrayList<Square> opponentPath, ArrayList<Square> quickPath) {
-        System.out.println(quickPath);
-        int bestDifference = Integer.MIN_VALUE;
-        int newAgentPath, newOpponentPath, pathDifference;
-        ArrayList<Wall> increasePathWalls = disruptiveWalls(opponentPath, opponent, agent.getPos());
-        Wall firstWall = null;
-        System.out.println(quickPath);
-        for(Wall wall : increasePathWalls) {
-            doVirtualMove(wall.toString());
-            newAgentPath = calculatePath(agent, opponent.getPos()).size();
-            newOpponentPath = calculatePath(opponent, agent.getPos()).size();
-            pathDifference = newOpponentPath-opponentPath.size();
-//            System.out.println(wall + " " + pathDifference);
-            if(pathDifference > bestDifference) {
-                bestDifference = pathDifference;
-                firstWall = wall;
-            }
-            undoVirtualMove(wall.toString());
+    private boolean blockQuickPath(ArrayList<Square> opponentPath, ArrayList<Square> quickPath) {
+        ArrayList<Wall> blockingWalls1, blockingWalls2;
+        Square sq1, sq2, sq3, sq4;
+        Square lastSqInQuickPath = quickPath.get(quickPath.size()-1);
+        int endOfQuickPath = opponentPath.indexOf(lastSqInQuickPath);
+        Square sqAfterQuickPath = opponentPath.get(endOfQuickPath+1);
+        Square leftToOpponent = getConnectedNeighbor(true);
+        Square rightToOpponent = getConnectedNeighbor(false);
+        int offset = 0;
+        Wall blocksPath = null;
+        if(leftToOpponent == null && rightToOpponent == null) {
+            do {
+                sq1 = lastSqInQuickPath.neighbor(offset, 0);
+                sq2 = sqAfterQuickPath.neighbor(offset, 0);
+                blockingWalls1 = blockCrossing(sq1, sq2);
+                offset++;
+            } while(blockingWalls1.isEmpty());
+            blocksPath = blockingWalls1.get(0);
         }
+        else {
+            int direction = (leftToOpponent != null) ? -1 : 1;
+            boolean found = false;
+            do {
+                // Get neighboring squares based on the direction
+                sq1 = lastSqInQuickPath.neighbor(offset, direction);
+                sq2 = sqAfterQuickPath.neighbor(offset, direction);
+                sq3 = lastSqInQuickPath.neighbor(offset, 0);
+                sq4 = sqAfterQuickPath.neighbor(offset, 0);
+
+                blockingWalls1 = blockCrossing(sq1, sq2);
+                blockingWalls2 = blockCrossing(sq3, sq4);
+                // Increment offset for next iteration
+                offset++;
+
+                for(Wall wall : blockingWalls1) {
+                    if(blockingWalls2.contains(wall)) {
+                        blocksPath = wall;
+                        found = true;
+                    }
+                }
+            } while (!found);
+        }
+        assert blocksPath != null;
+        int originalOpponentPathLen = opponentPath.size();
+        doVirtualMove(blocksPath.toString());
+        int newOpponentPathLen = calculatePath(opponent, agent.getPos()).size();
+        undoVirtualMove(blocksPath.toString());
+        if(newOpponentPathLen > originalOpponentPathLen) {
+            makeMove(blocksPath.toString());
+            return true;
+        }
+        return false;
     }
 
-    private ArrayList<Square> checkForQuickPath(ArrayList<Square> agentPath, ArrayList<Square> opponentPath) {
+    private Square getConnectedNeighbor(boolean isLeft) {
+        Square neighbor;
+        List<Square>[] graph = getGraph();
+        if(isLeft) {
+            neighbor = opponent.getPos().neighbor(0, -1);
+        } else {
+            neighbor = opponent.getPos().neighbor(0, 1);
+        }
+        int opponentPosIndex = opponent.getPos().squareToIndex();
+        if(graph[opponentPosIndex].contains(neighbor))
+            return neighbor;
+        return null;
+    }
+    private ArrayList<Square> searchQuickPath(ArrayList<Square> agentPath, ArrayList<Square> opponentPath) {
         boolean foundDeviation = false;
         boolean laneExists = true;
         int width;
@@ -160,16 +208,15 @@ public class AI {
         opponentPath.remove(0);
         if(quickPath.size() < 6) {
             return null;
-        } if(quickPath.size() > opponentPath.size()-2)
+        } if(quickPath.size() > opponentPath.size()-1) {
             return null;
-        for(Square square : quickPath) {
+        }for(Square square : quickPath) {
             if(agentPath.contains(square))
                 return null;
         }
-        if(opponent.getPos().equals(quickPath.get(0)))
-            return quickPath;
-        return null;
+        return quickPath;
     }
+
     private boolean searchAndPlaceWall(ArrayList<Square> opponentPath) {
         int bestDifference = Integer.MIN_VALUE;
         int newAgentPath, newOpponentPath, pathDifference;
@@ -192,7 +239,6 @@ public class AI {
         makeMove(bestWall.toString());
         return true;
     }
-
     private void searchForWeakPoints(ArrayList<Square> agentPath, ArrayList<Square> opponentPath) {
         boolean decisionMade = false;
         int width;
@@ -211,6 +257,7 @@ public class AI {
         }
         firstWeakPointThisTurn = true;
     }
+
     private boolean handleWeakPoint(ArrayList<Square> agentPath, int weakPointIndex, ArrayList<Square> originalOpponentPath) {
         int newOpponentPathLength;
         Wall weakPointUtilized = null;
@@ -332,12 +379,12 @@ public class AI {
             if(model.isValidWallPlacement(wall)) weakSpotBlockers.add(wall);
         return weakSpotBlockers;
     }
-
     private int calculateWidthAtSquare(Square src) {
         int steps = moveInDirection(src, 1);
         steps += moveInDirection(src, -1);
         return steps+1;
     }
+
     private int moveInDirection(Square src, int direction) {
         int steps = 0;
         boolean finished = false;
@@ -358,13 +405,6 @@ public class AI {
         return steps;
     }
 
-    /**
-     *
-     * @param pathToLengthen
-     * @param playerToLengthen
-     * @param otherPlayerPos
-     * @return
-     */
     public ArrayList<Wall> disruptiveWalls(ArrayList<Square> pathToLengthen, Player playerToLengthen, Square otherPlayerPos) {
         ArrayList<Wall> wallMoves = generateWallMoves();
         ArrayList<Wall> usefulWalls = new ArrayList<>();
@@ -377,13 +417,13 @@ public class AI {
         }
         return usefulWalls;
     }
-
     private void doVirtualMove(String move) {
         if(move.length() == 2)
             model.movePlayerToSquare(new Square(move));
         else if(move.length() == 3)
             model.addWallToBoard(new Wall(move));
     }
+
     private void undoVirtualMove(String move) {
         if(move.length() == 2)
             model.movePlayerToSquare(new Square(move));
@@ -414,11 +454,8 @@ public class AI {
             }
         }
     }
-
     private void setGraph(List<Square>[] graph) { this.graph = graph; }
-    private void setWalls(List<Wall> walls) { this.walls = walls; }
     private List<Square>[] getGraph() { return this.graph; }
-    private List<Wall> getWalls() { return this.walls; }
 
     public ArrayList<Square> generatePawnMoves(Square src) {
         ArrayList<Square> validMoves = new ArrayList<>();

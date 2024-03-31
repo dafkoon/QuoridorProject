@@ -3,6 +3,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
+import static Utilities.Constants.BOARD_DIMENSION;
+
 /**
  * Represents a Tile on the "Board" class.
  */
@@ -92,6 +94,7 @@ public class Square {
         return new Square(2*sq.row - row, 2*sq.col - col);
     }
 
+    public int squareToIndex() { return this.row*BOARD_DIMENSION+this.col; }
 
     /**
      * Get the index of the row.

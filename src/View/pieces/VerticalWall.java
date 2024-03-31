@@ -14,9 +14,9 @@ public class VerticalWall extends Rectangle{
         this.row = row;
         setWidth(((double) TILE_SIZE / 10));
         setHeight(TILE_SIZE);
-        setFill(Color.SILVER);
         setStrokeWidth(1);
         relocate(col * TILE_SIZE, (BOARD_DIMENSION-row) * TILE_SIZE);
+        setFill(Color.SILVER);
 //        setTranslateX(46);
     }
 

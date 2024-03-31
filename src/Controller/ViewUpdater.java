@@ -18,6 +18,7 @@ public class ViewUpdater {
             instance = new ViewUpdater(view);
         return instance;
     }
+
     // These are for human side
     public void fillVerticalWall(VerticalWall wall1, boolean isPressed) {
         int row = wall1.getRow();

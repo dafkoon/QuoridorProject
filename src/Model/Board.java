@@ -27,23 +27,12 @@ public class Board {
                 graph[i] = new LinkedList<>();
                 if (col > 0)
                     graph[i].add(new Square(row, col - 1)); // left.
-//                else
-//                    graph[i].add(null);
-
                 if (col < BOARD_DIMENSION - 1)
                     graph[i].add(new Square(row, col + 1)); // right.
-//                else
-//                    graph[i].add(null);
-
                 if (row > 0)
                     graph[i].add(new Square(row - 1, col)); // up.
-//                else
-//                    graph[i].add(null);
-
                 if (row < BOARD_DIMENSION - 1)
                     graph[i].add(new Square(row + 1, col)); // down.
-//                else
-//                    graph[i].add(null);
             }
         }
     }
