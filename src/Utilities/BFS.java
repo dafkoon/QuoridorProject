@@ -1,17 +1,14 @@
-package Controller;
+package Utilities;
 
-import Model.Gamestate.Square;
-import View.pieces.HorizontalWall;
-import View.pieces.VerticalWall;
+import Model.Square;
 
 import java.util.*;
 
-public class ShortestPath {
+public abstract class BFS {
     public static final int TILE_SIZE = 50;
     public static final int BOARD_DIMENSION = 9;
-    public static final int BOARD_SIZE = TILE_SIZE*BOARD_DIMENSION;
 
-    public static ArrayList<Square> shortestPathToRow(List<Square>[] currentGraph, Square srcSq, int destRow) {
+    public static ArrayList<Square> calculateBFS(List<Square>[] currentGraph, Square srcSq, int destRow) {
         ArrayList<Square> path = new ArrayList<>();
         if(currentGraph == null)
             return path;
@@ -43,13 +40,9 @@ public class ShortestPath {
         return path;
     }
 
-
-
-
-    public static int squareToIndex(Square sq) {
+    private static int squareToIndex(Square sq) {
         int sq_row = sq.getRow();
         int sq_col = sq.getCol();
         return sq_row*BOARD_DIMENSION+sq_col;
     }
-
 }

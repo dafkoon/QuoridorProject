@@ -1,4 +1,4 @@
-package Model.Gamestate;
+package Model;
 
 /**
  * Represents a move taken during the game.

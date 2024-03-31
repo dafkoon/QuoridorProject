@@ -1,17 +1,17 @@
-package Model.Gamestate;
+package Model;
 
-import Controller.ShortestPath;
+import static Utilities.BFS.calculateBFS;
+import static Utilities.Constants.*;
 
 import java.util.*;
 
 public class Board {
-    private final int BOARD_DIMENSION = 9;
     public List<Square>[] graph;
     public List<Wall> walls;
 
     public Board() {
         this.graph = new LinkedList[BOARD_DIMENSION*BOARD_DIMENSION];
-        this.walls = new LinkedList<Wall>();
+        this.walls = new LinkedList<>();
         initializeGraph();
     }
 
@@ -82,7 +82,7 @@ public class Board {
             addEdge(wall.startingSq, wall.startingSq.neighbor(0, 1));
             addEdge(wall.startingSq.neighbor(-1, 0), wall.startingSq.neighbor(-1, 1));
         }
-        return hasPath;
+        return !hasPath;
     }
     public boolean isValidWallPlacement(Wall wall, Player player0, Player player1) {
         if(squareToIndex(wall.startingSq) > graph.length || squareToIndex(wall.startingSq) < 0)
@@ -139,7 +139,7 @@ public class Board {
         }
     }
     public boolean hasPathToGoal(Player player0, Player player1) {
-        return !(ShortestPath.shortestPathToRow(graph, player0.getPos(), player0.getDestRow()).isEmpty() || ShortestPath.shortestPathToRow(graph, player1.getPos(), player1.getDestRow()).isEmpty());
+        return !(calculateBFS(graph, player0.getPos(), player0.getDestRow()).isEmpty() || calculateBFS(graph, player1.getPos(), player1.getDestRow()).isEmpty());
     }
     public void addWall(Wall wall) {
         if(wall.getOrientation() == Wall.Orientation.HORIZONTAL) {
@@ -174,7 +174,7 @@ public class Board {
         else if (graph[currentPlayerSquareIndex].contains(dest)) { // If the player's square is connected to dest.
             return true;
         }
-        else if(graph[currentPlayerSquareIndex].contains(otherPlayerPos)) { // If square of current is directly connected to square of other.
+        else if(graph[currentPlayerSquareIndex].contains(otherPlayerPos)) { // If square of current is directly connected to square of other square.
             if(graph[otherPlayerSquareIndex].contains(currentPlayerPos.opposite(otherPlayerPos))) {
                 return graph[otherPlayerSquareIndex].contains(dest) && currentPlayerPos.isCardinalTo(dest);
             }

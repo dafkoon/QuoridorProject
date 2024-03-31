@@ -1,7 +1,7 @@
 package View.pieces;
 
-import static Controller.HumanInputHandler.TILE_SIZE;
-import static Controller.HumanInputHandler.BOARD_DIMENSION;
+import static Utilities.Constants.*;
+
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 

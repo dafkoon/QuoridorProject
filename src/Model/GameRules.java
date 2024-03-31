@@ -1,19 +1,16 @@
-package Model.Gamestate;
+package Model;
 
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static Utilities.Constants.*;
 
 
 /**
  * Represents a game session consisting of 2 players.
  */
 public class GameRules {
-    private static GameRules instance = null;
-
-    public static final int TILE_SIZE = 50;
-    public static final int BOARD_DIMENSION = 9;
-    public static final int BOARD_SIZE = TILE_SIZE*BOARD_DIMENSION;
     public static final int MAX_PLAYERS = 2;
     private final Player[] players = new Player[MAX_PLAYERS];
     private final Board board = new Board();
@@ -73,7 +70,7 @@ public class GameRules {
     }
 
     private boolean isValidMoveSyntax(String move) {
-        Pattern p = Pattern.compile("[a-h][2-9][hv]?");
+        Pattern p = Pattern.compile("([a-h][1-8]h?)|([a-h][2-9]v?)");
         Matcher m = p.matcher(move);
         return m.matches();
     }
@@ -101,16 +98,8 @@ public class GameRules {
 
     public void movePlayerToSquare(Square sq) {
         players[getTurn()].setPos(sq);
-    }
-
-    public ArrayList<Square> generatePawnMoves(Square src) {
-        ArrayList<Square> validMoves = new ArrayList<>();
-        for (Square sq: src.neighbourhood(2)) {
-            if (isValidTraversal(src, sq)) {
-                validMoves.add(sq);
-            }
-        }
-        return validMoves;
+        if(players[getTurn()].getDestRow() == sq.getRow())
+            System.out.println(players[getTurn()].getName() + " WINNER");
     }
 
     public boolean commitMove(String move) {

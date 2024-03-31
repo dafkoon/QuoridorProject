@@ -1,7 +1,5 @@
-package Model.Gamestate;
+package Model;
 
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Objects;
 
 public class Wall {

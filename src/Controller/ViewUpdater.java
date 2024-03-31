@@ -4,12 +4,11 @@ import View.Game;
 import View.pieces.HorizontalWall;
 import View.pieces.VerticalWall;
 
-import static Controller.AI.BOARD_SIZE;
-import static Controller.AI.TILE_SIZE;
+import static Utilities.Constants.*;
 
 public class ViewUpdater {
     private static ViewUpdater instance;
-    private Game view;
+    private final Game view;
     private ViewUpdater(Game view) {
         this.view = view;
     }

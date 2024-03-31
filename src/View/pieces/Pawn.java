@@ -7,8 +7,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 
-import static Controller.HumanInputHandler.TILE_SIZE;
-import static Controller.HumanInputHandler.BOARD_SIZE;
+import static Utilities.Constants.*;
 
 
 /**

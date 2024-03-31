@@ -1,13 +1,13 @@
-package Model.Gamestate;
+package Model;
 
 /**
  * Represents a player in the game.
  */
 public class Player {
     private static final int MAX_WALLS = 10;
-    private String playerName;
-    private String playerColor;
-    private int destRow;
+    private final String playerName;
+    private final String playerColor;
+    private final int destRow;
     private Square pos;
 
     private int walls;

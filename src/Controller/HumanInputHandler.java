@@ -1,8 +1,8 @@
 package Controller;
-import Model.Gamestate.Square;
-import Model.Gamestate.GameRules;
-import Model.Gamestate.Wall;
-import Model.Gamestate.Player;
+import Model.Square;
+import Model.GameRules;
+import Model.Wall;
+import Model.Player;
 
 import View.pieces.HorizontalWall;
 import View.pieces.Pawn;
@@ -10,10 +10,9 @@ import View.pieces.VerticalWall;
 import javafx.scene.input.MouseEvent;
 import View.Game;
 
+import static Utilities.Constants.*;
+
 public class HumanInputHandler {
-    public static final int TILE_SIZE = 50;
-    public static final int BOARD_DIMENSION = 9;
-    public static final int BOARD_SIZE = TILE_SIZE*BOARD_DIMENSION;
     private final GameRules model;
     private final ViewUpdater viewUpdater;
     private final Game view;
@@ -99,9 +98,6 @@ public class HumanInputHandler {
         pawn.mouseX = event.getSceneX();
         pawn.mouseY = event.getSceneY();
     }
-
-
-
     public void pawnMouseDragged(MouseEvent event, Pawn pawn) {
         if(pawn.getType() == Pawn.PawnType.HUMAN) {
             // e.getSceneX()-mouseX continually calculates horizontal distance mouse has moved since last update.

@@ -2,8 +2,8 @@ package View.pieces;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
-import static Controller.HumanInputHandler.TILE_SIZE;
-import static Controller.HumanInputHandler.BOARD_DIMENSION;
+import static Utilities.Constants.*;
+
 
 public class VerticalWall extends Rectangle{
     private int row;

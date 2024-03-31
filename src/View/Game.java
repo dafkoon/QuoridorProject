@@ -6,16 +6,13 @@ import View.pieces.Pawn.PawnColor;
 
 import Controller.HumanInputHandler;
 
-import static Controller.HumanInputHandler.TILE_SIZE;
-import static Controller.HumanInputHandler.BOARD_DIMENSION;
-import static Controller.HumanInputHandler.BOARD_SIZE;
+import static Utilities.Constants.*;
 
 import javafx.application.Application;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
+import javafx.scene.image.Image;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
@@ -30,7 +27,6 @@ public class Game extends Application{
     private InfoPane infoPane;
     private Pawn[] pawnList;
     private HumanInputHandler humanInputHandler;
-    private Pane root;
 
 
     public void start(Stage primaryStage) {
@@ -39,9 +35,8 @@ public class Game extends Application{
         humanInputHandler = new HumanInputHandler(this, startingPlayer);
         initPawns();
 
-        root = createBoard();
+        Pane root = createBoard();
         Scene scene = new Scene(root);
-//        primaryStage.getIcons().add(new Image("images/icon.png"));
         primaryStage.setTitle("Quoridor");
         primaryStage.setScene(scene);
         primaryStage.setResizable(false);
@@ -171,16 +166,6 @@ public class Game extends Application{
         }
     }
 
-    public void decideWinner(int winnerID) {
-        Alert alert = new Alert(AlertType.INFORMATION);
-        if(winnerID == PawnType.HUMAN.ordinal())
-            alert.setHeaderText("WINNER");
-        else
-            alert.setHeaderText("LOSER");
-        alert.setTitle("GAME OVER!");
-        alert.setContentText(pawnList[winnerID].toString());
-        alert.showAndWait();
-    }
     public void fillVerticalWall(VerticalWall wall1, VerticalWall wall2, boolean isPressed) {
         wall1.setFill(Color.BLACK);
         wall2.setFill(Color.BLACK);
