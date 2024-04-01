@@ -1,8 +1,10 @@
 package View;
 
 import View.pieces.*;
-import View.pieces.Pawn.PawnType;
-import View.pieces.Pawn.PawnColor;
+import View.pieces.Walls.*;
+import View.pieces.PawnElements.*;
+import View.pieces.PawnElements.PawnType;
+import View.pieces.PawnElements.PawnColor;
 
 import Controller.HumanInputHandler;
 
@@ -12,7 +14,6 @@ import javafx.application.Application;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.image.Image;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
@@ -28,14 +29,18 @@ public class Game extends Application{
     private Pawn[] pawnList;
     private HumanInputHandler humanInputHandler;
 
-
+    /**
+     * Initializes and starts the Quoridor game.
+     *
+     * @param primaryStage the primary stage for displaying the game GUI
+     */
     public void start(Stage primaryStage) {
-        startingPlayer = 0;
-
+        startingPlayer = 0; // 0 - Human starts     1 - AI starts
         humanInputHandler = new HumanInputHandler(this, startingPlayer);
+
         initPawns();
 
-        Pane root = createBoard();
+        Pane root = populateBoard();
         Scene scene = new Scene(root);
         primaryStage.setTitle("Quoridor");
         primaryStage.setScene(scene);
@@ -47,106 +52,183 @@ public class Game extends Application{
     }
 
     /**
-     * Initializes the pawn's location and calls for a method to create the pawn.
-     * Calls the setupPawns method.
+     * Initializes the pawns for the Quoridor game.
+     * The method sets up the pawns for both players, including their types, colors, and initial positions.
+     * Additionally, it registers mouse events for human pawns and adds players and opponents to the input handler.
      */
     public void initPawns() {
-        int currentPlayer = startingPlayer;
+        int currentPlayer = startingPlayer;     // Determine the starting player
+
+        // Set initial positions for pawns
         int[] xPixel = new int[]{BOARD_SIZE/2-TILE_SIZE/2, BOARD_SIZE/2-TILE_SIZE/2};
         int[] yPixel = new int[]{0, BOARD_SIZE-TILE_SIZE};
         pawnList = new Pawn[xPixel.length];
+
         for(int i = 0; i < pawnList.length; i++) {
+            // Determine pawn type and color based on the current player
             PawnType pawnType = Pawn.intToType(currentPlayer);
             PawnColor pawnColor = Pawn.intToColor(currentPlayer);
             Pawn pawn = new Pawn(pawnType, pawnColor, xPixel[currentPlayer], yPixel[currentPlayer]);
-            if(pawn.getType() == PawnType.HUMAN) {
+
+            // Register mouse events for human pawns
+            if(pawn.getType() == PawnType.HUMAN)
                 pawnMouseEvents(pawn);
-            }
+
+            // Add player to the human input handler
             humanInputHandler.addPlayer(pawnType.name(), pawnColor.name(), currentPlayer);
+            // Add the pawn to the pawn group for display
             pawnGroup.getChildren().add(pawn);
+            // Store the pawn in the pawn list
             pawnList[currentPlayer] = pawn;
+            // Switch to the next player
             currentPlayer = (currentPlayer + 1) % 2;
         }
+        // Add AI opponent to the human input handler
         humanInputHandler.addOpponent(PawnType.AI.ordinal());
     }
+
+    /**
+     * Registers mouse events for a pawn, allowing human input handling for pawn movements.
+     * @param pawn the pawn for which mouse events are registered
+     */
     public void pawnMouseEvents(Pawn pawn) {
         pawn.setOnMousePressed(event -> humanInputHandler.handlePawnMovement(event, pawn));
         pawn.setOnMouseDragged(event -> humanInputHandler.handlePawnMovement(event, pawn));
         pawn.setOnMouseReleased(event -> humanInputHandler.handlePawnMovement(event, pawn));
     }
+
+    /**
+     * Registers mouse events for a horizontal wall, allowing human input handling for wall movements.
+     * @param wall the horizontal wall for which mouse events are registered
+     */
     public void horizontalWallMouseEvents(HorizontalWall wall) {
         wall.setOnMouseEntered(event -> humanInputHandler.handleHorizontalWallMovement(event, wall));
         wall.setOnMousePressed(event -> humanInputHandler.handleHorizontalWallMovement(event, wall));
         wall.setOnMouseExited(event -> humanInputHandler.handleHorizontalWallMovement(event, wall));
     }
+
+    /**
+     * Registers mouse events for a vertical wall, allowing human input handling for wall movements.
+     * @param wall the vertical wall for which mouse events are registered
+     */
     public void verticalWallMouseEvents(VerticalWall wall) {
         wall.setOnMouseEntered(event -> humanInputHandler.handleVerticalWallMovement(event, wall));
         wall.setOnMousePressed(event -> humanInputHandler.handleVerticalWallMovement(event, wall));
         wall.setOnMouseExited(event -> humanInputHandler.handleVerticalWallMovement(event, wall));
     }
-    private Pane createBoard() {
+
+    /**
+     * Populates the game board with tiles, vertical walls, and horizontal walls.
+     * Additionally, registers mouse events for wall movements.
+     * @return the pane containing the populated game board
+     */
+    private Pane populateBoard() {
+        // Create a new pane to contain the game board
         Pane root = new Pane();
         root.setPrefSize((BOARD_DIMENSION * TILE_SIZE) + 120, BOARD_DIMENSION * TILE_SIZE);
-        for(int row = 1; row <= BOARD_DIMENSION; row++) {  // 1-9
-            for(int col = 1; col <= BOARD_DIMENSION; col++) { // a-i
+
+        // Populate the board with tiles
+        for (int row = 1; row <= BOARD_DIMENSION; row++) {
+            for (int col = 1; col <= BOARD_DIMENSION; col++) {
                 Tile tile = new Tile(row, col);
                 tileGroup.getChildren().add(tile);
             }
         }
-        for(int row = 1; row <= BOARD_DIMENSION; row++) { // 1-9
-            for(int col = 1; col < BOARD_DIMENSION; col++) { // a-i
+
+        // Add vertical walls to the board and register mouse events for wall movements
+        for (int row = 1; row <= BOARD_DIMENSION; row++) {
+            for (int col = 1; col < BOARD_DIMENSION; col++) {
                 VerticalWall wall = new VerticalWall(row, col);
                 verticalWallGroup.getChildren().add(wall);
                 verticalWallMouseEvents(wall);
             }
         }
 
-        for(int row = 1; row < BOARD_DIMENSION; row++) {
-            for(int col = 1; col <= BOARD_DIMENSION; col++) {
+        // Add horizontal walls to the board and register mouse events for wall movements
+        for (int row = 1; row < BOARD_DIMENSION; row++) {
+            for (int col = 1; col <= BOARD_DIMENSION; col++) {
                 HorizontalWall wall = new HorizontalWall(row, col);
                 horizontalWallGroup.getChildren().add(wall);
                 horizontalWallMouseEvents(wall);
             }
         }
-        infoPane = generateInfoPanel();
+
+        // Populate the info panel and add it to the root pane
+        infoPane = populateInfoPanel();
         root.getChildren().addAll(tileGroup, pawnGroup, horizontalWallGroup, verticalWallGroup, infoPane);
         return root;
     }
 
-    public InfoPane generateInfoPanel() {
+    /**
+     * Populates the info panel with information about each player's name, remaining walls, and pawn color.
+     * @return the populated info panel
+     */
+    public InfoPane populateInfoPanel() {
         InfoPane panel = new InfoPane();
-        for(Pawn pawn : pawnList) {
+
+        // Add information about each pawn to the info panel
+        for (Pawn pawn : pawnList) {
             int id = pawn.getType().ordinal();
-            panel.addInfo(humanInputHandler.getPlayerName(id),
+            panel.addInfo(
+                    humanInputHandler.getPlayerName(id),
                     humanInputHandler.getPlayerWallsLeft(id),
-                    humanInputHandler.getPlayerColor(id));
+                    humanInputHandler.getPlayerColor(id)
+            );
         }
-        panel.setTranslateX(BOARD_DIMENSION*TILE_SIZE +10);
+        // Set the position of the info panel relative to the game board
+        panel.setTranslateX(BOARD_DIMENSION * TILE_SIZE + 10);
         return panel;
     }
+
+    /**
+     * Updates the information displayed in the info panel based on the current player's turn.
+     * @param playerTurn the index of the current player in the pawn list
+     */
     public void updateInfoPanel(int playerTurn) {
-        for(Pawn pawn : pawnList) {
+        // Iterate through each pawn in the pawn list
+        for (Pawn pawn : pawnList) {
             int pawnId = pawn.getType().ordinal();
-            if(pawnId == playerTurn) { // each infoText corresponds to a pawn in pawnList
-                infoPane.updateInfo(pawnId, humanInputHandler.getPlayerName(playerTurn),
+            // Check if the pawn corresponds to the current player's turn
+            if (pawnId == playerTurn) {
+                // Update the information displayed in the info panel for the current player
+                infoPane.updateInfo(
+                        pawnId,
+                        humanInputHandler.getPlayerName(playerTurn),
                         humanInputHandler.getPlayerWallsLeft(playerTurn),
-                        humanInputHandler.getPlayerColor(playerTurn));
-                break;
+                        humanInputHandler.getPlayerColor(playerTurn)
+                );
             }
         }
     }
 
-    public VerticalWall findVerticalWallObject(int row, int col) {
-        for(Node node : verticalWallGroup.getChildren()) {
+    /**
+     * Finds and returns the vertical wall located at the specified row and column on the game board.
+     * @param row the row of the vertical wall
+     * @param col the column of the vertical wall
+     * @return the vertical wall if found, or {@code null} if not found
+     */
+    public VerticalWall findVerticalWall(int row, int col) {
+        // Iterate through each node in the vertical wall group
+        for (Node node : verticalWallGroup.getChildren()) {
             VerticalWall wall = (VerticalWall) node;
+            // Check if the wall's row and column match the specified row and column
             if (wall.getCol() == col && wall.getRow() == row) {
                 return wall;
             }
         }
         return null;
     }
-    public HorizontalWall findHorizontalWallObject(int row, int col) {
-        for(Node node : horizontalWallGroup.getChildren()) {
+
+    /**
+     * Finds and returns the horizontal wall located at the specified row and column on the game board.
+     * @param row the row of the horizontal wall
+     * @param col the column of the horizontal wall
+     * @return the horizontal wall if found, or {@code null} if not found
+     */
+    public HorizontalWall findHorizontalWall(int row, int col) {
+        // Iterate through each node in the horizontal wall group
+        for (Node node : horizontalWallGroup.getChildren()) {
+            // Cast the node to HorizontalWall
             HorizontalWall wall = (HorizontalWall) node;
             if (wall.getCol() == col && wall.getRow() == row) {
                 return wall;
@@ -155,42 +237,80 @@ public class Game extends Application{
         return null;
     }
 
+    /**
+     * Updates the location of the pawn with the specified ID on the game board.
+     * If the provided xPixel and yPixel values are not -1, the pawn's position is updated.
+     * Otherwise, the pawn is reversed (moved back to its previous position).
+     * Additionally, the information panel is updated with the latest information about the pawn.
+     *
+     * @param id the ID of the pawn to update
+     * @param xPixel the x-coordinate of the new position, or -1 to reverse the pawn
+     * @param yPixel the y-coordinate of the new position, or -1 to reverse the pawn
+     */
     public void updatePawnLocation(int id, double xPixel, double yPixel) {
+        // Retrieve the pawn with the specified ID from the pawn list
         Pawn pawn = pawnList[id];
-        if(xPixel != -1 && yPixel != -1) {
+
+        // Check if the provided xPixel and yPixel values indicate a new position
+        if (xPixel != -1 && yPixel != -1) {
             pawn.move(xPixel, yPixel);
             updateInfoPanel(id);
-        }
-        else {
+        } else {
+            // Reverse the pawn (move it back to its previous position)
             pawn.reverse();
         }
     }
 
+    /**
+     * Fills the specified vertical walls with black color and marks them as placed if indicated.
+     * @param wall1 the first vertical wall
+     * @param wall2 the second vertical wall
+     * @param isPressed indicates whether the walls are being placed
+     */
     public void fillVerticalWall(VerticalWall wall1, VerticalWall wall2, boolean isPressed) {
         wall1.setFill(Color.BLACK);
         wall2.setFill(Color.BLACK);
-        if(isPressed) {
-            wall1.setPressCommit(true);
-            wall2.setPressCommit(true);
+        if (isPressed) {
+            wall1.setIsPlaced(true);
+            wall2.setIsPlaced(true);
         }
     }
+
+    /**
+     * Removes the fill color from the specified vertical walls.
+     * @param wall1 the first vertical wall
+     * @param wall2 the second vertical wall
+     */
     public void removeFillVerticalWall(VerticalWall wall1, VerticalWall wall2) {
         wall1.setFill(Color.SILVER);
         wall2.setFill(Color.SILVER);
-
     }
+
+    /**
+     * Fills the specified horizontal walls with black color and marks them as placed if indicated.
+     * @param wall1 the first horizontal wall
+     * @param wall2 the second horizontal wall
+     * @param isPressed indicates whether the walls are being placed
+     */
     public void fillHorizontalWall(HorizontalWall wall1, HorizontalWall wall2, boolean isPressed) {
         wall1.setFill(Color.BLACK);
         wall2.setFill(Color.BLACK);
-        if(isPressed) {
-            wall1.setPressCommit(true);
-            wall2.setPressCommit(true);
+        if (isPressed) {
+            wall1.setIsPlaced(true);
+            wall2.setIsPlaced(true);
         }
     }
+
+    /**
+     * Removes the fill color from the specified horizontal walls.
+     * @param wall1 the first horizontal wall
+     * @param wall2 the second horizontal wall
+     */
     public void removeFillHorizontalWall(HorizontalWall wall1, HorizontalWall wall2) {
         wall1.setFill(Color.SILVER);
         wall2.setFill(Color.SILVER);
     }
+
 
     public static void main(String[] args) {
         launch(args);

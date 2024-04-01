@@ -2,68 +2,77 @@ package Model;
 
 import java.util.Objects;
 
+/**
+ * Represents a wall in the game.
+ */
 public class Wall {
 
-    Square startingSq = new Square();
+    /** The square located at the start of the wall. */
+    Square startingSq;
+    /** The orientation of the wall (horizontal or vertical). */
     Orientation orientation = null;
 
     /**
-     * @param startingSq Square located at the start of the wall.
-     * @param orientation direction that the wall will go in (vertical or horizontal)
+     * Constructs a wall with the specified starting square and orientation.
+     * @param startingSq the square located at the start of the wall
+     * @param orientation the direction that the wall will go in (vertical or horizontal)
      */
     public Wall(Square startingSq, Orientation orientation) {
         this.startingSq = startingSq;
         this.orientation = orientation;
     }
 
+    /**
+     * Constructs a wall with the specified starting square and orientation.
+     * @param startingSq the square located at the start of the wall
+     * @param orientation the direction that the wall will go in (specified as 'h' for horizontal or 'v' for vertical)
+     */
     public Wall(Square startingSq, char orientation) {
         this.startingSq = startingSq;
         this.orientation = (orientation == 'h') ? Orientation.HORIZONTAL : Orientation.VERTICAL;
     }
 
-    public Wall(int row, int col, char orientation) {
-        this.startingSq = new Square(row, col);
-        this.orientation = (orientation == 'h') ? Orientation.HORIZONTAL : Orientation.VERTICAL;
-    }
-
-    /** Constructor for Wall using a string.
-     * example: Vertical wall between column e and f spanning rows 3 and 4 is e3v.
-     * @param s string constructor
+    /**
+     * Constructs a wall using a string representation.
+     * Example: "e3v" represents a vertical wall between columns e and f spanning rows 3 and 2.
+     * @param s the string representation of the wall
      */
     public Wall(String s) {
         if (s.length() > 2) {
-            this.startingSq = new Square (s.substring(0, 2));
+            this.startingSq = new Square(s.substring(0, 2));
             this.orientation = s.charAt(2) == 'h' ? Orientation.HORIZONTAL : Orientation.VERTICAL;
         }
     }
 
-    public Wall(Wall original) {
-        this.startingSq = new Square(original.startingSq);
-        this.orientation = original.orientation;
-    }
-
+    /**
+     * Returns the neighbor wall of the specified row, column, and orientation.
+     * @param row the row offset for the neighbor wall
+     * @param column the column offset for the neighbor wall
+     * @param orientation the orientation of the neighbor wall
+     * @return the neighbor wall
+     */
     public Wall neighbor(int row, int column, Orientation orientation) {
-        Square neighborSq = new Square(startingSq.getRow()+row, startingSq.getCol()+column);
-        Wall wall = new Wall(neighborSq, orientation);
-        return wall;
+        Square neighborSq = new Square(startingSq.getRow() + row, startingSq.getCol() + column);
+        return new Wall(neighborSq, orientation);
     }
 
+    /**
+     * Gets the starting square of the wall.
+     * @return the starting square of the wall
+     */
     public Square getStartingSq() { return startingSq; }
-//    public Square getSecondarySq() {
-//        if(getOrientation() == Orientation.HORIZONTAL)
-//            return getStartingSq().neighbor(0, 1);
-//        else
-//            return getStartingSq().neighbor(-1, 0);
-//    }
 
+    /**
+     * Gets the orientation of the wall.
+     * @return the orientation of the wall
+     */
     public Orientation getOrientation() { return orientation; }
 
-    @Override
+
     public String toString() {
         return startingSq.toString() + orientation.name().toLowerCase().charAt(0);
     }
 
-    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -71,12 +80,11 @@ public class Wall {
         return Objects.equals(startingSq, wall.startingSq) && orientation == wall.orientation;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(startingSq, orientation);
-    }
-
+    /**
+     * Represents the orientation of a wall (horizontal or vertical).
+     */
     public enum Orientation{
-        HORIZONTAL, VERTICAL;
+        HORIZONTAL, VERTICAL
     }
 }
+

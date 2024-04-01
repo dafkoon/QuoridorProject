@@ -4,26 +4,39 @@ import Model.GameRules;
 import Model.Wall;
 import Model.Player;
 
-import View.pieces.HorizontalWall;
-import View.pieces.Pawn;
-import View.pieces.VerticalWall;
-import javafx.scene.input.MouseEvent;
+import View.pieces.PawnElements.*;
 import View.Game;
+import View.pieces.Walls.*;
+import javafx.scene.input.MouseEvent;
 
 import static Utilities.Constants.*;
 
+/**
+ * This class handles human input events and interactions in the game.
+ */
 public class HumanInputHandler {
     private final GameRules model;
     private final ViewUpdater viewUpdater;
     private final Game view;
     private AI ai;
 
+    /**
+     * Constructs a HumanInputHandler object.
+     * @param view            The game view.
+     * @param startingPlayer  The ID of the starting player.
+     */
     public HumanInputHandler(Game view, int startingPlayer) {
         this.view = view;
         this.viewUpdater = ViewUpdater.getInstance(view);
         this.model = new GameRules(startingPlayer);
     }
 
+    /**
+     * Adds a player to the game.
+     * @param name  The name of the player.
+     * @param color The color of the player.
+     * @param id    The ID of the player.
+     */
     public void addPlayer(String name, String color, int id) {
         if (name.equals("HUMAN")) {
             model.addPlayer(name, color, new Square("e1"), 8, id);
@@ -32,26 +45,53 @@ public class HumanInputHandler {
         }
     }
 
+    /**
+     * Adds an opponent to the game.
+     * @param id The ID of the opponent.
+     */
     public void addOpponent(int id) {
         ai = new AI(id, model, view);
     }
 
+    /**
+     * Retrieves the name of a player.
+     * @param id The ID of the player.
+     * @return The name of the player.
+     */
     public String getPlayerName(int id) {
         Player player = this.model.getPlayer(id);
         return player.getName();
     }
+
+
+    /**
+     * Retrieves the number of walls left for a player.
+     * @param id The ID of the player.
+     * @return The number of walls left for the player.
+     */
     public int getPlayerWallsLeft(int id) {
         Player player = this.model.getPlayer(id);
         return player.getWallsLeft();
     }
+
+    /**
+     * Retrieves the color of a player.
+     * @param id The ID of the player.
+     * @return The color of the player.
+     */
     public String getPlayerColor(int id) {
         Player player = this.model.getPlayer(id);
         return player.getColor();
     }
 
+    /**
+     * Handles pawn movement events.
+     * @param event The mouse event.
+     * @param pawn The pawn object.
+     */
     public void handlePawnMovement(MouseEvent event, Pawn pawn) {
-        if(model.getTurn() == pawn.getType().ordinal()){
-            switch(event.getEventType().getName()) {
+        if (model.getTurn() == pawn.getType().ordinal()) {
+            switch (event.getEventType().getName()) {
                 case "MOUSE_PRESSED":
                     pawnMousePressed(event, pawn);
                     break;
@@ -59,117 +99,180 @@ public class HumanInputHandler {
                     pawnMouseDragged(event, pawn);
                     break;
                 case "MOUSE_RELEASED":
-                    pawnMouseReleased(event, pawn);
+                    pawnMouseReleased(pawn);
                     onHumanMoveCompleted();
                     break;
             }
         }
     }
+    /**
+     * Handles mouse events related to vertical wall movement.
+     * @param event The mouse event.
+     * @param wall The horizontal wall object.
+     */
     public void handleVerticalWallMovement(MouseEvent event, VerticalWall wall) {
         switch(event.getEventType().getName()) {
             case "MOUSE_ENTERED":
-                verticalWallEntered(event, wall);
+                verticalWallEntered(wall);
                 break;
             case "MOUSE_PRESSED":
-                verticalWallPressed(event, wall);
+                verticalWallPressed(wall);
                 break;
             case "MOUSE_EXITED":
-                verticalWallExited(event, wall);
+                verticalWallExited(wall);
                 onHumanMoveCompleted();
                 break;
         }
     }
+    /**
+     * Handles mouse events related to horizontal wall movement.
+     * @param event The mouse event.
+     * @param wall The horizontal wall object.
+     */
     public void handleHorizontalWallMovement(MouseEvent event, HorizontalWall wall) {
-        switch(event.getEventType().getName()) {
+        switch (event.getEventType().getName()) {
             case "MOUSE_ENTERED":
-                horizontalWallEntered(event, wall);
+                horizontalWallEntered(wall);
                 break;
             case "MOUSE_PRESSED":
-                horizontalWallPressed(event, wall);
+                horizontalWallPressed(wall);
                 break;
             case "MOUSE_EXITED":
-                horizontalWallExited(event, wall);
+                horizontalWallExited(wall);
                 onHumanMoveCompleted();
                 break;
         }
     }
 
+    /**
+     * Handles the mouse press event for moving a pawn.
+     * @param event The mouse event.
+     * @param pawn The pawn object.
+     */
     public void pawnMousePressed(MouseEvent event, Pawn pawn) {
         pawn.mouseX = event.getSceneX();
         pawn.mouseY = event.getSceneY();
     }
+
+    /**
+     * Handles the mouse drag event for moving a pawn.
+     * @param event The mouse event.
+     * @param pawn The pawn object.
+     */
     public void pawnMouseDragged(MouseEvent event, Pawn pawn) {
-        if(pawn.getType() == Pawn.PawnType.HUMAN) {
-            // e.getSceneX()-mouseX continually calculates horizontal distance mouse has moved since last update.
-            // getLayoutX current X coordinate of the node within its parent's coordinate system.
-            pawn.relocate(pawn.getLayoutX() + (event.getSceneX()-pawn.mouseX), pawn.getLayoutY() + (event.getSceneY() - pawn.mouseY));
+        if (pawn.getType() == PawnType.HUMAN) {
+            // Continually calculates horizontal distance mouse has moved since last update.
+            // getLayoutX: current X coordinate of the node within its parent's coordinate system.
+            pawn.relocate(pawn.getLayoutX() + (event.getSceneX() - pawn.mouseX), pawn.getLayoutY() + (event.getSceneY() - pawn.mouseY));
             pawn.mouseX = event.getSceneX();
             pawn.mouseY = event.getSceneY();
         }
     }
-    public void pawnMouseReleased(MouseEvent event, Pawn pawn) {
+
+    /**
+     * Handles the mouse release event for moving a pawn.
+     * @param pawn The pawn object.
+     */
+    public void pawnMouseReleased(Pawn pawn) {
         double xPixel = pawn.getLayoutX();
-        double yPixel = (BOARD_SIZE-TILE_SIZE) - pawn.getLayoutY();
+        double yPixel = (BOARD_SIZE - TILE_SIZE) - pawn.getLayoutY();
         int newCol = pixelToBoard(xPixel);
         int newRow = pixelToBoard(yPixel);
         Square dest = new Square(newRow, newCol);
         int turn = model.getTurn();
-        if(model.commitMove(dest.toString()))
+        if (model.commitMove(dest.toString()))
             viewUpdater.updatePawnPosition(turn, newRow, newCol);
         else
             viewUpdater.updatePawnPosition(turn, -1, -1);
     }
 
-    public void verticalWallEntered(MouseEvent event, VerticalWall wall) {
-        if(wall.getRow() > 1) {
-            if(model.isLegalWallPlacement(wall.toAlgebraic(), false)) { //BOARD_DIMENSION - (row + 1), col
+    /**
+     * Handles the mouse entering event for a vertical wall.
+     * @param wall The vertical wall object.
+     */
+    public void verticalWallEntered(VerticalWall wall) {
+        if (wall.getRow() > 1) {
+            if (model.isLegalWallPlacement(wall.toAlgebraic(), false)) {
                 viewUpdater.fillVerticalWall(wall, false);
             }
         }
     }
-    public void verticalWallExited(MouseEvent event, VerticalWall wall) {
-        if(wall.getRow() > 1 && !wall.isPressCommit()) {
-            if(model.isLegalWallPlacement(wall.toAlgebraic(), false)) {
+
+    /**
+     * Handles the mouse exiting event for a vertical wall.
+     * @param wall The vertical wall object.
+     */
+    public void verticalWallExited(VerticalWall wall) {
+        if (wall.getRow() > 1 && !wall.isPlaced()) {
+            if (model.isLegalWallPlacement(wall.toAlgebraic(), false)) {
                 viewUpdater.removeFillVerticalWall(wall);
             }
         }
     }
-    public void verticalWallPressed(MouseEvent event, VerticalWall wall) {
+
+    /**
+     * Handles the mouse press event for a vertical wall.
+     * @param wall The vertical wall object.
+     */
+    public void verticalWallPressed(VerticalWall wall) {
         Wall newWall = new Wall(wall.toAlgebraic() + 'v');
         int turn = model.getTurn();
-        if(model.commitMove(newWall.toString())) {
+        if (model.commitMove(newWall.toString())) {
             viewUpdater.updateVerticalWall(wall.getRow(), wall.getCol(), turn);
         }
     }
 
-    public void horizontalWallEntered(MouseEvent event, HorizontalWall wall) {
-        if(wall.getCol() < BOARD_DIMENSION) {
-            if(model.isLegalWallPlacement(wall.toAlgebraic(), true)) {
+    /**
+     * Handles the mouse entering event for a horizontal wall.
+     * @param wall The horizontal wall object.
+     */
+    public void horizontalWallEntered(HorizontalWall wall) {
+        if (wall.getCol() < BOARD_DIMENSION) {
+            if (model.isLegalWallPlacement(wall.toAlgebraic(), true)) {
                 viewUpdater.fillHorizontalWall(wall, false);
             }
-
         }
     }
-    public void horizontalWallExited(MouseEvent event, HorizontalWall wall) {
-        if(wall.getCol() < BOARD_DIMENSION && !wall.isPressCommit()) {
-            if(model.isLegalWallPlacement(wall.toAlgebraic(), true)) {
+
+    /**
+     * Handles the mouse exiting event for a horizontal wall.
+     * @param wall The horizontal wall object.
+     */
+    public void horizontalWallExited(HorizontalWall wall) {
+        if (wall.getCol() < BOARD_DIMENSION && !wall.isPlaced()) {
+            if (model.isLegalWallPlacement(wall.toAlgebraic(), true)) {
                 viewUpdater.removeFillHorizontalWall(wall);
             }
         }
     }
-    public void horizontalWallPressed(MouseEvent event, HorizontalWall wall) {
+
+    /**
+     * Handles the mouse press event for a horizontal wall.
+     * @param wall The horizontal wall object.
+     */
+    public void horizontalWallPressed(HorizontalWall wall) {
         Wall newWall = new Wall(wall.toAlgebraic() + 'h');
         int turn = model.getTurn();
-        if(model.commitMove(newWall.toString())) {
+        if (model.commitMove(newWall.toString())) {
             viewUpdater.updateHorizontalWall(wall.getRow(), wall.getCol(), turn);
         }
     }
 
+
+    /**
+     * Converts pixel coordinates to board coordinates.
+     * @param pixel The pixel coordinate.
+     * @return The corresponding board coordinate.
+     */
     public int pixelToBoard(double pixel) {
-        return (int)(pixel+ TILE_SIZE/2)/TILE_SIZE;
+        return (int) (pixel + TILE_SIZE / 2) / TILE_SIZE;
     }
 
+    /**
+     * Handles the completion of a human player's move by initiating the AI's turn.
+     */
     public void onHumanMoveCompleted() {
         ai.AiTurn();
     }
+
 }

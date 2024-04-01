@@ -1,136 +1,135 @@
 package Model;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
 
 import static Utilities.Constants.BOARD_DIMENSION;
 
 /**
- * Represents a Tile on the "Board" class.
+ * Represents a square on the game board.
  */
 public class Square {
-
     private int row;
     private int col;
 
     /**
-     * Default constructor (used in Wall).
-     */
-    public Square() {}
-
-    /**
-     * Constructor for Square using index of row and column.
-     * @param row index of row.
-     * @param col index of column.
+     * Constructs a square with the specified row and column indices.
+     * @param row the index of the row
+     * @param col the index of the column
      */
     public Square(int row, int col) {
         this.row = row;
         this.col = col;
-
     }
 
     /**
-     * Constructor for Square using a string location. example a4
-     * @param s location on board using string.
+     * Constructs a square using a string location.
+     * Example: "a4" represents the square at column a and row 4.
+     * @param s the string representation of the square's location
      */
-    public Square(String s){
-        if(s.length() > 1) {
+    public Square(String s) {
+        if (s.length() > 1) {
             this.row = s.charAt(1) - '1';
             this.col = s.charAt(0) - 'a';
         }
     }
 
     /**
-     * Copy constructor.
-     * @param sq Square instance to copy.
+     * Creates a new square object with the indices of the current square plus the specified displacements.
+     * @param row the displacement of the row
+     * @param col the displacement of the column
+     * @return a new square with the displacement applied
      */
-    public Square(Square sq) {
-        this.row = sq.getRow();
-        this.col = sq.getCol();
+    public Square neighbor(int row, int col) {
+        return new Square(this.row + row, this.col + col);
     }
 
     /**
-     * Creates a new Square object with the indexes of Square + parameters.
-     * @param row displacement of row.
-     * @param col displacement of col.
-     * @return new square with displacement apploed.
-     * @throws IllegalArgumentException
+     * Assigns a list of squares which are the neighbors of the current square at the specified radius.
+     * @param radius the displacement of squares surrounding the current square
+     * @return a list of neighboring square objects
      */
-    public Square neighbor(int row, int col) throws IllegalArgumentException{
-        return new Square(this.row+row, this.col+col);
-    }
-
-    /**
-     * Assigns a LinkedList of Squares which are the neighbors of Square at displacement radius.
-     * @param radius displacement of squares surrounding current square.
-     * @return A LinkedList of Square objects.
-     */
-    public List<Square> neighbourhood (int radius) {
-        List <Square> neighbors = new LinkedList<Square>();
-        for(int distance = -radius; distance <= radius; distance++) {
-            if(distance != 0) {
-                if(row+distance >= 0 && row+distance < 9)
-                    neighbors.add(new Square(row+distance, col));
-                if(col+distance >= 0 && col+distance < 9)
-                    neighbors.add(new Square(row, col+distance));
+    public List<Square> neighbourhood(int radius) {
+        List<Square> neighbors = new LinkedList<>();
+        for (int distance = -radius; distance <= radius; distance++) {
+            if (distance != 0) {
+                if (row + distance >= 0 && row + distance < 9)
+                    neighbors.add(new Square(row + distance, col));
+                if (col + distance >= 0 && col + distance < 9)
+                    neighbors.add(new Square(row, col + distance));
             }
         }
         return neighbors;
     }
 
     /**
-     * @param sq square to check if current Square is on the same row or column as sq but not both.
-     * @return checks if square is on same the same row or column of current square.
+     * Checks if the current square is on the same row or column as another square but not both.
+     * @param sq the square to check against
+     * @return true if the square is on the same row or column of the current square, but not both; false otherwise
      */
     public boolean isCardinalTo(Square sq) {
         return (row - sq.row != 0) ^ (col - sq.col != 0);
     }
 
     /**
-     * @param sq square to get a square opposite to it (for jumping)
-     * @return square that 2 squares away from current square
+     * Returns the square opposite to the specified square (for jumping).
+     * @param sq the square to get the opposite square for
+     * @return the square that is 2 squares away from the current square
      */
     public Square opposite(Square sq) {
-        return new Square(2*sq.row - row, 2*sq.col - col);
+        return new Square(2 * sq.row - row, 2 * sq.col - col);
     }
 
-    public int squareToIndex() { return this.row*BOARD_DIMENSION+this.col; }
+    /**
+     * Converts the square to its corresponding index in the board array.
+     * @return the index of the square in the board array
+     */
+    public int squareToIndex() {
+        return this.row * BOARD_DIMENSION + this.col;
+    }
 
     /**
-     * Get the index of the row.
-     * @return index of row.
+     * Gets the index of the row.
+     * @return the index of the row
      */
     public int getRow() {
         return row;
     }
+
     /**
-     * Get the index of the column.
-     * @return index of column.
+     * Gets the index of the column.
+     * @return the index of the column
      */
     public int getCol() {
         return col;
     }
 
-    public char getRowNotation() { return (char) ('1' + this.row); }
-    public char getColNotation() { return (char) ('a' + this.col); }
+    /**
+     * Gets the notation of the row (e.g., '1' for row 1).
+     * @return the notation of the row
+     */
+    public char getRowNotation() {
+        return (char) ('1' + this.row);
+    }
 
-    @Override
+    /**
+     * Gets the notation of the column (e.g., 'a' for column a).
+     * @return the notation of the column
+     */
+    public char getColNotation() {
+        return (char) ('a' + this.col);
+    }
+
     public String toString() {
         char row = getRowNotation();
         char col = getColNotation();
-        return ""+col+row;
+        return "" + col + row;
     }
 
-    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Square square = (Square) o;
         return row == square.row && col == square.col;
     }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(row, col);
-    }
 }
+
