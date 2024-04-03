@@ -1,11 +1,11 @@
 package Controller;
 import Model.Square;
-import Model.GameRules;
+import Model.GameData;
 import Model.Wall;
 import Model.Player;
 
 import View.pieces.PawnElements.*;
-import View.Game;
+import View.GUI;
 import View.pieces.Walls.*;
 import javafx.scene.input.MouseEvent;
 
@@ -14,21 +14,21 @@ import static Utilities.Constants.*;
 /**
  * This class handles human input events and interactions in the game.
  */
-public class HumanInputHandler {
-    private final GameRules model;
+public class ClientSideHandler {
+    private final GameData model;
     private final ViewUpdater viewUpdater;
-    private final Game view;
+    private final GUI view;
     private AI ai;
 
     /**
-     * Constructs a HumanInputHandler object.
+     * Constructs a ClientSideHandler object.
      * @param view            The game view.
      * @param startingPlayer  The ID of the starting player.
      */
-    public HumanInputHandler(Game view, int startingPlayer) {
+    public ClientSideHandler(GUI view, int startingPlayer) {
         this.view = view;
         this.viewUpdater = ViewUpdater.getInstance(view);
-        this.model = new GameRules(startingPlayer);
+        this.model = new GameData(startingPlayer);
     }
 
     /**

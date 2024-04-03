@@ -6,7 +6,7 @@ import View.pieces.PawnElements.*;
 import View.pieces.PawnElements.PawnType;
 import View.pieces.PawnElements.PawnColor;
 
-import Controller.HumanInputHandler;
+import Controller.ClientSideHandler;
 
 import static Utilities.Constants.*;
 
@@ -19,7 +19,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 
-public class Game extends Application{
+public class GUI extends Application{
     public static int startingPlayer;
     private final Group tileGroup = new Group();
     private final Group pawnGroup = new Group();
@@ -27,7 +27,7 @@ public class Game extends Application{
     private final Group verticalWallGroup = new Group();
     private InfoPane infoPane;
     private Pawn[] pawnList;
-    private HumanInputHandler humanInputHandler;
+    private ClientSideHandler controller;
 
     /**
      * Initializes and starts the Quoridor game.
@@ -36,7 +36,7 @@ public class Game extends Application{
      */
     public void start(Stage primaryStage) {
         startingPlayer = 0; // 0 - Human starts     1 - AI starts
-        humanInputHandler = new HumanInputHandler(this, startingPlayer);
+        controller = new ClientSideHandler(this, startingPlayer);
 
         initPawns();
 
@@ -48,7 +48,7 @@ public class Game extends Application{
         primaryStage.show();
 
         if(startingPlayer == PawnType.AI.ordinal())
-            humanInputHandler.onHumanMoveCompleted();
+            controller.onHumanMoveCompleted();
     }
 
     /**
@@ -75,7 +75,7 @@ public class Game extends Application{
                 pawnMouseEvents(pawn);
 
             // Add player to the human input handler
-            humanInputHandler.addPlayer(pawnType.name(), pawnColor.name(), currentPlayer);
+            controller.addPlayer(pawnType.name(), pawnColor.name(), currentPlayer);
             // Add the pawn to the pawn group for display
             pawnGroup.getChildren().add(pawn);
             // Store the pawn in the pawn list
@@ -84,7 +84,7 @@ public class Game extends Application{
             currentPlayer = (currentPlayer + 1) % 2;
         }
         // Add AI opponent to the human input handler
-        humanInputHandler.addOpponent(PawnType.AI.ordinal());
+        controller.addOpponent(PawnType.AI.ordinal());
     }
 
     /**
@@ -92,9 +92,9 @@ public class Game extends Application{
      * @param pawn the pawn for which mouse events are registered
      */
     public void pawnMouseEvents(Pawn pawn) {
-        pawn.setOnMousePressed(event -> humanInputHandler.handlePawnMovement(event, pawn));
-        pawn.setOnMouseDragged(event -> humanInputHandler.handlePawnMovement(event, pawn));
-        pawn.setOnMouseReleased(event -> humanInputHandler.handlePawnMovement(event, pawn));
+        pawn.setOnMousePressed(event -> controller.handlePawnMovement(event, pawn));
+        pawn.setOnMouseDragged(event -> controller.handlePawnMovement(event, pawn));
+        pawn.setOnMouseReleased(event -> controller.handlePawnMovement(event, pawn));
     }
 
     /**
@@ -102,9 +102,9 @@ public class Game extends Application{
      * @param wall the horizontal wall for which mouse events are registered
      */
     public void horizontalWallMouseEvents(HorizontalWall wall) {
-        wall.setOnMouseEntered(event -> humanInputHandler.handleHorizontalWallMovement(event, wall));
-        wall.setOnMousePressed(event -> humanInputHandler.handleHorizontalWallMovement(event, wall));
-        wall.setOnMouseExited(event -> humanInputHandler.handleHorizontalWallMovement(event, wall));
+        wall.setOnMouseEntered(event -> controller.handleHorizontalWallMovement(event, wall));
+        wall.setOnMousePressed(event -> controller.handleHorizontalWallMovement(event, wall));
+        wall.setOnMouseExited(event -> controller.handleHorizontalWallMovement(event, wall));
     }
 
     /**
@@ -112,9 +112,9 @@ public class Game extends Application{
      * @param wall the vertical wall for which mouse events are registered
      */
     public void verticalWallMouseEvents(VerticalWall wall) {
-        wall.setOnMouseEntered(event -> humanInputHandler.handleVerticalWallMovement(event, wall));
-        wall.setOnMousePressed(event -> humanInputHandler.handleVerticalWallMovement(event, wall));
-        wall.setOnMouseExited(event -> humanInputHandler.handleVerticalWallMovement(event, wall));
+        wall.setOnMouseEntered(event -> controller.handleVerticalWallMovement(event, wall));
+        wall.setOnMousePressed(event -> controller.handleVerticalWallMovement(event, wall));
+        wall.setOnMouseExited(event -> controller.handleVerticalWallMovement(event, wall));
     }
 
     /**
@@ -170,9 +170,9 @@ public class Game extends Application{
         for (Pawn pawn : pawnList) {
             int id = pawn.getType().ordinal();
             panel.addInfo(
-                    humanInputHandler.getPlayerName(id),
-                    humanInputHandler.getPlayerWallsLeft(id),
-                    humanInputHandler.getPlayerColor(id)
+                    controller.getPlayerName(id),
+                    controller.getPlayerWallsLeft(id),
+                    controller.getPlayerColor(id)
             );
         }
         // Set the position of the info panel relative to the game board
@@ -193,9 +193,9 @@ public class Game extends Application{
                 // Update the information displayed in the info panel for the current player
                 infoPane.updateInfo(
                         pawnId,
-                        humanInputHandler.getPlayerName(playerTurn),
-                        humanInputHandler.getPlayerWallsLeft(playerTurn),
-                        humanInputHandler.getPlayerColor(playerTurn)
+                        controller.getPlayerName(playerTurn),
+                        controller.getPlayerWallsLeft(playerTurn),
+                        controller.getPlayerColor(playerTurn)
                 );
             }
         }

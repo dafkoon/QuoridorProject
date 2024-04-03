@@ -1,6 +1,6 @@
 package Controller;
 
-import View.Game;
+import View.GUI;
 import View.pieces.Walls.*;
 import static Utilities.Constants.*;
 
@@ -9,13 +9,13 @@ import static Utilities.Constants.*;
  */
 public class ViewUpdater {
     private static ViewUpdater instance;
-    private final Game view;
+    private final GUI view;
 
     /**
      * Constructs a ViewUpdater instance.
      * @param view The Game view to be updated.
      */
-    private ViewUpdater(Game view) {
+    private ViewUpdater(GUI view) {
         this.view = view;
     }
 
@@ -25,13 +25,13 @@ public class ViewUpdater {
      * @param view The Game view.
      * @return The ViewUpdater instance.
      */
-    public static ViewUpdater getInstance(Game view) {
+    public static ViewUpdater getInstance(GUI view) {
         if(instance == null)
             instance = new ViewUpdater(view);
         return instance;
     }
 
-    // These are used only by the HumanInputHandler Class
+    // These are used only by the ClientSideHandler Class
 
     /**
      * Fills a vertical wall on the human side.
@@ -79,7 +79,7 @@ public class ViewUpdater {
         view.removeFillHorizontalWall(wall1, wall2);
     }
 
-    // These methods are used by both AI class and HumanInputHandler
+    // These methods are used by both AI class and ClientSideHandler
 
     /**
      * Updates a horizontal wall on the board.

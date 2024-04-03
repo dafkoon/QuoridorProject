@@ -22,6 +22,7 @@ public abstract class BFS {
         ArrayList<Square> path = new ArrayList<>();
         if (currentGraph == null)
             return path;
+
         Queue<Square> queue = new LinkedList<>();
         HashMap<Square, Square> parentNode = new HashMap<>();
         queue.add(srcSq);
@@ -31,7 +32,7 @@ public abstract class BFS {
             Square curr = queue.poll();
             if (curr != null) {
                 if (curr.getRow() == destRow) {
-                    while (!curr.equals(srcSq)) {
+                    while (curr != null) {
                         path.add(curr);
                         curr = parentNode.get(curr);
                     }

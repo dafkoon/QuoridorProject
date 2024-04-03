@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 /**
  * Manages the game rules and stores data.
  */
-public class GameRules {
+public class GameData {
     private static final int MAX_PLAYERS = 2;
     private static int moveCounter;
     private static int headstart = 0;
@@ -27,7 +27,7 @@ public class GameRules {
      * Constructs the game rules with the specified starting player.
      * @param startingPlayer the index of the starting player
      */
-    public GameRules(int startingPlayer) {
+    public GameData(int startingPlayer) {
         this.startingPlayer = startingPlayer;
         this.turn = startingPlayer;
     }

@@ -90,7 +90,6 @@ public class Board {
             addEdge(wall.startingSq, wall.startingSq.neighbor(0, 1));
             addEdge(wall.startingSq.neighbor(-1, 0), wall.startingSq.neighbor(-1, 1));
         }
-        System.out.println(!hasPath);
         return !hasPath;
     }
 
