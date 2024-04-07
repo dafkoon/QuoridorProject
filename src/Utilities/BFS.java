@@ -1,9 +1,10 @@
 package Utilities;
 
 import Model.Square;
-import static Utilities.Constants.*;
 
 import java.util.*;
+
+import static Utilities.Constants.BOARD_DIMENSION;
 
 /**
  * Abstract class for implementing breadth-first search (BFS) algorithm.

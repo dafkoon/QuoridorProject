@@ -62,9 +62,9 @@ public class Square {
     }
 
     /**
-     * Checks if the current square is on the same row or column as another square but not both.
-     * @param sq the square to check against
-     * @return true if the square is on the same row or column of the current square, but not both; false otherwise
+     * A boolean method that calculates if the given sq is adjacent in a straight line, either horizontally or vertically to this.
+     * @param sq The square to check.
+     * @return True if the square is adjacent in a straight line, either horizontally or vertically to this.
      */
     public boolean isCardinalTo(Square sq) {
         return (row - sq.row != 0) ^ (col - sq.col != 0);
@@ -76,6 +76,7 @@ public class Square {
      * @return the square that is 2 squares away from the current square
      */
     public Square opposite(Square sq) {
+//        System.out.println(this + " " + new Square(2 * sq.row - row, 2 * sq.col - col));
         return new Square(2 * sq.row - row, 2 * sq.col - col);
     }
 

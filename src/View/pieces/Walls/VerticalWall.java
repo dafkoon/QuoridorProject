@@ -1,5 +1,7 @@
 package View.pieces.Walls;
-import static Utilities.Constants.*;
+
+import static Utilities.Constants.BOARD_DIMENSION;
+import static Utilities.Constants.TILE_SIZE;
 
 public class VerticalWall extends Wall {
     public VerticalWall(int row, int col) {

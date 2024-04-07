@@ -1,15 +1,13 @@
 package View;
 
-import View.pieces.*;
-import View.pieces.Walls.*;
-import View.pieces.PawnElements.*;
-import View.pieces.PawnElements.PawnType;
-import View.pieces.PawnElements.PawnColor;
-
 import Controller.ClientSideHandler;
-
-import static Utilities.Constants.*;
-
+import View.pieces.InfoPane;
+import View.pieces.PawnElements.Pawn;
+import View.pieces.PawnElements.PawnColor;
+import View.pieces.PawnElements.PawnType;
+import View.pieces.Tile;
+import View.pieces.Walls.HorizontalWall;
+import View.pieces.Walls.VerticalWall;
 import javafx.application.Application;
 import javafx.scene.Group;
 import javafx.scene.Node;
@@ -17,6 +15,8 @@ import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+
+import static Utilities.Constants.*;
 
 
 public class GUI extends Application{
@@ -39,7 +39,6 @@ public class GUI extends Application{
         controller = new ClientSideHandler(this, startingPlayer);
 
         initPawns();
-
         Pane root = populateBoard();
         Scene scene = new Scene(root);
         primaryStage.setTitle("Quoridor");

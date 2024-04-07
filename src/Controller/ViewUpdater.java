@@ -1,8 +1,11 @@
 package Controller;
 
 import View.GUI;
-import View.pieces.Walls.*;
-import static Utilities.Constants.*;
+import View.pieces.Walls.HorizontalWall;
+import View.pieces.Walls.VerticalWall;
+
+import static Utilities.Constants.BOARD_SIZE;
+import static Utilities.Constants.TILE_SIZE;
 
 /**
  * Singleton class responsible for updating the view based on game events.

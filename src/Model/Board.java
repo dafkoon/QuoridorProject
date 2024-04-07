@@ -1,9 +1,10 @@
 package Model;
 
-import static Utilities.BFS.calculateBFS;
-import static Utilities.Constants.*;
+import java.util.LinkedList;
+import java.util.List;
 
-import java.util.*;
+import static Utilities.BFS.calculateBFS;
+import static Utilities.Constants.BOARD_DIMENSION;
 
 /**
  * Represents the game board.
@@ -207,25 +208,33 @@ public class Board {
 
     /**
      * Checks if a traversal to the destination square is valid for the current player, considering the other player's position.
-     * @param dest The destination square.
-     * @param currentPlayerPos The current player's position.
-     * @param otherPlayerPos The other player's position.
+     * @param destination The destination square.
+     * @param playingPlayerSquare The current player's position.
+     * @param otherPlayerSquare The other player's position.
      * @return True if the traversal is valid, false otherwise.
      */
-    public boolean isValidTraversal(Square dest, Square currentPlayerPos, Square otherPlayerPos){
-        int currentPlayerSquareIndex = squareToIndex(currentPlayerPos);
-        int otherPlayerSquareIndex = squareToIndex(otherPlayerPos);
-        if(currentPlayerSquareIndex >= graph.length || otherPlayerSquareIndex >= graph.length)
+    public boolean isValidTraversal(Square destination, Square playingPlayerSquare, Square otherPlayerSquare){
+        int playingPlayerSquareIndex = squareToIndex(playingPlayerSquare);
+        int otherPlayerSquareIndex = squareToIndex(otherPlayerSquare);
+        if(playingPlayerSquareIndex >= graph.length || otherPlayerSquareIndex >= graph.length) {
             return false;
-        if(dest.equals(currentPlayerPos) || dest.equals(otherPlayerPos)) { // If dest equals any of the player's positions.
+        }
+        if(destination.equals(playingPlayerSquare) || destination.equals(otherPlayerSquare)) {
+            // Check if the destination is a square that's already occupied.
             return false;
-        } else if (graph[currentPlayerSquareIndex].contains(dest)) { // If the player's square is connected to dest.
+        } else if (graph[playingPlayerSquareIndex].contains(destination)) {
+            // Check if the destination is connected to the playing player's Square
             return true;
-        } else if(graph[currentPlayerSquareIndex].contains(otherPlayerPos)) { // If square of current is directly connected to square of other square.
-            if(graph[otherPlayerSquareIndex].contains(currentPlayerPos.opposite(otherPlayerPos))) {
-                return graph[otherPlayerSquareIndex].contains(dest) && currentPlayerPos.isCardinalTo(dest);
+        } else if(graph[playingPlayerSquareIndex].contains(otherPlayerSquare)) {
+            // Check if the playing player's Square is connected to other player's Square
+
+            if(graph[otherPlayerSquareIndex].contains(playingPlayerSquare.opposite(otherPlayerSquare))) {
+                // Return a boolean if the destination is connected to other's Square and is adjacent horizontally or vertically.
+                // Basically return false if the destination is diagonal to playing player's square.
+                return graph[otherPlayerSquareIndex].contains(destination) && playingPlayerSquare.isCardinalTo(destination);
             } else {
-                return graph[otherPlayerSquareIndex].contains(dest); // Other's square is connected to dest.
+                // There is a back wall
+                return graph[otherPlayerSquareIndex].contains(destination); // Other player's Square is connected to the destination
             }
         }
         return false;

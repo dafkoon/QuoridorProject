@@ -1,7 +1,7 @@
 package View.pieces.Walls;
 
-import javafx.scene.shape.Rectangle;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 
 public class Wall extends Rectangle {
     private final int row;

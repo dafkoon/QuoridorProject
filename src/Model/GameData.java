@@ -1,6 +1,6 @@
 package Model;
 
-import java.util.*;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 public class GameData {
     private static final int MAX_PLAYERS = 2;
     private static int moveCounter;
-    private static int headstart = 0;
+    private static int headstart = 5;
 
     /** The index of the starting player. */
     private final int startingPlayer;

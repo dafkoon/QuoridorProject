@@ -1,12 +1,14 @@
 package Controller;
-import Model.Square;
-import Model.GameData;
-import Model.Wall;
-import Model.Player;
 
-import View.pieces.PawnElements.*;
+import Model.GameData;
+import Model.Player;
+import Model.Square;
+import Model.Wall;
 import View.GUI;
-import View.pieces.Walls.*;
+import View.pieces.PawnElements.Pawn;
+import View.pieces.PawnElements.PawnType;
+import View.pieces.Walls.HorizontalWall;
+import View.pieces.Walls.VerticalWall;
 import javafx.scene.input.MouseEvent;
 
 import static Utilities.Constants.*;

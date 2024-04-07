@@ -1,10 +1,12 @@
 package View.pieces;
+
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
-import static Utilities.Constants.*;
+import static Utilities.Constants.BOARD_DIMENSION;
+import static Utilities.Constants.TILE_SIZE;
 
 
 /**

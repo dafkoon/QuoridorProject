@@ -1,4 +1,5 @@
 package View.pieces.PawnElements;
+
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -6,7 +7,8 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 
-import static Utilities.Constants.*;
+import static Utilities.Constants.BOARD_SIZE;
+import static Utilities.Constants.TILE_SIZE;
 
 /**
  * Represents a pawn on the game board.
@@ -16,8 +18,8 @@ public class Pawn extends StackPane {
 
     private final PawnType type;
     private final PawnColor color;
-    public double mouseX, mouseY;
     private double oldX, oldY;
+    public double mouseX, mouseY;
 
     /**
      * Constructs a new pawn with the specified type, color, and initial position.
