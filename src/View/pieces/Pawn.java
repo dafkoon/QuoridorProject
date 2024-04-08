@@ -1,4 +1,4 @@
-package View.pieces.PawnElements;
+package View.pieces;
 
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -32,7 +32,20 @@ public class Pawn extends StackPane {
         this.type = type;
         this.color = color;
         move(xPixel, (BOARD_SIZE - TILE_SIZE) - yPixel);
-        addPawn();
+
+        Circle ellipse = new Circle(TILE_SIZE * 0.3125);
+        ellipse.setFill(Color.web(color.name()));
+        ellipse.setStroke(Color.BLACK);
+        ellipse.setStrokeWidth(TILE_SIZE * 0.03);
+        ellipse.setTranslateX((TILE_SIZE - TILE_SIZE * 0.3125 * 2) / 2);
+        ellipse.setTranslateY((TILE_SIZE - TILE_SIZE * 0.3125 * 2) / 2);
+
+        Text text = new Text(type.name());
+        text.setTranslateX((TILE_SIZE - TILE_SIZE * 0.3125 * 2) / 2);
+        text.setTranslateY((TILE_SIZE - TILE_SIZE * 0.3125 * 2) / 2);
+        text.setFont(Font.font("Verdana", FontWeight.BOLD, 8));
+        text.setFill(Color.BEIGE);
+        getChildren().addAll(ellipse, text);
     }
 
     /**
@@ -51,25 +64,6 @@ public class Pawn extends StackPane {
         return type;
     }
 
-    /**
-     * Adds the pawn as ellipses and places them in their starting positions.
-     * Allows moving the pawn across the board and when released positions them in the center of Square.
-     */
-    public void addPawn() {
-        Circle ellipse = new Circle(TILE_SIZE * 0.3125);
-        ellipse.setFill(Color.web(color.name()));
-        ellipse.setStroke(Color.BLACK);
-        ellipse.setStrokeWidth(TILE_SIZE * 0.03);
-        ellipse.setTranslateX((TILE_SIZE - TILE_SIZE * 0.3125 * 2) / 2);
-        ellipse.setTranslateY((TILE_SIZE - TILE_SIZE * 0.3125 * 2) / 2);
-
-        Text text = new Text(type.name());
-        text.setTranslateX((TILE_SIZE - TILE_SIZE * 0.3125 * 2) / 2);
-        text.setTranslateY((TILE_SIZE - TILE_SIZE * 0.3125 * 2) / 2);
-        text.setFont(Font.font("Verdana", FontWeight.BOLD, 8));
-        text.setFill(Color.BEIGE);
-        getChildren().addAll(ellipse, text);
-    }
 
     /**
      * Reverses the movement of the pawn, moving it back to its previous position.
@@ -127,6 +121,15 @@ public class Pawn extends StackPane {
                 " " + color.name() +
                 '}';
     }
+
+    public enum PawnColor {
+        BLUE, RED
+    }
+
+    public enum PawnType {
+        HUMAN, AI
+    }
+
 
 }
 

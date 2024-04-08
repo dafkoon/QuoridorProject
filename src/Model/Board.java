@@ -173,7 +173,7 @@ public class Board {
      * @return True if both players have a path to their goal, false otherwise.
      */
     public boolean hasPathToGoal(Player player0, Player player1) {
-        return !(calculateBFS(graph, player0.getPos(), player0.getDestRow()).isEmpty() || calculateBFS(graph, player1.getPos(), player1.getDestRow()).isEmpty());
+        return !(calculateBFS(graph, player0.getPosition(), player0.getDestRow()).isEmpty() || calculateBFS(graph, player1.getPosition(), player1.getDestRow()).isEmpty());
     }
 
     /**

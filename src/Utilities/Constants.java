@@ -3,7 +3,7 @@ package Utilities;
 /**
  * Contains constants used in the game.
  */
-public class Constants {
+public abstract class Constants {
     /** The size of each tile on the game board. */
     public static final int TILE_SIZE = 50;
 

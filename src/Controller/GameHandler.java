@@ -4,9 +4,10 @@ import Model.GameData;
 import Model.Player;
 import Model.Square;
 import Model.Wall;
+
 import View.GUI;
-import View.pieces.PawnElements.Pawn;
-import View.pieces.PawnElements.PawnType;
+import View.pieces.Pawn;
+import View.pieces.Pawn.PawnType;
 import View.pieces.Walls.HorizontalWall;
 import View.pieces.Walls.VerticalWall;
 import javafx.scene.input.MouseEvent;
@@ -16,53 +17,42 @@ import static Utilities.Constants.*;
 /**
  * This class handles human input events and interactions in the game.
  */
-public class ClientSideHandler {
+public class GameHandler {
     private final GameData model;
     private final ViewUpdater viewUpdater;
     private final GUI view;
     private AI ai;
+    private final int startingPlayer;
+    private boolean isHumanTurn = true;
 
     /**
      * Constructs a ClientSideHandler object.
      * @param view            The game view.
      * @param startingPlayer  The ID of the starting player.
      */
-    public ClientSideHandler(GUI view, int startingPlayer) {
+    public GameHandler(GUI view, int startingPlayer) {
         this.view = view;
+        this.startingPlayer = startingPlayer;
         this.viewUpdater = ViewUpdater.getInstance(view);
         this.model = new GameData(startingPlayer);
     }
 
-    /**
-     * Adds a player to the game.
-     * @param name  The name of the player.
-     * @param color The color of the player.
-     * @param id    The ID of the player.
-     */
-    public void addPlayer(String name, String color, int id) {
-        if (name.equals("HUMAN")) {
-            model.addPlayer(name, color, new Square("e1"), 8, id);
-        } else {
-            model.addPlayer(name, color, new Square("e9"), 0, id);
+    public void initPlayers(Pawn[] pawns) {
+        for(Pawn pawn : pawns) {
+            if(pawn.getType() == PawnType.HUMAN)
+                model.addPlayer(pawn.getType().name(), new Square("e1"), pawn.getType().ordinal());
+            else
+                model.addPlayer(pawn.getType().name(), new Square("e9"), pawn.getType().ordinal());
         }
+        InitAI(PawnType.AI.ordinal());
     }
 
     /**
      * Adds an opponent to the game.
      * @param id The ID of the opponent.
      */
-    public void addOpponent(int id) {
+    private void InitAI(int id) {
         ai = new AI(id, model, view);
-    }
-
-    /**
-     * Retrieves the name of a player.
-     * @param id The ID of the player.
-     * @return The name of the player.
-     */
-    public String getPlayerName(int id) {
-        Player player = this.model.getPlayer(id);
-        return player.getName();
     }
 
 
@@ -77,34 +67,26 @@ public class ClientSideHandler {
     }
 
     /**
-     * Retrieves the color of a player.
-     * @param id The ID of the player.
-     * @return The color of the player.
-     */
-    public String getPlayerColor(int id) {
-        Player player = this.model.getPlayer(id);
-        return player.getColor();
-    }
-
-    /**
      * Handles pawn movement events.
      * @param event The mouse event.
      * @param pawn The pawn object.
      */
     public void handlePawnMovement(MouseEvent event, Pawn pawn) {
-        if (model.getTurn() == pawn.getType().ordinal()) {
-            switch (event.getEventType().getName()) {
-                case "MOUSE_PRESSED":
-                    pawnMousePressed(event, pawn);
-                    break;
-                case "MOUSE_DRAGGED":
-                    pawnMouseDragged(event, pawn);
-                    break;
-                case "MOUSE_RELEASED":
-                    pawnMouseReleased(pawn);
-                    onHumanMoveCompleted();
-                    break;
-            }
+        if(!isHumanTurn)
+            return;
+        switch (event.getEventType().getName()) {
+            case "MOUSE_PRESSED":
+                pawnMousePressed(event, pawn);
+                break;
+            case "MOUSE_DRAGGED":
+                pawnMouseDragged(event, pawn);
+                break;
+            case "MOUSE_RELEASED":
+                pawnMouseReleased(pawn);
+                break;
+        }
+        if(!isHumanTurn) {
+            callAI();
         }
     }
     /**
@@ -113,6 +95,8 @@ public class ClientSideHandler {
      * @param wall The horizontal wall object.
      */
     public void handleVerticalWallMovement(MouseEvent event, VerticalWall wall) {
+        if(!isHumanTurn)
+            return;
         switch(event.getEventType().getName()) {
             case "MOUSE_ENTERED":
                 verticalWallEntered(wall);
@@ -122,8 +106,10 @@ public class ClientSideHandler {
                 break;
             case "MOUSE_EXITED":
                 verticalWallExited(wall);
-                onHumanMoveCompleted();
                 break;
+        }
+        if(!isHumanTurn) {
+            callAI();
         }
     }
     /**
@@ -132,6 +118,8 @@ public class ClientSideHandler {
      * @param wall The horizontal wall object.
      */
     public void handleHorizontalWallMovement(MouseEvent event, HorizontalWall wall) {
+        if(!isHumanTurn)
+            return;
         switch (event.getEventType().getName()) {
             case "MOUSE_ENTERED":
                 horizontalWallEntered(wall);
@@ -141,8 +129,10 @@ public class ClientSideHandler {
                 break;
             case "MOUSE_EXITED":
                 horizontalWallExited(wall);
-                onHumanMoveCompleted();
                 break;
+        }
+        if(!isHumanTurn) {
+            callAI();
         }
     }
 
@@ -151,7 +141,7 @@ public class ClientSideHandler {
      * @param event The mouse event.
      * @param pawn The pawn object.
      */
-    public void pawnMousePressed(MouseEvent event, Pawn pawn) {
+    private void pawnMousePressed(MouseEvent event, Pawn pawn) {
         pawn.mouseX = event.getSceneX();
         pawn.mouseY = event.getSceneY();
     }
@@ -161,7 +151,7 @@ public class ClientSideHandler {
      * @param event The mouse event.
      * @param pawn The pawn object.
      */
-    public void pawnMouseDragged(MouseEvent event, Pawn pawn) {
+    private void pawnMouseDragged(MouseEvent event, Pawn pawn) {
         if (pawn.getType() == PawnType.HUMAN) {
             // Continually calculates horizontal distance mouse has moved since last update.
             // getLayoutX: current X coordinate of the node within its parent's coordinate system.
@@ -175,15 +165,17 @@ public class ClientSideHandler {
      * Handles the mouse release event for moving a pawn.
      * @param pawn The pawn object.
      */
-    public void pawnMouseReleased(Pawn pawn) {
+    private void pawnMouseReleased(Pawn pawn) {
         double xPixel = pawn.getLayoutX();
         double yPixel = (BOARD_SIZE - TILE_SIZE) - pawn.getLayoutY();
         int newCol = pixelToBoard(xPixel);
         int newRow = pixelToBoard(yPixel);
         Square dest = new Square(newRow, newCol);
         int turn = model.getTurn();
-        if (model.commitMove(dest.toString()))
+        if (model.commitMove(dest.toString())) {
             viewUpdater.updatePawnPosition(turn, newRow, newCol);
+            isHumanTurn = false;
+        }
         else
             viewUpdater.updatePawnPosition(turn, -1, -1);
     }
@@ -192,7 +184,7 @@ public class ClientSideHandler {
      * Handles the mouse entering event for a vertical wall.
      * @param wall The vertical wall object.
      */
-    public void verticalWallEntered(VerticalWall wall) {
+    private void verticalWallEntered(VerticalWall wall) {
         if (wall.getRow() > 1) {
             if (model.isLegalWallPlacement(wall.toAlgebraic(), false)) {
                 viewUpdater.fillVerticalWall(wall, false);
@@ -204,7 +196,7 @@ public class ClientSideHandler {
      * Handles the mouse exiting event for a vertical wall.
      * @param wall The vertical wall object.
      */
-    public void verticalWallExited(VerticalWall wall) {
+    private void verticalWallExited(VerticalWall wall) {
         if (wall.getRow() > 1 && !wall.isPlaced()) {
             if (model.isLegalWallPlacement(wall.toAlgebraic(), false)) {
                 viewUpdater.removeFillVerticalWall(wall);
@@ -216,11 +208,12 @@ public class ClientSideHandler {
      * Handles the mouse press event for a vertical wall.
      * @param wall The vertical wall object.
      */
-    public void verticalWallPressed(VerticalWall wall) {
+    private void verticalWallPressed(VerticalWall wall) {
         Wall newWall = new Wall(wall.toAlgebraic() + 'v');
         int turn = model.getTurn();
         if (model.commitMove(newWall.toString())) {
             viewUpdater.updateVerticalWall(wall.getRow(), wall.getCol(), turn);
+            isHumanTurn = false;
         }
     }
 
@@ -228,7 +221,7 @@ public class ClientSideHandler {
      * Handles the mouse entering event for a horizontal wall.
      * @param wall The horizontal wall object.
      */
-    public void horizontalWallEntered(HorizontalWall wall) {
+    private void horizontalWallEntered(HorizontalWall wall) {
         if (wall.getCol() < BOARD_DIMENSION) {
             if (model.isLegalWallPlacement(wall.toAlgebraic(), true)) {
                 viewUpdater.fillHorizontalWall(wall, false);
@@ -240,7 +233,7 @@ public class ClientSideHandler {
      * Handles the mouse exiting event for a horizontal wall.
      * @param wall The horizontal wall object.
      */
-    public void horizontalWallExited(HorizontalWall wall) {
+    private void horizontalWallExited(HorizontalWall wall) {
         if (wall.getCol() < BOARD_DIMENSION && !wall.isPlaced()) {
             if (model.isLegalWallPlacement(wall.toAlgebraic(), true)) {
                 viewUpdater.removeFillHorizontalWall(wall);
@@ -252,11 +245,12 @@ public class ClientSideHandler {
      * Handles the mouse press event for a horizontal wall.
      * @param wall The horizontal wall object.
      */
-    public void horizontalWallPressed(HorizontalWall wall) {
+    private void horizontalWallPressed(HorizontalWall wall) {
         Wall newWall = new Wall(wall.toAlgebraic() + 'h');
         int turn = model.getTurn();
         if (model.commitMove(newWall.toString())) {
             viewUpdater.updateHorizontalWall(wall.getRow(), wall.getCol(), turn);
+            isHumanTurn = false;
         }
     }
 
@@ -266,15 +260,22 @@ public class ClientSideHandler {
      * @param pixel The pixel coordinate.
      * @return The corresponding board coordinate.
      */
-    public int pixelToBoard(double pixel) {
+    private int pixelToBoard(double pixel) {
         return (int) (pixel + TILE_SIZE / 2) / TILE_SIZE;
+    }
+
+    public void startGame() {
+        if(startingPlayer == PawnType.AI.ordinal()) {
+            callAI();
+        }
     }
 
     /**
      * Handles the completion of a human player's move by initiating the AI's turn.
      */
-    public void onHumanMoveCompleted() {
+    public void callAI() {
         ai.AiTurn();
+        isHumanTurn = true;
     }
 
 }

@@ -47,13 +47,11 @@ public class AI {
      * Initiates the AI's turn, making decisions based on the game state.
      */
     public void AiTurn() {
-        if(model.getTurn() == this.agentID) {
-            setBoardGraph(model.getBoardGraph());
-            if (agentPlayer.getWallsLeft() > 0)
-                takeShortestPath();
-            else
-                compareBetweenPaths();
-        }
+        setBoardGraph(model.getBoardGraph());
+        if (agentPlayer.getWallsLeft() == 0)
+            takeShortestPath();
+        else
+            compareBetweenPaths();
     }
 
     /**
@@ -63,15 +61,15 @@ public class AI {
      * @return The calculated path.
      */
     private ArrayList<Square> calculatePath(Player movingPlayer, Square otherPlayerPos) {
-        ArrayList<Square> shortestPath = calculateBFS(getBoardGraph(), movingPlayer.getPos(), movingPlayer.getDestRow());
+        ArrayList<Square> shortestPath = calculateBFS(getBoardGraph(), movingPlayer.getPosition(), movingPlayer.getDestRow());
         if(shortestPath.contains(otherPlayerPos) && shortestPath.size() <= 2) {
             shortestPath = generatePawnMoves(otherPlayerPos);
-            shortestPath.remove(movingPlayer.getPos());
+            shortestPath.remove(movingPlayer.getPosition());
         }
         if(shortestPath.contains(otherPlayerPos) && shortestPath.size() > 2) { // path contains other's square - jump needed.
             shortestPath.remove(otherPlayerPos);
-            if(!model.isValidTraversal(movingPlayer.getPos(), shortestPath.get(1))) {
-                ArrayList<Square> possibleMoves = generatePawnMoves(movingPlayer.getPos());
+            if(!model.isValidTraversal(movingPlayer.getPosition(), shortestPath.get(1))) {
+                ArrayList<Square> possibleMoves = generatePawnMoves(movingPlayer.getPosition());
                 ArrayList<Square> currentPath;
                 int minPathLength = Integer.MAX_VALUE;
                 for (Square firstMove : possibleMoves) {
@@ -91,7 +89,7 @@ public class AI {
      * Initiates the AI's move by taking the shortest path to the destination.
      */
     private void takeShortestPath() {
-        ArrayList<Square> path = calculatePath(agentPlayer, opponentPlayer.getPos());
+        ArrayList<Square> path = calculatePath(agentPlayer, opponentPlayer.getPosition());
         makeMove(path.get(1).toString());
     }
 
@@ -141,8 +139,8 @@ public class AI {
      * Calculates shortest paths for agent/opponent and head start for opponent and decides who's considered closer to goal.
      */
     private void compareBetweenPaths() {
-        ArrayList<Square> agentPath = calculatePath(agentPlayer, opponentPlayer.getPos());
-        ArrayList<Square> opponentPath = calculatePath(opponentPlayer, agentPlayer.getPos());
+        ArrayList<Square> agentPath = calculatePath(agentPlayer, opponentPlayer.getPosition());
+        ArrayList<Square> opponentPath = calculatePath(opponentPlayer, agentPlayer.getPosition());
         int opponentHeadStart = decideOnOpponentHeadStart();
         if (isOpponentCloser(agentPath.size(), opponentPath.size(), opponentHeadStart)) {
             boolean decisionMade = blockOpponent(opponentPath);
@@ -244,7 +242,7 @@ public class AI {
             return false;
         int originalOpponentPathLen = opponentPath.size();
         doVirtualMove(wallToBlockPath.toString());
-        int newOpponentPathLen = calculatePath(opponentPlayer, agentPlayer.getPos()).size();
+        int newOpponentPathLen = calculatePath(opponentPlayer, agentPlayer.getPosition()).size();
         undoVirtualMove(wallToBlockPath.toString());
         if (newOpponentPathLen > originalOpponentPathLen) {
             makeMove(wallToBlockPath.toString());
@@ -262,11 +260,11 @@ public class AI {
         Square neighbor;
         List<Square>[] graph = getBoardGraph();
         if (isLeft) {
-            neighbor = opponentPlayer.getPos().neighbor(0, -1);
+            neighbor = opponentPlayer.getPosition().neighbor(0, -1);
         } else {
-            neighbor = opponentPlayer.getPos().neighbor(0, 1);
+            neighbor = opponentPlayer.getPosition().neighbor(0, 1);
         }
-        int opponentPosIndex = opponentPlayer.getPos().squareToIndex();
+        int opponentPosIndex = opponentPlayer.getPosition().squareToIndex();
         if (graph[opponentPosIndex].contains(neighbor))
             return neighbor;
         return null;
@@ -310,13 +308,13 @@ public class AI {
      * @return True if a wall is successfully placed, false otherwise.
      */
     private boolean blockOpponent(ArrayList<Square> opponentPath) {
-        ArrayList<Wall> increasePathWalls = disruptiveWalls(opponentPath, opponentPlayer, agentPlayer.getPos());
+        ArrayList<Wall> increasePathWalls = disruptiveWalls(opponentPath, opponentPlayer, agentPlayer.getPosition());
         int maxDifference = Integer.MIN_VALUE;
         int newOpponentPath, pathDifference;
         Wall bestWall = null;
         for (Wall wall : increasePathWalls) {
             doVirtualMove(wall.toString());
-            newOpponentPath = calculatePath(opponentPlayer, agentPlayer.getPos()).size();
+            newOpponentPath = calculatePath(opponentPlayer, agentPlayer.getPosition()).size();
             pathDifference = newOpponentPath - opponentPath.size();
             if (pathDifference > maxDifference) {
                 maxDifference = pathDifference;
@@ -370,8 +368,8 @@ public class AI {
         ArrayList<Wall> walls = blockCrossing(weakPoint, next);
         for (Wall wall : walls) {
             doVirtualMove(wall.toString());
-            newOpponentPathLength = calculatePath(opponentPlayer, agentPlayer.getPos()).size();
-            newAgentPathLength = calculatePath(agentPlayer, opponentPlayer.getPos()).size();
+            newOpponentPathLength = calculatePath(opponentPlayer, agentPlayer.getPosition()).size();
+            newAgentPathLength = calculatePath(agentPlayer, opponentPlayer.getPosition()).size();
             if((newAgentPathLength-agentPath.size()) >= (newOpponentPathLength-opponentPath.size()))
                 trappingWall = wall;
             undoVirtualMove(wall.toString());
@@ -379,8 +377,8 @@ public class AI {
         if (trappingWall == null)
             return false;
         doVirtualMove(trappingWall.toString());
-        newAgentPathLength = calculatePath(agentPlayer, opponentPlayer.getPos()).size();
-        newOpponentPathLength = calculatePath(opponentPlayer, agentPlayer.getPos()).size();
+        newAgentPathLength = calculatePath(agentPlayer, opponentPlayer.getPosition()).size();
+        newOpponentPathLength = calculatePath(opponentPlayer, agentPlayer.getPosition()).size();
 //        System.out.println(newAgentPathLength <= newOpponentPathLength);
 //        System.out.println(newAgentPathLength - newOpponentPathLength <= 2 && newOpponentPathLength > 5);
         undoVirtualMove(trappingWall.toString());
@@ -401,9 +399,9 @@ public class AI {
     private boolean blockWeakPoint(Wall trappingWall) {
         ArrayList<Square> alternatePath;
         if (!foundWeakPoint) {
-            Square originalPos = agentPlayer.getPos();
+            Square originalPos = agentPlayer.getPosition();
             doVirtualMove(trappingWall.toString());
-            alternatePath = calculatePath(agentPlayer, opponentPlayer.getPos());
+            alternatePath = calculatePath(agentPlayer, opponentPlayer.getPosition());
             Wall blockingWall;
             for (int i = 0; i < alternatePath.size() - 1; i++) {
                 doVirtualMove(alternatePath.get(i).toString());
@@ -424,7 +422,7 @@ public class AI {
             }
         }
         doVirtualMove(trappingWall.toString());
-        alternatePath = calculatePath(agentPlayer, opponentPlayer.getPos());
+        alternatePath = calculatePath(agentPlayer, opponentPlayer.getPosition());
         undoVirtualMove(trappingWall.toString());
         makeMove(alternatePath.get(1).toString());
         return true;
@@ -531,7 +529,7 @@ public class AI {
 
         for (int i = 1; i < BOARD_DIMENSION && !finished; i++) {
             next = src.neighbor(0, direction * i);
-            if (next.equals(opponentPlayer.getPos())) {
+            if (next.equals(opponentPlayer.getPosition())) {
                 i++;
                 next = src.neighbor(0, direction * i);
             }

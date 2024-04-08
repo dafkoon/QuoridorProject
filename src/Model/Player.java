@@ -1,29 +1,29 @@
 package Model;
 
+import static Utilities.Constants.BOARD_DIMENSION;
+
 /**
  * Represents a player in the game.
  */
 public class Player {
     private static final int MAX_WALLS = 10;
     private final String playerName;
-    private final String playerColor;
     private final int destRow;
-    private Square pos;
+    private Square position;
     private int walls;
 
     /**
      * Constructs a player with the specified name, color, position, and destination row.
-     * @param name the name of the player (HUMAN / AI)
-     * @param color the color of the player (BLUE / RED)
-     * @param pos the initial position of the player
-     * @param destRow the destination row of the player
+     * @param playerName the name of the player (HUMAN / AI)
+     * @param startingSquare the initial square of the player
      */
-    public Player(String name, String color, Square pos, int destRow) {
-        this.playerName = name;
-        this.playerColor = color;
-        this.pos = pos;
-        this.destRow = destRow;
+    public Player(String playerName, Square startingSquare) {
+        this.playerName = playerName;
+        this.position = startingSquare;
+        this.destRow = BOARD_DIMENSION-startingSquare.getRow()-1;
         this.walls = MAX_WALLS;
+        System.out.println(playerName);
+        System.out.println(this.destRow);
     }
 
     /**
@@ -32,14 +32,6 @@ public class Player {
      */
     public String getName() {
         return playerName;
-    }
-
-    /**
-     * Gets the color of the player.
-     * @return the color of the player (BLUE / RED)
-     */
-    public String getColor() {
-        return playerColor;
     }
 
     /**
@@ -54,16 +46,16 @@ public class Player {
      * Gets the current position of the player.
      * @return the current position of the player
      */
-    public Square getPos() {
-        return pos;
+    public Square getPosition() {
+        return position;
     }
 
     /**
      * Sets the position of the player.
-     * @param pos the new position of the player
+     * @param position the new position of the player
      */
-    public void setPos(Square pos) {
-        this.pos = pos;
+    public void setPosition(Square position) {
+        this.position = position;
     }
 
     /**

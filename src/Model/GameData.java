@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 public class GameData {
     private static final int MAX_PLAYERS = 2;
     private static int moveCounter;
-    private static int headstart = 5;
+    private static int headstart = 0;
 
     /** The index of the starting player. */
     private final int startingPlayer;
@@ -34,15 +34,13 @@ public class GameData {
 
     /**
      * Adds a player to the game.
-     * @param name the name of the player
-     * @param color the color of the player
-     * @param pos the initial position of the player
-     * @param destRow the destination row of the player
-     * @param id the ID of the player
+     * @param playerName the name of the player
+     * @param startingSquare the initial square of the player
+     * @param playerId the ID of the player
      */
-    public void addPlayer(String name, String color, Square pos, int destRow, int id){
-        Player player = new Player(name, color, pos, destRow);
-        players[id] = player;
+    public void addPlayer(String playerName, Square startingSquare, int playerId) {
+        Player player = new Player(playerName, startingSquare);
+        players[playerId] = player;
     }
 
     /**
@@ -130,7 +128,7 @@ public class GameData {
      * @param sq the square to move the player to
      */
     public void movePlayerToSquare(Square sq) {
-        players[getTurn()].setPos(sq);
+        players[getTurn()].setPosition(sq);
         if(players[getTurn()].getDestRow() == sq.getRow())
             System.out.println(players[getTurn()].getName() + " WINNER");
     }
@@ -164,7 +162,7 @@ public class GameData {
     }
 
     public boolean gameOver() {
-        return players[0].getPos().getRow() == players[0].getDestRow() || players[1].getPos().getRow() == players[1].getDestRow();
+        return players[0].getPosition().getRow() == players[0].getDestRow() || players[1].getPosition().getRow() == players[1].getDestRow();
     }
 
     private void updateTurn() {
@@ -189,7 +187,7 @@ public class GameData {
      * @return The position of the current player.
      */
     public Square getCurrentPlayerPos() {
-        return getCurrentPlayer().getPos();
+        return getCurrentPlayer().getPosition();
     }
 
     /**
@@ -197,7 +195,7 @@ public class GameData {
      * @return The position of the other player.
      */
     public Square getOtherPlayerPos() {
-        return getOtherPlayer().getPos();
+        return getOtherPlayer().getPosition();
     }
 
     /**
