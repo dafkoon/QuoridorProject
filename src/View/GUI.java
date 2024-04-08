@@ -85,9 +85,9 @@ public class GUI extends Application{
      * @param pawn the pawn for which mouse events are registered
      */
     public void pawnMouseEvents(Pawn pawn) {
-        pawn.setOnMousePressed(event -> gameHandler.handlePawnMovement(event, pawn));
-        pawn.setOnMouseDragged(event -> gameHandler.handlePawnMovement(event, pawn));
-        pawn.setOnMouseReleased(event -> gameHandler.handlePawnMovement(event, pawn));
+        pawn.setOnMousePressed(pawn::setOnMousePressed);
+        pawn.setOnMouseDragged(pawn::setOnMouseDragged);
+        pawn.setOnMouseReleased(event -> gameHandler.pawnReleased(pawn));
     }
 
     /**

@@ -1,5 +1,6 @@
 package View.pieces;
 
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -21,7 +22,7 @@ public class Pawn extends StackPane {
     private double oldX, oldY;
     public double mouseX, mouseY;
 
-    
+
     /**
      * Constructs a new pawn with the specified type, color, and initial position.
      * @param type the type of the pawn
@@ -110,6 +111,20 @@ public class Pawn extends StackPane {
             enumVal = types[num];
         }
         return enumVal;
+    }
+
+    public void setOnMousePressed(MouseEvent event) {
+        mouseX = event.getSceneX();
+        mouseY = event.getSceneY();
+    }
+
+    public void setOnMouseDragged(MouseEvent event) {
+        // Continually calculates horizontal distance mouse has moved since last update.
+        // getLayoutX: current X coordinate of the node within its parent's coordinate system.
+        relocate(getLayoutX() + (event.getSceneX() - mouseX), getLayoutY() + (event.getSceneY() - mouseY));
+        mouseX = event.getSceneX();
+        mouseY = event.getSceneY();
+
     }
 
     /**

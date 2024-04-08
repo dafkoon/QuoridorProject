@@ -39,10 +39,12 @@ public class GameHandler {
 
     public void initPlayers(Pawn[] pawns) {
         for(Pawn pawn : pawns) {
-            if(pawn.getType() == PawnType.HUMAN)
-                model.addPlayer(pawn.getType().name(), new Square("e1"), pawn.getType().ordinal());
+            String name = pawn.getType().name();
+            int id = pawn.getType().ordinal();
+            if(name.equals("HUMAN"))
+                model.addPlayer(name, new Square("e1"), id);
             else
-                model.addPlayer(pawn.getType().name(), new Square("e9"), pawn.getType().ordinal());
+                model.addPlayer(name, new Square("e9"), id);
         }
         InitAI(PawnType.AI.ordinal());
     }
@@ -57,38 +59,29 @@ public class GameHandler {
 
 
     /**
-     * Retrieves the number of walls left for a player.
-     * @param id The ID of the player.
-     * @return The number of walls left for the player.
-     */
-    public int getPlayerWallsLeft(int id) {
-        Player player = this.model.getPlayer(id);
-        return player.getWallsLeft();
-    }
-
-    /**
-     * Handles pawn movement events.
-     * @param event The mouse event.
+     * Handles the mouse release event for moving a pawn.
      * @param pawn The pawn object.
      */
-    public void handlePawnMovement(MouseEvent event, Pawn pawn) {
+    public void pawnReleased(Pawn pawn) {
         if(!isHumanTurn)
             return;
-        switch (event.getEventType().getName()) {
-            case "MOUSE_PRESSED":
-                pawnMousePressed(event, pawn);
-                break;
-            case "MOUSE_DRAGGED":
-                pawnMouseDragged(event, pawn);
-                break;
-            case "MOUSE_RELEASED":
-                pawnMouseReleased(pawn);
-                break;
+        double xPixel = pawn.getLayoutX();
+        double yPixel = (BOARD_SIZE - TILE_SIZE) - pawn.getLayoutY();
+        int newCol = pixelToBoard(xPixel);
+        int newRow = pixelToBoard(yPixel);
+        Square squareToGo = new Square(newRow, newCol);
+        int turn = model.getTurn();
+        if (model.commitMove(squareToGo.toString())) {
+            viewUpdater.updatePawnPosition(turn, newRow, newCol);
+            isHumanTurn = false;
+        } else {
+            viewUpdater.updatePawnPosition(turn, -1, -1);
         }
         if(!isHumanTurn) {
             callAI();
         }
     }
+
     /**
      * Handles mouse events related to vertical wall movement.
      * @param event The mouse event.
@@ -112,6 +105,7 @@ public class GameHandler {
             callAI();
         }
     }
+
     /**
      * Handles mouse events related to horizontal wall movement.
      * @param event The mouse event.
@@ -131,55 +125,9 @@ public class GameHandler {
                 horizontalWallExited(wall);
                 break;
         }
-        if(!isHumanTurn) {
+        if(!isHumanTurn)
             callAI();
-        }
     }
-
-    /**
-     * Handles the mouse press event for moving a pawn.
-     * @param event The mouse event.
-     * @param pawn The pawn object.
-     */
-    private void pawnMousePressed(MouseEvent event, Pawn pawn) {
-        pawn.mouseX = event.getSceneX();
-        pawn.mouseY = event.getSceneY();
-    }
-
-    /**
-     * Handles the mouse drag event for moving a pawn.
-     * @param event The mouse event.
-     * @param pawn The pawn object.
-     */
-    private void pawnMouseDragged(MouseEvent event, Pawn pawn) {
-        if (pawn.getType() == PawnType.HUMAN) {
-            // Continually calculates horizontal distance mouse has moved since last update.
-            // getLayoutX: current X coordinate of the node within its parent's coordinate system.
-            pawn.relocate(pawn.getLayoutX() + (event.getSceneX() - pawn.mouseX), pawn.getLayoutY() + (event.getSceneY() - pawn.mouseY));
-            pawn.mouseX = event.getSceneX();
-            pawn.mouseY = event.getSceneY();
-        }
-    }
-
-    /**
-     * Handles the mouse release event for moving a pawn.
-     * @param pawn The pawn object.
-     */
-    private void pawnMouseReleased(Pawn pawn) {
-        double xPixel = pawn.getLayoutX();
-        double yPixel = (BOARD_SIZE - TILE_SIZE) - pawn.getLayoutY();
-        int newCol = pixelToBoard(xPixel);
-        int newRow = pixelToBoard(yPixel);
-        Square dest = new Square(newRow, newCol);
-        int turn = model.getTurn();
-        if (model.commitMove(dest.toString())) {
-            viewUpdater.updatePawnPosition(turn, newRow, newCol);
-            isHumanTurn = false;
-        }
-        else
-            viewUpdater.updatePawnPosition(turn, -1, -1);
-    }
-
     /**
      * Handles the mouse entering event for a vertical wall.
      * @param wall The vertical wall object.
@@ -255,6 +203,19 @@ public class GameHandler {
     }
 
 
+    public void startGame() {
+        if(startingPlayer == PawnType.AI.ordinal())
+            callAI();
+    }
+
+    /**
+     * Handles the completion of a human player's move by initiating the AI's turn.
+     */
+    public void callAI() {
+        ai.AiTurn();
+        isHumanTurn = true;
+    }
+
     /**
      * Converts pixel coordinates to board coordinates.
      * @param pixel The pixel coordinate.
@@ -264,18 +225,14 @@ public class GameHandler {
         return (int) (pixel + TILE_SIZE / 2) / TILE_SIZE;
     }
 
-    public void startGame() {
-        if(startingPlayer == PawnType.AI.ordinal()) {
-            callAI();
-        }
-    }
-
     /**
-     * Handles the completion of a human player's move by initiating the AI's turn.
+     * Retrieves the number of walls left for a player.
+     * @param id The ID of the player.
+     * @return The number of walls left for the player.
      */
-    public void callAI() {
-        ai.AiTurn();
-        isHumanTurn = true;
+    public int getPlayerWallsLeft(int id) {
+        Player player = this.model.getPlayer(id);
+        return player.getWallsLeft();
     }
 
 }
