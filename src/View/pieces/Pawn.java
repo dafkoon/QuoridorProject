@@ -21,6 +21,7 @@ public class Pawn extends StackPane {
     private double oldX, oldY;
     public double mouseX, mouseY;
 
+    
     /**
      * Constructs a new pawn with the specified type, color, and initial position.
      * @param type the type of the pawn
