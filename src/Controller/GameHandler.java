@@ -27,8 +27,9 @@ public class GameHandler {
 
     /**
      * Constructs a ClientSideHandler object.
-     * @param view            The game view.
-     * @param startingPlayer  The ID of the starting player.
+     *
+     * @param view           The game view.
+     * @param startingPlayer The ID of the starting player.
      */
     public GameHandler(GUI view, int startingPlayer) {
         this.view = view;
@@ -38,10 +39,10 @@ public class GameHandler {
     }
 
     public void initPlayers(Pawn[] pawns) {
-        for(Pawn pawn : pawns) {
+        for (Pawn pawn : pawns) {
             String name = pawn.getType().name();
             int id = pawn.getType().ordinal();
-            if(name.equals("HUMAN"))
+            if (name.equals("HUMAN"))
                 model.addPlayer(name, new Square("e1"), id);
             else
                 model.addPlayer(name, new Square("e9"), id);
@@ -51,6 +52,7 @@ public class GameHandler {
 
     /**
      * Adds an opponent to the game.
+     *
      * @param id The ID of the opponent.
      */
     private void InitAI(int id) {
@@ -60,37 +62,50 @@ public class GameHandler {
 
     /**
      * Handles the mouse release event for moving a pawn.
+     *
      * @param pawn The pawn object.
      */
     public void pawnReleased(Pawn pawn) {
-        if(!isHumanTurn)
+        // Check if it's the human player's turn
+        if (!isHumanTurn)
             return;
+
+        // Get the current position of the pawn in pixels
         double xPixel = pawn.getLayoutX();
         double yPixel = (BOARD_SIZE - TILE_SIZE) - pawn.getLayoutY();
+
+        // Convert pixel positions to board coordinates
         int newCol = pixelToBoard(xPixel);
         int newRow = pixelToBoard(yPixel);
+
+        // Create a Square object representing the destination square
         Square squareToGo = new Square(newRow, newCol);
+
+        // Get the current turn from the model
         int turn = model.getTurn();
+
+        // Try to commit the move to the model
         if (model.commitMove(squareToGo.toString())) {
+            // If move is successful, update pawn position and switch turn to AI
             viewUpdater.updatePawnPosition(turn, newRow, newCol);
             isHumanTurn = false;
+            callAI(); // Call AI for its turn
         } else {
+            // If move is invalid, update pawn position to indicate no move and stay on the human's turn
             viewUpdater.updatePawnPosition(turn, -1, -1);
-        }
-        if(!isHumanTurn) {
-            callAI();
         }
     }
 
     /**
      * Handles mouse events related to vertical wall movement.
+     *
      * @param event The mouse event.
-     * @param wall The horizontal wall object.
+     * @param wall  The horizontal wall object.
      */
     public void handleVerticalWallMovement(MouseEvent event, VerticalWall wall) {
-        if(!isHumanTurn)
+        if (!isHumanTurn)
             return;
-        switch(event.getEventType().getName()) {
+        switch (event.getEventType().getName()) {
             case "MOUSE_ENTERED":
                 verticalWallEntered(wall);
                 break;
@@ -101,18 +116,19 @@ public class GameHandler {
                 verticalWallExited(wall);
                 break;
         }
-        if(!isHumanTurn) {
+        if (!isHumanTurn) {
             callAI();
         }
     }
 
     /**
      * Handles mouse events related to horizontal wall movement.
+     *
      * @param event The mouse event.
-     * @param wall The horizontal wall object.
+     * @param wall  The horizontal wall object.
      */
     public void handleHorizontalWallMovement(MouseEvent event, HorizontalWall wall) {
-        if(!isHumanTurn)
+        if (!isHumanTurn)
             return;
         switch (event.getEventType().getName()) {
             case "MOUSE_ENTERED":
@@ -125,11 +141,13 @@ public class GameHandler {
                 horizontalWallExited(wall);
                 break;
         }
-        if(!isHumanTurn)
+        if (!isHumanTurn)
             callAI();
     }
+
     /**
      * Handles the mouse entering event for a vertical wall.
+     *
      * @param wall The vertical wall object.
      */
     private void verticalWallEntered(VerticalWall wall) {
@@ -142,6 +160,7 @@ public class GameHandler {
 
     /**
      * Handles the mouse exiting event for a vertical wall.
+     *
      * @param wall The vertical wall object.
      */
     private void verticalWallExited(VerticalWall wall) {
@@ -154,6 +173,7 @@ public class GameHandler {
 
     /**
      * Handles the mouse press event for a vertical wall.
+     *
      * @param wall The vertical wall object.
      */
     private void verticalWallPressed(VerticalWall wall) {
@@ -167,6 +187,7 @@ public class GameHandler {
 
     /**
      * Handles the mouse entering event for a horizontal wall.
+     *
      * @param wall The horizontal wall object.
      */
     private void horizontalWallEntered(HorizontalWall wall) {
@@ -179,6 +200,7 @@ public class GameHandler {
 
     /**
      * Handles the mouse exiting event for a horizontal wall.
+     *
      * @param wall The horizontal wall object.
      */
     private void horizontalWallExited(HorizontalWall wall) {
@@ -191,6 +213,7 @@ public class GameHandler {
 
     /**
      * Handles the mouse press event for a horizontal wall.
+     *
      * @param wall The horizontal wall object.
      */
     private void horizontalWallPressed(HorizontalWall wall) {
@@ -204,8 +227,9 @@ public class GameHandler {
 
 
     public void startGame() {
-        if(startingPlayer == PawnType.AI.ordinal())
+        if (startingPlayer == PawnType.AI.ordinal()) {
             callAI();
+        }
     }
 
     /**
@@ -218,6 +242,7 @@ public class GameHandler {
 
     /**
      * Converts pixel coordinates to board coordinates.
+     *
      * @param pixel The pixel coordinate.
      * @return The corresponding board coordinate.
      */
@@ -234,5 +259,4 @@ public class GameHandler {
         Player player = this.model.getPlayer(id);
         return player.getWallsLeft();
     }
-
 }

@@ -163,6 +163,7 @@ public class GUI extends Application{
         for (Pawn pawn : pawnList) {
             int id = pawn.getType().ordinal();
             panel.addInfo(pawn.getType().name(), gameHandler.getPlayerWallsLeft(id), pawn.getColor().name());
+
         }
         // Set the position of the info panel relative to the game board
         panel.setTranslateX(BOARD_DIMENSION * TILE_SIZE + 10);
