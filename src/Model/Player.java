@@ -22,8 +22,6 @@ public class Player {
         this.position = startingSquare;
         this.destRow = BOARD_DIMENSION-startingSquare.getRow()-1;
         this.walls = MAX_WALLS;
-        System.out.println(playerName);
-        System.out.println(this.destRow);
     }
 
     /**

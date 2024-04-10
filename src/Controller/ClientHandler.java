@@ -1,11 +1,9 @@
 package Controller;
 
-import Model.GameData;
+import Model.Validator;
 import Model.Player;
 import Model.Square;
-import Model.Wall;
 
-import View.GUI;
 import View.pieces.Pawn;
 import View.pieces.Pawn.PawnType;
 import View.pieces.Walls.HorizontalWall;
@@ -17,25 +15,22 @@ import static Utilities.Constants.*;
 /**
  * This class handles human input events and interactions in the game.
  */
-public class GameHandler {
-    private final GameData model;
+public class ClientHandler {
+    private final Validator validator;
     private final ViewUpdater viewUpdater;
-    private final GUI view;
     private AI ai;
-    private final int startingPlayer;
+//    private final int startingPlayer;
     private boolean isHumanTurn = true;
 
     /**
      * Constructs a ClientSideHandler object.
-     *
-     * @param view           The game view.
+     * @param viewUpdater The game view.
      * @param startingPlayer The ID of the starting player.
      */
-    public GameHandler(GUI view, int startingPlayer) {
-        this.view = view;
-        this.startingPlayer = startingPlayer;
-        this.viewUpdater = ViewUpdater.getInstance(view);
-        this.model = new GameData(startingPlayer);
+    public ClientHandler(ViewUpdater viewUpdater, int startingPlayer) {
+        this.viewUpdater = viewUpdater;
+        this.isHumanTurn = startingPlayer == PawnType.HUMAN.ordinal();
+        this.validator = new Validator(startingPlayer);
     }
 
     public void initPlayers(Pawn[] pawns) {
@@ -43,29 +38,27 @@ public class GameHandler {
             String name = pawn.getType().name();
             int id = pawn.getType().ordinal();
             if (name.equals("HUMAN"))
-                model.addPlayer(name, new Square("e1"), id);
+                validator.addPlayer(name, "e1", id);
             else
-                model.addPlayer(name, new Square("e9"), id);
+                validator.addPlayer(name, "e9", id);
         }
         InitAI(PawnType.AI.ordinal());
     }
 
     /**
      * Adds an opponent to the game.
-     *
      * @param id The ID of the opponent.
      */
     private void InitAI(int id) {
-        ai = new AI(id, model, view);
+        ai = new AI(viewUpdater, validator, id);
     }
 
 
     /**
      * Handles the mouse release event for moving a pawn.
-     *
      * @param pawn The pawn object.
      */
-    public void pawnReleased(Pawn pawn) {
+    public void mouseReleasedPawn(Pawn pawn) {
         // Check if it's the human player's turn
         if (!isHumanTurn)
             return;
@@ -80,12 +73,9 @@ public class GameHandler {
 
         // Create a Square object representing the destination square
         Square squareToGo = new Square(newRow, newCol);
-
-        // Get the current turn from the model
-        int turn = model.getTurn();
-
+        int turn = validator.getTurn();
         // Try to commit the move to the model
-        if (model.commitMove(squareToGo.toString())) {
+        if (validator.commitMove(squareToGo.toString())) {
             // If move is successful, update pawn position and switch turn to AI
             viewUpdater.updatePawnPosition(turn, newRow, newCol);
             isHumanTurn = false;
@@ -98,11 +88,10 @@ public class GameHandler {
 
     /**
      * Handles mouse events related to vertical wall movement.
-     *
      * @param event The mouse event.
      * @param wall  The horizontal wall object.
      */
-    public void handleVerticalWallMovement(MouseEvent event, VerticalWall wall) {
+    public void verticalWallEvents(MouseEvent event, VerticalWall wall) {
         if (!isHumanTurn)
             return;
         switch (event.getEventType().getName()) {
@@ -127,7 +116,7 @@ public class GameHandler {
      * @param event The mouse event.
      * @param wall  The horizontal wall object.
      */
-    public void handleHorizontalWallMovement(MouseEvent event, HorizontalWall wall) {
+    public void horizontalWallEvents(MouseEvent event, HorizontalWall wall) {
         if (!isHumanTurn)
             return;
         switch (event.getEventType().getName()) {
@@ -152,9 +141,8 @@ public class GameHandler {
      */
     private void verticalWallEntered(VerticalWall wall) {
         if (wall.getRow() > 1) {
-            if (model.isLegalWallPlacement(wall.toAlgebraic(), false)) {
+            if (validator.isValidWallPlacement(wall.toAlgebraic(), false))
                 viewUpdater.fillVerticalWall(wall, false);
-            }
         }
     }
 
@@ -165,9 +153,8 @@ public class GameHandler {
      */
     private void verticalWallExited(VerticalWall wall) {
         if (wall.getRow() > 1 && !wall.isPlaced()) {
-            if (model.isLegalWallPlacement(wall.toAlgebraic(), false)) {
+            if (validator.isValidWallPlacement(wall.toAlgebraic(), false))
                 viewUpdater.removeFillVerticalWall(wall);
-            }
         }
     }
 
@@ -177,9 +164,9 @@ public class GameHandler {
      * @param wall The vertical wall object.
      */
     private void verticalWallPressed(VerticalWall wall) {
-        Wall newWall = new Wall(wall.toAlgebraic() + 'v');
-        int turn = model.getTurn();
-        if (model.commitMove(newWall.toString())) {
+        String wallString = wall.toAlgebraic() + 'v';
+        if (validator.commitMove(wallString)) {
+            int turn = validator.getTurn();
             viewUpdater.updateVerticalWall(wall.getRow(), wall.getCol(), turn);
             isHumanTurn = false;
         }
@@ -187,14 +174,12 @@ public class GameHandler {
 
     /**
      * Handles the mouse entering event for a horizontal wall.
-     *
      * @param wall The horizontal wall object.
      */
     private void horizontalWallEntered(HorizontalWall wall) {
         if (wall.getCol() < BOARD_DIMENSION) {
-            if (model.isLegalWallPlacement(wall.toAlgebraic(), true)) {
+            if (validator.isValidWallPlacement(wall.toAlgebraic(), true))
                 viewUpdater.fillHorizontalWall(wall, false);
-            }
         }
     }
 
@@ -205,9 +190,8 @@ public class GameHandler {
      */
     private void horizontalWallExited(HorizontalWall wall) {
         if (wall.getCol() < BOARD_DIMENSION && !wall.isPlaced()) {
-            if (model.isLegalWallPlacement(wall.toAlgebraic(), true)) {
+            if (validator.isValidWallPlacement(wall.toAlgebraic(), true))
                 viewUpdater.removeFillHorizontalWall(wall);
-            }
         }
     }
 
@@ -217,9 +201,9 @@ public class GameHandler {
      * @param wall The horizontal wall object.
      */
     private void horizontalWallPressed(HorizontalWall wall) {
-        Wall newWall = new Wall(wall.toAlgebraic() + 'h');
-        int turn = model.getTurn();
-        if (model.commitMove(newWall.toString())) {
+        String wallString = wall.toAlgebraic() + 'h';
+        if (validator.commitMove(wallString)) {
+            int turn = validator.getTurn();
             viewUpdater.updateHorizontalWall(wall.getRow(), wall.getCol(), turn);
             isHumanTurn = false;
         }
@@ -227,9 +211,8 @@ public class GameHandler {
 
 
     public void startGame() {
-        if (startingPlayer == PawnType.AI.ordinal()) {
+        if(!isHumanTurn)
             callAI();
-        }
     }
 
     /**
@@ -256,7 +239,7 @@ public class GameHandler {
      * @return The number of walls left for the player.
      */
     public int getPlayerWallsLeft(int id) {
-        Player player = this.model.getPlayer(id);
+        Player player = this.validator.getPlayer(id);
         return player.getWallsLeft();
     }
 }

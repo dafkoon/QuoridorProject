@@ -84,7 +84,7 @@ public class Square {
      * Converts the square to its corresponding index in the board array.
      * @return the index of the square in the board array
      */
-    public int squareToIndex() {
+    public int toIndex() {
         return this.row * BOARD_DIMENSION + this.col;
     }
 

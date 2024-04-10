@@ -18,7 +18,7 @@ public class ViewUpdater {
      * Constructs a ViewUpdater instance.
      * @param view The Game view to be updated.
      */
-    private ViewUpdater(GUI view) {
+    public ViewUpdater(GUI view) {
         this.view = view;
     }
 

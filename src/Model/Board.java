@@ -48,61 +48,14 @@ public class Board {
     }
 
     /**
-     * Checks if the specified wall intersects with other walls on the board.
-     * @param wall The wall to check.
-     * @return True if the wall intersects with other walls, false otherwise.
-     */
-    public boolean doesWallIntersectOther(Wall wall) {
-        if(squareToIndex(wall.startingSq) >= graph.length || squareToIndex(wall.startingSq) < 0)
-            return true;
-        if(wall.getOrientation() == Wall.Orientation.HORIZONTAL) { // Check Horizontal wall not intersecting others.
-            return walls.contains(wall) ||
-                    walls.contains(wall.neighbor(1, 0, Wall.Orientation.VERTICAL)) || // Through it
-                    walls.contains(wall.neighbor(0, -1, Wall.Orientation.HORIZONTAL)) || //
-                    walls.contains(wall.neighbor(0, 1, Wall.Orientation.HORIZONTAL));
-        } else {
-            return walls.contains(wall) ||
-                    walls.contains(wall.neighbor(-1, 0, Wall.Orientation.HORIZONTAL)) ||
-                    walls.contains(wall.neighbor(-1, 0, Wall.Orientation.VERTICAL)) ||
-                    walls.contains(wall.neighbor(1, 0, Wall.Orientation.VERTICAL));
-        }
-    }
-
-    /**
-     * Checks if placing the specified wall completely blocks a path between the two players.
-     * @param wall The wall to check.
-     * @param player0 The first player.
-     * @param player1 The second player.
-     * @return True if the wall completely blocks the path, false otherwise.
-     */
-    public boolean doesWallCompletelyBlock(Wall wall, Player player0, Player player1) {
-        if(wall.getOrientation() == Wall.Orientation.HORIZONTAL) {
-            removeEdge(wall.startingSq, wall.startingSq.neighbor(1, 0));
-            removeEdge(wall.startingSq.neighbor(0, 1), wall.startingSq.neighbor(1, 1)); //
-        } else {
-            removeEdge(wall.startingSq, wall.startingSq.neighbor(0, 1)); // remove connecting between startingSq and the wall to the left of it
-            removeEdge(wall.startingSq.neighbor(-1, 0), wall.startingSq.neighbor(-1, 1)); // remove the connection between squares on the next rank.
-        }
-        boolean hasPath = hasPathToGoal(player0, player1);
-        if(wall.getOrientation() == Wall.Orientation.HORIZONTAL) {
-            addEdge(wall.startingSq, wall.startingSq.neighbor(1, 0));
-            addEdge(wall.startingSq.neighbor(0, 1), wall.startingSq.neighbor(1, 1));
-        } else {
-            addEdge(wall.startingSq, wall.startingSq.neighbor(0, 1));
-            addEdge(wall.startingSq.neighbor(-1, 0), wall.startingSq.neighbor(-1, 1));
-        }
-        return !hasPath;
-    }
-
-    /**
      * Checks if placing the specified wall is a valid move without blocking the players' paths to their goals.
      * @param wall The wall to check.
      * @param player0 The first player.
      * @param player1 The second player.
      * @return True if the wall placement is valid, false otherwise.
      */
-    public boolean isValidWallPlacement(Wall wall, Player player0, Player player1) {
-        if(squareToIndex(wall.startingSq) >= graph.length || squareToIndex(wall.startingSq) < 0)
+    public boolean isLegalWallPlacment(Wall wall, Player player0, Player player1) {
+        if(wall.startingSq.toIndex() >= graph.length || wall.startingSq.toIndex() < 0)
             return false;
 
         if(wall.getOrientation() == Wall.Orientation.HORIZONTAL) { // Check Horizontal wall not intersecting others.
@@ -144,8 +97,8 @@ public class Board {
      * @param sq2 The second square.
      */
     private void addEdge(Square sq1, Square sq2) {
-        int sq1_index = squareToIndex(sq1);
-        int sq2_index = squareToIndex(sq2);
+        int sq1_index = sq1.toIndex();
+        int sq2_index = sq2.toIndex();
         if (sq1_index >= 0 && sq1_index < 81 && sq2_index >= 0 && sq2_index < 81) {
             graph[sq1_index].add(sq2);
             graph[sq2_index].add(sq1);
@@ -158,8 +111,8 @@ public class Board {
      * @param sq2 The second square.
      */
     private void removeEdge(Square sq1, Square sq2) {
-        int sq1_index = squareToIndex(sq1);
-        int sq2_index = squareToIndex(sq2);
+        int sq1_index = sq1.toIndex();
+        int sq2_index = sq2.toIndex();
         if (sq1_index >= 0 && sq1_index < 81 && sq2_index >= 0 && sq2_index < 81) {
             graph[sq1_index].remove(sq2);
             graph[sq2_index].remove(sq1);
@@ -208,33 +161,33 @@ public class Board {
 
     /**
      * Checks if a traversal to the destination square is valid for the current player, considering the other player's position.
-     * @param destination The destination square.
-     * @param playingPlayerSquare The current player's position.
+     * @param newSquare The destination square.
+     * @param currentSquare The current player's position.
      * @param otherPlayerSquare The other player's position.
      * @return True if the traversal is valid, false otherwise.
      */
-    public boolean isValidTraversal(Square destination, Square playingPlayerSquare, Square otherPlayerSquare){
-        int playingPlayerSquareIndex = squareToIndex(playingPlayerSquare);
-        int otherPlayerSquareIndex = squareToIndex(otherPlayerSquare);
-        if(playingPlayerSquareIndex >= graph.length || otherPlayerSquareIndex >= graph.length) {
+    public boolean isLegalTraversal(Square currentSquare, Square newSquare, Square otherPlayerSquare){
+        int currentSquareIndex = currentSquare.toIndex();
+        int otherPlayerSquareIndex = otherPlayerSquare.toIndex();
+        if(currentSquareIndex >= graph.length || otherPlayerSquareIndex >= graph.length) {
             return false;
         }
-        if(destination.equals(playingPlayerSquare) || destination.equals(otherPlayerSquare)) {
+        if(newSquare.equals(currentSquare) || newSquare.equals(otherPlayerSquare)) {
             // Check if the destination is a square that's already occupied.
             return false;
-        } else if (graph[playingPlayerSquareIndex].contains(destination)) {
+        } else if (graph[currentSquareIndex].contains(newSquare)) {
             // Check if the destination is connected to the playing player's Square
             return true;
-        } else if(graph[playingPlayerSquareIndex].contains(otherPlayerSquare)) {
+        } else if(graph[currentSquareIndex].contains(otherPlayerSquare)) {
             // Check if the playing player's Square is connected to other player's Square
 
-            if(graph[otherPlayerSquareIndex].contains(playingPlayerSquare.opposite(otherPlayerSquare))) {
+            if(graph[otherPlayerSquareIndex].contains(currentSquare.opposite(otherPlayerSquare))) {
                 // Return a boolean if the destination is connected to other's Square and is adjacent horizontally or vertically.
                 // Basically return false if the destination is diagonal to playing player's square.
-                return graph[otherPlayerSquareIndex].contains(destination) && playingPlayerSquare.isCardinalTo(destination);
+                return graph[otherPlayerSquareIndex].contains(newSquare) && currentSquare.isCardinalTo(newSquare);
             } else {
                 // There is a back wall
-                return graph[otherPlayerSquareIndex].contains(destination); // Other player's Square is connected to the destination
+                return graph[otherPlayerSquareIndex].contains(newSquare); // Other player's Square is connected to the destination
             }
         }
         return false;
@@ -242,25 +195,56 @@ public class Board {
 
 
     /**
-     * Turns a Square object to its index location in the adjacency list.
-     * for example: new Square(row=4, col=4) --> row*(how many Squares are there in a board) + col = index in array.
-     * @param sq Square to get index in adjacency list for.
-     * @return The index of the Square in adjacency list.
+     * Checks if the specified wall intersects with other walls on the board.
+     * @param wall The wall to check.
+     * @return True if the wall intersects with other walls, false otherwise.
      */
-    public int squareToIndex(Square sq) {
-        int sq_row = sq.getRow();
-        int sq_col = sq.getCol();
-        return sq_row*BOARD_DIMENSION+sq_col;
+    public boolean doesWallIntersectOther(Wall wall) {
+        if(wall.startingSq.toIndex() >= graph.length || wall.startingSq.toIndex() < 0)
+            return true;
+        if(wall.getOrientation() == Wall.Orientation.HORIZONTAL) { // Check Horizontal wall not intersecting others.
+            return walls.contains(wall) ||
+                    walls.contains(wall.neighbor(1, 0, Wall.Orientation.VERTICAL)) || // Through it
+                    walls.contains(wall.neighbor(0, -1, Wall.Orientation.HORIZONTAL)) || //
+                    walls.contains(wall.neighbor(0, 1, Wall.Orientation.HORIZONTAL));
+        } else {
+            return walls.contains(wall) ||
+                    walls.contains(wall.neighbor(-1, 0, Wall.Orientation.HORIZONTAL)) ||
+                    walls.contains(wall.neighbor(-1, 0, Wall.Orientation.VERTICAL)) ||
+                    walls.contains(wall.neighbor(1, 0, Wall.Orientation.VERTICAL));
+        }
+    }
+
+    /**
+     * Checks if placing the specified wall completely blocks a path between the two players.
+     * @param wall The wall to check.
+     * @param player0 The first player.
+     * @param player1 The second player.
+     * @return True if the wall completely blocks the path, false otherwise.
+     */
+    public boolean doesWallBlockCompletely(Wall wall, Player player0, Player player1) {
+        if(wall.getOrientation() == Wall.Orientation.HORIZONTAL) {
+            removeEdge(wall.startingSq, wall.startingSq.neighbor(1, 0));
+            removeEdge(wall.startingSq.neighbor(0, 1), wall.startingSq.neighbor(1, 1)); //
+        } else {
+            removeEdge(wall.startingSq, wall.startingSq.neighbor(0, 1)); // remove connecting between startingSq and the wall to the left of it
+            removeEdge(wall.startingSq.neighbor(-1, 0), wall.startingSq.neighbor(-1, 1)); // remove the connection between squares on the next rank.
+        }
+        boolean hasPath = hasPathToGoal(player0, player1);
+        if(wall.getOrientation() == Wall.Orientation.HORIZONTAL) {
+            addEdge(wall.startingSq, wall.startingSq.neighbor(1, 0));
+            addEdge(wall.startingSq.neighbor(0, 1), wall.startingSq.neighbor(1, 1));
+        } else {
+            addEdge(wall.startingSq, wall.startingSq.neighbor(0, 1));
+            addEdge(wall.startingSq.neighbor(-1, 0), wall.startingSq.neighbor(-1, 1));
+        }
+        return !hasPath;
     }
 
     public String toString() {
         StringBuilder result = new StringBuilder();
-        for (int i = 0; i < BOARD_DIMENSION * BOARD_DIMENSION; i++) {
-
+        for (int i = 0; i < BOARD_DIMENSION * BOARD_DIMENSION; i++)
             result.append(i).append(" -> ").append(graph[i]).append("\n");
-        }
         return result.toString();
     }
-
-
 }

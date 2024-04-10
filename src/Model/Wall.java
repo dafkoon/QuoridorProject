@@ -7,9 +7,7 @@ import java.util.Objects;
  */
 public class Wall {
 
-    /** The square located at the start of the wall. */
     Square startingSq;
-    /** The orientation of the wall (horizontal or vertical). */
     Orientation orientation = null;
 
     /**
@@ -60,13 +58,17 @@ public class Wall {
      * Gets the starting square of the wall.
      * @return the starting square of the wall
      */
-    public Square getStartingSq() { return startingSq; }
+    public Square getStartingSq() {
+        return startingSq;
+    }
 
     /**
      * Gets the orientation of the wall.
      * @return the orientation of the wall
      */
-    public Orientation getOrientation() { return orientation; }
+    public Orientation getOrientation() {
+        return orientation;
+    }
 
 
     public String toString() {
@@ -83,7 +85,7 @@ public class Wall {
     /**
      * Represents the orientation of a wall (horizontal or vertical).
      */
-    public enum Orientation{
+    public enum Orientation {
         HORIZONTAL, VERTICAL
     }
 }

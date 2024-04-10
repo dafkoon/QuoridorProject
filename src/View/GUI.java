@@ -1,6 +1,7 @@
 package View;
 
-import Controller.GameHandler;
+import Controller.ClientHandler;
+import Controller.ViewUpdater;
 import View.pieces.InfoPane;
 import View.pieces.Pawn;
 import View.pieces.Pawn.PawnColor;
@@ -27,7 +28,7 @@ public class GUI extends Application{
     private final Group verticalWallGroup = new Group();
     private InfoPane infoPane;
     private Pawn[] pawnList;
-    private GameHandler gameHandler;
+    private ClientHandler clientHandler;
 
     /**
      * Initializes and starts the Quoridor game.
@@ -38,8 +39,9 @@ public class GUI extends Application{
         startingPlayer = 1; // 0 - Human starts     1 - AI starts
         createPawns();
 
-        gameHandler = new GameHandler(this, startingPlayer);
-        gameHandler.initPlayers(pawnList);
+        ViewUpdater viewUpdater = new ViewUpdater(this);
+        clientHandler = new ClientHandler(viewUpdater, startingPlayer);
+        clientHandler.initPlayers(pawnList);
 
         Pane root = populateBoard();
         Scene scene = new Scene(root);
@@ -48,7 +50,7 @@ public class GUI extends Application{
         primaryStage.setResizable(false);
         primaryStage.show();
 
-        gameHandler.startGame();
+        clientHandler.startGame();
     }
 
     /**
@@ -87,7 +89,7 @@ public class GUI extends Application{
     public void pawnMouseEvents(Pawn pawn) {
         pawn.setOnMousePressed(pawn::setOnMousePressed);
         pawn.setOnMouseDragged(pawn::setOnMouseDragged);
-        pawn.setOnMouseReleased(event -> gameHandler.pawnReleased(pawn));
+        pawn.setOnMouseReleased(event -> clientHandler.mouseReleasedPawn(pawn));
     }
 
     /**
@@ -95,9 +97,9 @@ public class GUI extends Application{
      * @param wall the horizontal wall for which mouse events are registered
      */
     public void horizontalWallMouseEvents(HorizontalWall wall) {
-        wall.setOnMouseEntered(event -> gameHandler.handleHorizontalWallMovement(event, wall));
-        wall.setOnMousePressed(event -> gameHandler.handleHorizontalWallMovement(event, wall));
-        wall.setOnMouseExited(event -> gameHandler.handleHorizontalWallMovement(event, wall));
+        wall.setOnMouseEntered(event -> clientHandler.horizontalWallEvents(event, wall));
+        wall.setOnMousePressed(event -> clientHandler.horizontalWallEvents(event, wall));
+        wall.setOnMouseExited(event -> clientHandler.horizontalWallEvents(event, wall));
     }
 
     /**
@@ -105,9 +107,9 @@ public class GUI extends Application{
      * @param wall the vertical wall for which mouse events are registered
      */
     public void verticalWallMouseEvents(VerticalWall wall) {
-        wall.setOnMouseEntered(event -> gameHandler.handleVerticalWallMovement(event, wall));
-        wall.setOnMousePressed(event -> gameHandler.handleVerticalWallMovement(event, wall));
-        wall.setOnMouseExited(event -> gameHandler.handleVerticalWallMovement(event, wall));
+        wall.setOnMouseEntered(event -> clientHandler.verticalWallEvents(event, wall));
+        wall.setOnMousePressed(event -> clientHandler.verticalWallEvents(event, wall));
+        wall.setOnMouseExited(event -> clientHandler.verticalWallEvents(event, wall));
     }
 
     /**
@@ -162,7 +164,7 @@ public class GUI extends Application{
         // Add information about each pawn to the info panel
         for (Pawn pawn : pawnList) {
             int id = pawn.getType().ordinal();
-            panel.addInfo(pawn.getType().name(), gameHandler.getPlayerWallsLeft(id), pawn.getColor().name());
+            panel.addInfo(pawn.getType().name(), clientHandler.getPlayerWallsLeft(id), pawn.getColor().name());
 
         }
         // Set the position of the info panel relative to the game board
@@ -181,7 +183,7 @@ public class GUI extends Application{
             // Check if the pawn corresponds to the current player's turn
             if (id == playerTurn) {
                 // Update the information displayed in the info panel for the current player
-                infoPane.updateInfo(id, pawn.getType().name(), gameHandler.getPlayerWallsLeft(id), pawn.getColor().name());
+                infoPane.updateInfo(id, pawn.getType().name(), clientHandler.getPlayerWallsLeft(id), pawn.getColor().name());
             }
         }
     }
@@ -225,7 +227,7 @@ public class GUI extends Application{
     /**
      * Updates the location of the pawn with the specified ID on the game board.
      * If the provided xPixel and yPixel values are not -1, the pawn's position is updated.
-     * Otherwise, the pawn is reversed (moved back to its previous position).
+     * Otherwise, the pawn is reversed (moved back to its last position before being dragged).
      * Additionally, the information panel is updated with the latest information about the pawn.
      *
      * @param id the ID of the pawn to update

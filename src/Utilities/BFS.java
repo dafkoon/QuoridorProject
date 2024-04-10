@@ -40,7 +40,7 @@ public abstract class BFS {
                     Collections.reverse(path);
                     return path;
                 }
-                int i = squareToIndex(curr);
+                int i = curr.toIndex();
                 for (Square e : currentGraph[i]) {
                     if (!parentNode.containsKey(e)) {
                         parentNode.put(e, curr);
@@ -50,17 +50,6 @@ public abstract class BFS {
             }
         }
         return path;
-    }
-
-    /**
-     * Converts a square to its corresponding index in the graph array.
-     * @param sq the square to convert
-     * @return the index of the square in the graph array
-     */
-    private static int squareToIndex(Square sq) {
-        int sq_row = sq.getRow();
-        int sq_col = sq.getCol();
-        return sq_row * BOARD_DIMENSION + sq_col;
     }
 }
 
