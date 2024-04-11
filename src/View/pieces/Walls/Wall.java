@@ -15,6 +15,14 @@ public class Wall extends Rectangle {
         setStrokeWidth(1);
     }
 
+    public void fill() {
+        this.setFill(Color.BLACK);
+    }
+
+    public void removeFill() {
+        this.setFill(Color.SILVER);
+    }
+
     public int getCol() {
         return col;
     }

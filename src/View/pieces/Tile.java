@@ -16,27 +16,43 @@ import static Utilities.Constants.TILE_SIZE;
 public class Tile extends StackPane {
     private final int col;
     private final int row;
+    private Rectangle rectangle;
+
+    public int getCol() {
+        return col;
+    }
+
+    public int getRow() {
+        return row;
+    }
 
     /**
      * Constructs a new tile with the specified column and row position.
-     *
      * @param col the column position of the tile
      * @param row the row position of the tile
      */
-    public Tile(int col, int row) {
+    public Tile(int row, int col) {
         this.col = col;
         this.row = row;
 
         // Create a rectangle representing the tile
-        Rectangle rectangle = new Rectangle(TILE_SIZE, TILE_SIZE);
-        rectangle.setFill(Color.BURLYWOOD); // Set fill color
-        rectangle.setStroke(Color.BLACK); // Set border color
+        this.rectangle = new Rectangle(TILE_SIZE, TILE_SIZE);
+        this.rectangle.setFill(Color.BURLYWOOD); // Set fill color
+        this.rectangle.setStroke(Color.BLACK); // Set border color
 
         // Create a label for the tile's notation (e.g., "a1", "b2", etc.)
         Label notationLabel = new Label(toString());
 
-        getChildren().addAll(rectangle, notationLabel);
+        getChildren().addAll(this.rectangle, notationLabel);
         relocate((col - 1) * TILE_SIZE, (BOARD_DIMENSION - row) * TILE_SIZE);
+    }
+
+    public void highlight() {
+        this.rectangle.setFill(Color.LIGHTGRAY);
+    }
+
+    public void hide() {
+        this.rectangle.setFill(Color.BURLYWOOD);
     }
 
     /**

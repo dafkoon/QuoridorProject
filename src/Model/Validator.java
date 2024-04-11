@@ -46,7 +46,6 @@ public class Validator {
      */
     public boolean commitMove(String move) {
         if(gameOver()) {
-            System.out.println(getOtherPlayer().getName() + "WINNER");
             return false;
         }
         if (isValidWallSyntax(move)) {
@@ -130,7 +129,7 @@ public class Validator {
      * @return true if the traversal is valid, false otherwise
      */
     public boolean isValidTraversal(Square from, Square dest) {
-        return board.isLegalTraversal(dest, from, getOtherPlayerPos());
+        return board.isLegalTraversal(from, dest, getOtherPlayerPos());
     }
 
 

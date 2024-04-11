@@ -46,7 +46,7 @@ public class AI {
      */
     public void AiTurn() {
         setBoardGraph(validator.getBoardGraph());
-        if (agentPlayer.getWallsLeft() == 0)
+        if (agentPlayer.getWallsLeft() > 0)
             takeShortestPath();
         else
             compareBetweenPaths();
@@ -546,18 +546,18 @@ public class AI {
             if (move.length() == 2) {
                 Square sq = new Square(move);
                 if (validator.commitMove(sq.toString()))
-                    viewUpdater.updatePawnPosition(turn, sq.getRow(), sq.getCol());
+                    viewUpdater.updatePawnPosition(sq.getRow(), sq.getCol(), turn);
                 else
-                    viewUpdater.updatePawnPosition(turn, -1, -1);
+                    viewUpdater.updatePawnPosition(-1, -1, turn);
             } else if (move.length() == 3) {
                 Wall wall = new Wall(move);
                 if (validator.commitMove(wall.toString())) {
                     int row = wall.getStartingSq().getRow() + 1;
                     int col = wall.getStartingSq().getCol() + 1;
                     if (move.charAt(2) == 'h')
-                        viewUpdater.updateHorizontalWall(row, col, turn);
+                        viewUpdater.placeHorizontalWalls(row, col, turn);
                     else if (move.charAt(2) == 'v')
-                        viewUpdater.updateVerticalWall(row, col, turn);
+                        viewUpdater.placeVerticalWall(row, col, turn);
                 }
             }
         }

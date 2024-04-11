@@ -173,6 +173,7 @@ public class Board {
             return false;
         }
         if(newSquare.equals(currentSquare) || newSquare.equals(otherPlayerSquare)) {
+//            System.out.println("went from " + currentSquare + " to " + newSquare + " while " + otherPlayerSquare + " is not empty");
             // Check if the destination is a square that's already occupied.
             return false;
         } else if (graph[currentSquareIndex].contains(newSquare)) {

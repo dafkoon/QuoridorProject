@@ -112,12 +112,12 @@ public class Pawn extends StackPane {
         return enumVal;
     }
 
-    public void setOnMousePressed(MouseEvent event) {
+    public void mousePressed(MouseEvent event) {
         mouseX = event.getSceneX();
         mouseY = event.getSceneY();
     }
 
-    public void setOnMouseDragged(MouseEvent event) {
+    public void mouseDragged(MouseEvent event) {
         // Continually calculates horizontal distance mouse has moved since last update.
         // getLayoutX: current X coordinate of the node within its parent's coordinate system.
         relocate(getLayoutX() + (event.getSceneX() - mouseX), getLayoutY() + (event.getSceneY() - mouseY));
@@ -132,9 +132,7 @@ public class Pawn extends StackPane {
      */
     @Override
     public String toString() {
-        return "Pawn{" + type.name() +
-                " " + color.name() +
-                '}';
+        return type.name() + "/" + color.name() + " player";
     }
 
     public enum PawnColor {
