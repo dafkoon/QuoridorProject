@@ -112,14 +112,21 @@ public class Pawn extends StackPane {
         return enumVal;
     }
 
+    /**
+     * When the pawn is pressed, keep its x and y coordinates.
+     * @param event the event object.
+     */
     public void mousePressed(MouseEvent event) {
         mouseX = event.getSceneX();
         mouseY = event.getSceneY();
     }
 
+    /**
+     * When the pawn is dragged, continually calculate its location while moving.
+     *
+     * @param event the event object.
+     */
     public void mouseDragged(MouseEvent event) {
-        // Continually calculates horizontal distance mouse has moved since last update.
-        // getLayoutX: current X coordinate of the node within its parent's coordinate system.
         relocate(getLayoutX() + (event.getSceneX() - mouseX), getLayoutY() + (event.getSceneY() - mouseY));
         mouseX = event.getSceneX();
         mouseY = event.getSceneY();

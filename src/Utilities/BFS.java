@@ -4,8 +4,6 @@ import Model.Square;
 
 import java.util.*;
 
-import static Utilities.Constants.BOARD_DIMENSION;
-
 /**
  * Abstract class for implementing breadth-first search (BFS) algorithm.
  * Provides functionality to calculate BFS on a graph represented by squares.

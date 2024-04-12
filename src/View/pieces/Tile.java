@@ -16,15 +16,8 @@ import static Utilities.Constants.TILE_SIZE;
 public class Tile extends StackPane {
     private final int col;
     private final int row;
-    private Rectangle rectangle;
+    private final Rectangle rectangle;
 
-    public int getCol() {
-        return col;
-    }
-
-    public int getRow() {
-        return row;
-    }
 
     /**
      * Constructs a new tile with the specified column and row position.
@@ -47,10 +40,16 @@ public class Tile extends StackPane {
         relocate((col - 1) * TILE_SIZE, (BOARD_DIMENSION - row) * TILE_SIZE);
     }
 
+    /**
+     * Colors the tile so it looks highlighted.
+     */
     public void highlight() {
-        this.rectangle.setFill(Color.LIGHTGRAY);
+        this.rectangle.setFill(Color.BLANCHEDALMOND);
     }
 
+    /**
+     * Colors the tile to its original color.
+     */
     public void hide() {
         this.rectangle.setFill(Color.BURLYWOOD);
     }

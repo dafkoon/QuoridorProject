@@ -4,6 +4,12 @@ import static Utilities.Constants.BOARD_DIMENSION;
 import static Utilities.Constants.TILE_SIZE;
 
 public class VerticalWall extends Wall {
+
+    /**
+     * Constructor for a vertical wall.
+     * @param row The row of the wall.
+     * @param col The column of the wall.
+     */
     public VerticalWall(int row, int col) {
         super(row, col);
         setWidth(((double) TILE_SIZE / 10));

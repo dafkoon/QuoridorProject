@@ -5,7 +5,6 @@ import View.pieces.Tile;
 import View.pieces.Walls.HorizontalWall;
 import View.pieces.Walls.VerticalWall;
 
-
 import java.util.LinkedList;
 
 import static Utilities.Constants.BOARD_SIZE;
@@ -15,9 +14,8 @@ import static Utilities.Constants.TILE_SIZE;
  * Singleton class responsible for updating the view based on game events.
  */
 public class ViewUpdater {
-    private static ViewUpdater instance;
     private final GUI view;
-    LinkedList<Tile> tiles = new LinkedList<>();
+    LinkedList<Tile> highlightedTiles = new LinkedList<>();
 
     /**
      * Constructs a ViewUpdater instance.
@@ -27,17 +25,6 @@ public class ViewUpdater {
         this.view = view;
     }
 
-
-    /**
-     * Gets the singleton instance of ViewUpdater.
-     * @param view The Game view.
-     * @return The ViewUpdater instance.
-     */
-    public static ViewUpdater getInstance(GUI view) {
-        if(instance == null)
-            instance = new ViewUpdater(view);
-        return instance;
-    }
 
     // These methods are only used from the client side to show/remove walls.
 
@@ -89,12 +76,12 @@ public class ViewUpdater {
 
     public void showTile(String stringTile) {
         Tile tile = view.findTile(stringTile);
-        tiles.add(tile);
+        highlightedTiles.add(tile);
         tile.highlight();
     }
 
     public void hideTile() {
-        for(Tile tile : tiles) {
+        for(Tile tile : highlightedTiles) {
             tile.hide();
         }
     }
@@ -140,6 +127,10 @@ public class ViewUpdater {
             view.updatePawnLocation(playerTurn, col*TILE_SIZE, (BOARD_SIZE-TILE_SIZE)-row*TILE_SIZE);
     }
 
+    /**
+     * Calls for the view to display a window with the winner's information.
+     * @param playerTurn the player whose turn it is that won, also is the id of that player.
+     */
     public void setWinner(int playerTurn) {
         view.showWinner(playerTurn);
     }

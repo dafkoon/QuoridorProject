@@ -173,7 +173,6 @@ public class Board {
             return false;
         }
         if(newSquare.equals(currentSquare) || newSquare.equals(otherPlayerSquare)) {
-//            System.out.println("went from " + currentSquare + " to " + newSquare + " while " + otherPlayerSquare + " is not empty");
             // Check if the destination is a square that's already occupied.
             return false;
         } else if (graph[currentSquareIndex].contains(newSquare)) {
@@ -181,7 +180,6 @@ public class Board {
             return true;
         } else if(graph[currentSquareIndex].contains(otherPlayerSquare)) {
             // Check if the playing player's Square is connected to other player's Square
-
             if(graph[otherPlayerSquareIndex].contains(currentSquare.opposite(otherPlayerSquare))) {
                 // Return a boolean if the destination is connected to other's Square and is adjacent horizontally or vertically.
                 // Basically return false if the destination is diagonal to playing player's square.
@@ -202,12 +200,13 @@ public class Board {
      */
     public boolean doesWallIntersectOther(Wall wall) {
         if(wall.startingSq.toIndex() >= graph.length || wall.startingSq.toIndex() < 0)
-            return true;
+            return false;
         if(wall.getOrientation() == Wall.Orientation.HORIZONTAL) { // Check Horizontal wall not intersecting others.
             return walls.contains(wall) ||
-                    walls.contains(wall.neighbor(1, 0, Wall.Orientation.VERTICAL)) || // Through it
-                    walls.contains(wall.neighbor(0, -1, Wall.Orientation.HORIZONTAL)) || //
+                    walls.contains(wall.neighbor(1, 0, Wall.Orientation.VERTICAL)) ||
+                    walls.contains(wall.neighbor(0, -1, Wall.Orientation.HORIZONTAL)) ||
                     walls.contains(wall.neighbor(0, 1, Wall.Orientation.HORIZONTAL));
+
         } else {
             return walls.contains(wall) ||
                     walls.contains(wall.neighbor(-1, 0, Wall.Orientation.HORIZONTAL)) ||

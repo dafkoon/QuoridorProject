@@ -15,14 +15,13 @@ import javafx.application.Platform;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.ChoiceDialog;
+import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
-import javafx.scene.control.Label;
 import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-
 
 import java.util.Optional;
 
@@ -61,6 +60,10 @@ public class GUI extends Application{
         clientHandler.startGame();
     }
 
+    /**
+     * Creates a selection screen to let the user choose who should have the first move.
+     * @return
+     */
     private int selectStartingPlayer() {
         String[] players = {"Human", "AI"};
         ChoiceDialog<String> d = new ChoiceDialog<>(players[0], players);
@@ -81,9 +84,9 @@ public class GUI extends Application{
     }
 
     /**
-     * Initializes the pawns for the Quoridor game.
+     * Initializes the pawns for the game.
      * The method sets up the pawns for both players, including their types, colors, and initial positions.
-     * Additionally, it registers mouse events for human pawns and adds players and opponents to the input handler.
+     * Additionally, it registers mouse events for human pawns.
      */
     private void createPawns() {
         int currentPlayer = startingPlayer;     // Start from the starting player
@@ -116,7 +119,6 @@ public class GUI extends Application{
             pawn.mousePressed(event);
             clientHandler.showReachableTiles();
         });
-//        pawn.setOnMousePressed(pawn::mousePressed);
         pawn.setOnMouseDragged(pawn::mouseDragged);
         pawn.setOnMouseReleased(event ->  {
             clientHandler.hideReachableTiles();
@@ -229,7 +231,7 @@ public class GUI extends Application{
     }
 
     /**
-     * Finds and returns the horizontal wall located at the specified row and column on the game board.
+     * Finds and returns the horizontal wall object located at the specified row and column on the game board.
      * @param row the row of the horizontal wall
      * @param col the column of the horizontal wall
      * @return the horizontal wall if found, or {@code null} if not found
@@ -246,6 +248,11 @@ public class GUI extends Application{
         return null;
     }
 
+    /**
+     * Finds and returns the tile object located at the specific row and column on the game board.
+     * @param stringTile
+     * @return
+     */
     public Tile findTile(String stringTile) {
         for (Node node : tileGroup.getChildren()) {
             Tile tile = (Tile) node;
@@ -289,8 +296,8 @@ public class GUI extends Application{
         wall1.fill();
         wall2.fill();
         if (isPressed) {
-            wall1.setIsPlaced(true);
-            wall2.setIsPlaced(true);
+            wall1.setPressCommit(true);
+            wall2.setPressCommit(true);
         }
     }
 
@@ -304,7 +311,10 @@ public class GUI extends Application{
         wall2.removeFill();
     }
 
-
+    /**
+     * Creates a popup window displaying the winner.
+     * @param id the id of the winner.
+     */
     public void showWinner(int id) {
         // Create a new stage for the pop-up window
         Stage popupStage = new Stage();

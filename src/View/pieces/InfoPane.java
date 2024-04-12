@@ -21,7 +21,6 @@ public class InfoPane extends Pane {
 
     /**
      * Adds player information to the information panel.
-     *
      * @param playerName the name of the player
      * @param wallsLeft the number of walls left for the player
      * @param playerColor the color of the player
@@ -41,7 +40,6 @@ public class InfoPane extends Pane {
 
     /**
      * Updates the player information displayed in the information panel.
-     *
      * @param currentTurn the index of the player whose information is being updated
      * @param playerName the updated name of the player
      * @param wallsLeft the updated number of walls left for the player

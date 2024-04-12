@@ -1,19 +1,14 @@
 package Controller;
 
-import Model.Validator;
 import Model.Player;
 import Model.Square;
-
+import Model.Validator;
 import View.pieces.Pawn;
 import View.pieces.Pawn.PawnType;
-import View.pieces.Tile;
 import View.pieces.Walls.HorizontalWall;
 import View.pieces.Walls.VerticalWall;
 import View.pieces.Walls.Wall;
 import javafx.scene.input.MouseEvent;
-
-
-import java.util.ArrayList;
 
 import static Utilities.Constants.*;
 
@@ -63,10 +58,8 @@ public class ClientHandler {
         for (Square sq : src.neighbourhood(2)) {
             if (validator.isValidTraversal(src, sq)) {
                 viewUpdater.showTile(sq.toString());
-
             }
         }
-        System.out.println();
     }
 
     public void hideReachableTiles() {
@@ -89,22 +82,23 @@ public class ClientHandler {
         // Convert pixel positions to board coordinates
         int newCol = pixelToBoard(xPixel);
         int newRow = pixelToBoard(yPixel);
-//        System.out.println(newCol + " " + newRow);
-        // Create a Square object representing the destination square
         Square squareToGo = new Square(newRow, newCol);
         int turn = validator.getTurn();
-        // Try to commit the move to the model
         if (validator.commitMove(squareToGo.toString())) {
-            // If move is successful, update pawn position and switch turn to AI
             viewUpdater.updatePawnPosition(newRow, newCol, turn);
             isHumanTurn = false;
-            callAI(); // Call AI for its turn
+            callAI();
         } else {
             // If move is invalid, update pawn position to indicate no move and stay on the human's turn
             viewUpdater.updatePawnPosition(-1, -1, turn);
         }
     }
 
+    /**
+     * Separates between the different types of walls and calls their appropriate event methods.
+     * @param event The event that was created.
+     * @param wall The wall that the event happened to.
+     */
     public void wallEvents(MouseEvent event, Wall wall) {
         if (wall instanceof HorizontalWall) {
             horizontalWallEvents(event, (HorizontalWall) wall);
@@ -139,7 +133,6 @@ public class ClientHandler {
 
     /**
      * Handles mouse events related to horizontal wall movement.
-     *
      * @param event The mouse event.
      * @param wall  The horizontal wall object.
      */
@@ -163,37 +156,34 @@ public class ClientHandler {
 
     /**
      * Handles the mouse entering event for a vertical wall.
-     *
      * @param wall The vertical wall object.
      */
     private void verticalWallEntered(VerticalWall wall) {
         if (wall.getRow() > 1) {
-            if (validator.isValidWallPlacement(wall.toAlgebraic(), false))
+            if (validator.isValidWallPlacement(wall.toString(), false))
                 viewUpdater.fillVerticalWall(wall, false); // Fill the wall but don't set it as pressed.
         }
     }
 
     /**
      * Handles the mouse exiting event for a vertical wall.
-     *
      * @param wall The vertical wall object.
      */
     private void verticalWallExited(VerticalWall wall) {
-        if (wall.getRow() > 1 && !wall.isPlaced()) {
-            if (validator.isValidWallPlacement(wall.toAlgebraic(), false))
+        if (wall.getRow() > 1 && !wall.getPressCommit()) {
+            if (validator.isValidWallPlacement(wall.toString(), false))
                 viewUpdater.removeFillVerticalWall(wall);
         }
     }
 
     /**
      * Handles the mouse press event for a vertical wall.
-     *
      * @param wall The vertical wall object.
      */
     private void verticalWallPressed(VerticalWall wall) {
-        String wallString = wall.toAlgebraic() + 'v';
+        String wallString = wall.toString() + 'v';
+        int turn = validator.getTurn();
         if (validator.commitMove(wallString)) {
-            int turn = validator.getTurn();
             viewUpdater.placeVerticalWall(wall.getRow(), wall.getCol(), turn);
             isHumanTurn = false;
         }
@@ -205,45 +195,46 @@ public class ClientHandler {
      */
     private void horizontalWallEntered(HorizontalWall wall) {
         if (wall.getCol() < BOARD_DIMENSION) {
-            if (validator.isValidWallPlacement(wall.toAlgebraic(), true))
+            if (validator.isValidWallPlacement(wall.toString(), true))
                 viewUpdater.fillHorizontalWall(wall, false);
         }
     }
 
     /**
      * Handles the mouse exiting event for a horizontal wall.
-     *
      * @param wall The horizontal wall object.
      */
     private void horizontalWallExited(HorizontalWall wall) {
-        if (wall.getCol() < BOARD_DIMENSION && !wall.isPlaced()) {
-            if (validator.isValidWallPlacement(wall.toAlgebraic(), true))
+        if (wall.getCol() < BOARD_DIMENSION && !wall.getPressCommit()) {
+            if (validator.isValidWallPlacement(wall.toString(), true))
                 viewUpdater.removeFillHorizontalWall(wall);
         }
     }
 
     /**
      * Handles the mouse press event for a horizontal wall.
-     *
      * @param wall The horizontal wall object.
      */
     private void horizontalWallPressed(HorizontalWall wall) {
-        String wallString = wall.toAlgebraic() + 'h';
+        String wallString = wall.toString() + 'h';
+        int turn = validator.getTurn();
         if (validator.commitMove(wallString)) {
-            int turn = validator.getTurn();
             viewUpdater.placeHorizontalWalls(wall.getRow(), wall.getCol(), turn);
             isHumanTurn = false;
         }
     }
 
-
+    /**
+     * Calls the AI if it's the starting player, otherwise does nothing.
+     */
     public void startGame() {
         if(!isHumanTurn)
             callAI();
     }
 
     /**
-     * Handles the completion of a human player's move by initiating the AI's turn.
+     * Checks if the game is over before calling the AI - Human won.
+     * Checks if the game is over after calling the AI - AI won.
      */
     public void callAI() {
         boolean isGameOver = validator.gameOver();
@@ -254,13 +245,11 @@ public class ClientHandler {
             if (validator.gameOver())
                 viewUpdater.setWinner(PawnType.AI.ordinal());
         }
-
         isHumanTurn = true;
     }
 
     /**
      * Converts pixel coordinates to board coordinates.
-     *
      * @param pixel The pixel coordinate.
      * @return The corresponding board coordinate.
      */
