@@ -14,18 +14,20 @@ public class Player {
 
     /**
      * Constructs a player with the specified name, color, position, and destination row.
-     * @param playerName the name of the player (HUMAN / AI)
+     *
+     * @param playerName     the name of the player (HUMAN / AI)
      * @param startingSquare the initial square of the player
      */
     public Player(String playerName, Square startingSquare) {
         this.playerName = playerName;
         this.position = startingSquare;
-        this.destRow = BOARD_DIMENSION-startingSquare.getRow()-1;
+        this.destRow = BOARD_DIMENSION - startingSquare.getRow() - 1;
         this.walls = MAX_WALLS;
     }
 
     /**
      * Gets the name of the player.
+     *
      * @return the name of the player (HUMAN / AI)
      */
     public String getName() {
@@ -34,6 +36,7 @@ public class Player {
 
     /**
      * Gets the amount of walls the player has left.
+     *
      * @return the number of walls the player has left
      */
     public int getWallsLeft() {
@@ -42,6 +45,7 @@ public class Player {
 
     /**
      * Gets the current position of the player.
+     *
      * @return the current position of the player
      */
     public Square getPosition() {
@@ -50,6 +54,7 @@ public class Player {
 
     /**
      * Sets the position of the player.
+     *
      * @param position the new position of the player
      */
     public void setPosition(Square position) {
@@ -58,6 +63,7 @@ public class Player {
 
     /**
      * Gets the destination row of the player.
+     *
      * @return the destination row of the player
      */
     public int getDestRow() {

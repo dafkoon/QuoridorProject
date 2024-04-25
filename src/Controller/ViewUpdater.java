@@ -19,6 +19,7 @@ public class ViewUpdater {
 
     /**
      * Constructs a ViewUpdater instance.
+     *
      * @param view The Game view to be updated.
      */
     public ViewUpdater(GUI view) {
@@ -30,7 +31,8 @@ public class ViewUpdater {
 
     /**
      * Fills a vertical wall.
-     * @param wall1 The first vertical wall.
+     *
+     * @param wall1     The first vertical wall.
      * @param isPressed Indicates if the wall is being pressed.
      */
     public void fillVerticalWall(VerticalWall wall1, boolean isPressed) {
@@ -42,6 +44,7 @@ public class ViewUpdater {
 
     /**
      * Removes fill from a vertical wall.
+     *
      * @param wall1 The first vertical wall.
      */
     public void removeFillVerticalWall(VerticalWall wall1) {
@@ -53,24 +56,26 @@ public class ViewUpdater {
 
     /**
      * Fills a horizontal wall on the human side.
-     * @param wall1 The first horizontal wall.
+     *
+     * @param wall1     The first horizontal wall.
      * @param isPressed Indicates if the wall is being pressed.
      */
     public void fillHorizontalWall(HorizontalWall wall1, boolean isPressed) {
         int row = wall1.getRow();
         int col = wall1.getCol();
-        HorizontalWall wall2 = view.findHorizontalWall(row, col+1);
+        HorizontalWall wall2 = view.findHorizontalWall(row, col + 1);
         view.fillWall(wall1, wall2, isPressed);
     }
 
     /**
      * Removes fill from a horizontal wall on the human side.
+     *
      * @param wall1 The first horizontal wall.
      */
     public void removeFillHorizontalWall(HorizontalWall wall1) {
         int row = wall1.getRow();
         int col = wall1.getCol();
-        HorizontalWall wall2 = view.findHorizontalWall(row, col+1);
+        HorizontalWall wall2 = view.findHorizontalWall(row, col + 1);
         view.removeFill(wall1, wall2);
     }
 
@@ -81,17 +86,17 @@ public class ViewUpdater {
     }
 
     public void hideTile() {
-        for(Tile tile : highlightedTiles) {
+        for (Tile tile : highlightedTiles)
             tile.hide();
-        }
     }
 
     // These methods are used by both AI class and Client to place walls.
 
     /**
      * Updates a horizontal wall on the board.
-     * @param row The row of the wall.
-     * @param col The column of the wall.
+     *
+     * @param row        The row of the wall.
+     * @param col        The column of the wall.
      * @param playerTurn The player's turn.
      */
     public void placeHorizontalWalls(int row, int col, int playerTurn) {
@@ -103,8 +108,9 @@ public class ViewUpdater {
 
     /**
      * Updates a vertical wall on the board.
-     * @param row The row of the wall.
-     * @param col The column of the wall.
+     *
+     * @param row        The row of the wall.
+     * @param col        The column of the wall.
      * @param playerTurn The player's turn.
      */
     public void placeVerticalWall(int row, int col, int playerTurn) {
@@ -116,19 +122,21 @@ public class ViewUpdater {
 
     /**
      * Updates the position of a pawn.
-     * @param row The row of the pawn.
-     * @param col The column of the pawn.
+     *
+     * @param row        The row of the pawn.
+     * @param col        The column of the pawn.
      * @param playerTurn The player's turn.
      */
     public void updatePawnPosition(int row, int col, int playerTurn) {
-        if(row == -1 || col == -1) {
+        if (row == -1 || col == -1) {
             view.updatePawnLocation(playerTurn, -1, -1);
         } else
-            view.updatePawnLocation(playerTurn, col*TILE_SIZE, (BOARD_SIZE-TILE_SIZE)-row*TILE_SIZE);
+            view.updatePawnLocation(playerTurn, col * TILE_SIZE, (BOARD_SIZE - TILE_SIZE) - row * TILE_SIZE);
     }
 
     /**
      * Calls for the view to display a window with the winner's information.
+     *
      * @param playerTurn the player whose turn it is that won, also is the id of that player.
      */
     public void setWinner(int playerTurn) {

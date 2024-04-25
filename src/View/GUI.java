@@ -17,6 +17,7 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -28,7 +29,7 @@ import java.util.Optional;
 import static Utilities.Constants.*;
 
 
-public class GUI extends Application{
+public class GUI extends Application {
     public static int startingPlayer;
     private final Group tileGroup = new Group();
     private final Group pawnGroup = new Group();
@@ -40,6 +41,7 @@ public class GUI extends Application{
 
     /**
      * Initializes and starts the Quoridor game.
+     *
      * @param primaryStage the primary stage for displaying the game GUI
      */
     public void start(Stage primaryStage) {
@@ -53,6 +55,7 @@ public class GUI extends Application{
         Pane root = populateBoard();
         Scene scene = new Scene(root);
         primaryStage.setTitle("Quoridor");
+        primaryStage.getIcons().add(new Image("View/images/icon.png"));
         primaryStage.setScene(scene);
         primaryStage.setResizable(false);
         primaryStage.show();
@@ -62,7 +65,8 @@ public class GUI extends Application{
 
     /**
      * Creates a selection screen to let the user choose who should have the first move.
-     * @return
+     *
+     * @return An int that tells which player is starting first.
      */
     private int selectStartingPlayer() {
         String[] players = {"Human", "AI"};
@@ -92,17 +96,17 @@ public class GUI extends Application{
         int currentPlayer = startingPlayer;     // Start from the starting player
 
         // Set initial positions for pawns
-        int[] xPixel = new int[]{BOARD_SIZE/2-TILE_SIZE/2, BOARD_SIZE/2-TILE_SIZE/2};
-        int[] yPixel = new int[]{0, BOARD_SIZE-TILE_SIZE};
+        int[] xPixel = new int[]{BOARD_SIZE / 2 - TILE_SIZE / 2, BOARD_SIZE / 2 - TILE_SIZE / 2};
+        int[] yPixel = new int[]{0, BOARD_SIZE - TILE_SIZE};
         pawnList = new Pawn[xPixel.length]; // initialize the pawn list by how many positions are there.
-        for(int i = 0; i < pawnList.length; i++) {
+        for (int i = 0; i < pawnList.length; i++) {
             // Determine pawn type and color based on the current player
             PawnType pawnType = Pawn.intToType(currentPlayer);
             PawnColor pawnColor = Pawn.intToColor(currentPlayer);
             Pawn pawn = new Pawn(pawnType, pawnColor, xPixel[currentPlayer], yPixel[currentPlayer]);
 
             // Register mouse events for human pawns
-            if(pawn.getType() == PawnType.HUMAN)
+            if (pawn.getType() == PawnType.HUMAN)
                 pawnMouseEvents(pawn);
             pawnGroup.getChildren().add(pawn);
             pawnList[currentPlayer] = pawn;
@@ -112,6 +116,7 @@ public class GUI extends Application{
 
     /**
      * Registers mouse events for a pawn, allowing human input handling for pawn movements.
+     *
      * @param pawn the pawn for which mouse events are registered
      */
     private void pawnMouseEvents(Pawn pawn) {
@@ -120,7 +125,7 @@ public class GUI extends Application{
             clientHandler.showReachableTiles();
         });
         pawn.setOnMouseDragged(pawn::mouseDragged);
-        pawn.setOnMouseReleased(event ->  {
+        pawn.setOnMouseReleased(event -> {
             clientHandler.hideReachableTiles();
             clientHandler.mouseReleasedPawn(pawn);
         });
@@ -128,6 +133,7 @@ public class GUI extends Application{
 
     /**
      * Registers mouse events for a wall, allowing human input handling for wall movements.
+     *
      * @param wall the wall for which mouse events are registered
      */
     private void registerWallMouseEvents(Wall wall) {
@@ -139,6 +145,7 @@ public class GUI extends Application{
     /**
      * Populates the game board with tiles, vertical walls, and horizontal walls.
      * Additionally, registers mouse events for wall movements.
+     *
      * @return the pane containing the populated game board
      */
     private Pane populateBoard() {
@@ -180,6 +187,7 @@ public class GUI extends Application{
 
     /**
      * Creates the info panel, adds  information about each player's name, remaining walls, and pawn color.
+     *
      * @return the populated info panel
      */
     private InfoPane populateInfoPanel() {
@@ -189,7 +197,6 @@ public class GUI extends Application{
         for (Pawn pawn : pawnList) {
             int id = pawn.getType().ordinal();
             panel.addInfo(pawn.getType().name(), clientHandler.getPlayerWallsLeft(id), pawn.getColor().name());
-
         }
         // Set the position of the info panel relative to the game board
         panel.setTranslateX(BOARD_DIMENSION * TILE_SIZE + 10);
@@ -198,6 +205,7 @@ public class GUI extends Application{
 
     /**
      * Updates the information displayed in the info panel based on the current player's turn.
+     *
      * @param playerTurn the index of the current player in the pawn list
      */
     public void updateInfoPanel(int playerTurn) {
@@ -214,6 +222,7 @@ public class GUI extends Application{
 
     /**
      * Finds and returns the vertical wall located at the specified row and column on the game board.
+     *
      * @param row the row of the vertical wall
      * @param col the column of the vertical wall
      * @return the vertical wall if found, or {@code null} if not found
@@ -232,6 +241,7 @@ public class GUI extends Application{
 
     /**
      * Finds and returns the horizontal wall object located at the specified row and column on the game board.
+     *
      * @param row the row of the horizontal wall
      * @param col the column of the horizontal wall
      * @return the horizontal wall if found, or {@code null} if not found
@@ -239,8 +249,8 @@ public class GUI extends Application{
     public HorizontalWall findHorizontalWall(int row, int col) {
         // Iterate through each node in the horizontal wall group
         for (Node node : horizontalWallGroup.getChildren()) {
-            // Cast the node to HorizontalWall
             HorizontalWall wall = (HorizontalWall) node;
+            // Check if the wall's row and column match the specified row and column
             if (wall.getCol() == col && wall.getRow() == row) {
                 return wall;
             }
@@ -250,14 +260,14 @@ public class GUI extends Application{
 
     /**
      * Finds and returns the tile object located at the specific row and column on the game board.
-     * @param stringTile
-     * @return
+     *
+     * @param tileString A string that represents the tile.
+     * @return The tile object that is in tileGroup that matches the tileString.
      */
-    public Tile findTile(String stringTile) {
+    public Tile findTile(String tileString) {
         for (Node node : tileGroup.getChildren()) {
             Tile tile = (Tile) node;
-            // Check if the wall's row and column match the specified row and column
-            if(tile.toString().equals(stringTile)) {
+            if (tile.toString().equals(tileString)) { // Check if the wall's row and column match the specified row and column
                 return tile;
             }
         }
@@ -268,7 +278,8 @@ public class GUI extends Application{
      * Updates the location of the pawn with the specified ID on the game board.
      * If the provided xPixel and yPixel values are not -1, the pawn's position is updated.
      * Otherwise, the pawn is reversed (moved back to its last position before being dragged).
-     * @param id the ID of the pawn to update
+     *
+     * @param id     the ID of the pawn to update
      * @param xPixel the x-coordinate of the new position, or -1 to reverse the pawn
      * @param yPixel the y-coordinate of the new position, or -1 to reverse the pawn
      */
@@ -288,8 +299,9 @@ public class GUI extends Application{
 
     /**
      * Fills the specified walls with as placed if indicated.
-     * @param wall1 the first wall
-     * @param wall2 the second wall
+     *
+     * @param wall1     the first wall
+     * @param wall2     the second wall
      * @param isPressed indicates whether the walls are being placed
      */
     public void fillWall(Wall wall1, Wall wall2, boolean isPressed) {
@@ -303,6 +315,7 @@ public class GUI extends Application{
 
     /**
      * Removes the fill color from the specified walls.
+     *
      * @param wall1 the first wall
      * @param wall2 the second wall
      */
@@ -313,6 +326,7 @@ public class GUI extends Application{
 
     /**
      * Creates a popup window displaying the winner.
+     *
      * @param id the id of the winner.
      */
     public void showWinner(int id) {
@@ -337,7 +351,6 @@ public class GUI extends Application{
         popupStage.setTitle("Winner!");
         popupStage.show();
     }
-
 
 
     public static void main(String[] args) {

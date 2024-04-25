@@ -1,4 +1,5 @@
 package View.pieces;
+
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -24,8 +25,9 @@ public class Pawn extends StackPane {
 
     /**
      * Constructs a new pawn with the specified type, color, and initial position.
-     * @param type the type of the pawn
-     * @param color the color of the pawn
+     *
+     * @param type   the type of the pawn
+     * @param color  the color of the pawn
      * @param xPixel the x-coordinate of the initial position
      * @param yPixel the y-coordinate of the initial position
      */
@@ -34,23 +36,24 @@ public class Pawn extends StackPane {
         this.color = color;
         move(xPixel, (BOARD_SIZE - TILE_SIZE) - yPixel);
 
-        Circle ellipse = new Circle(TILE_SIZE * 0.3125);
-        ellipse.setFill(Color.web(color.name()));
-        ellipse.setStroke(Color.BLACK);
-        ellipse.setStrokeWidth(TILE_SIZE * 0.03);
-        ellipse.setTranslateX((TILE_SIZE - TILE_SIZE * 0.3125 * 2) / 2);
-        ellipse.setTranslateY((TILE_SIZE - TILE_SIZE * 0.3125 * 2) / 2);
+        Circle circle = new Circle(TILE_SIZE * 0.3125);
+        circle.setFill(Color.web(color.name()));
+        circle.setStroke(Color.BLACK);
+        circle.setStrokeWidth(TILE_SIZE * 0.03);
+        circle.setTranslateX((TILE_SIZE - TILE_SIZE * 0.3125 * 2) / 2);
+        circle.setTranslateY((TILE_SIZE - TILE_SIZE * 0.3125 * 2) / 2);
 
         Text text = new Text(type.name());
         text.setTranslateX((TILE_SIZE - TILE_SIZE * 0.3125 * 2) / 2);
         text.setTranslateY((TILE_SIZE - TILE_SIZE * 0.3125 * 2) / 2);
         text.setFont(Font.font("Verdana", FontWeight.BOLD, 8));
         text.setFill(Color.BEIGE);
-        getChildren().addAll(ellipse, text);
+        getChildren().addAll(circle, text);
     }
 
     /**
      * Gets the color of the pawn.
+     *
      * @return the color of the pawn
      */
     public PawnColor getColor() {
@@ -59,6 +62,7 @@ public class Pawn extends StackPane {
 
     /**
      * Gets the type of the pawn.
+     *
      * @return the type of the pawn
      */
     public PawnType getType() {
@@ -75,6 +79,7 @@ public class Pawn extends StackPane {
 
     /**
      * Moves the pawn to the specified position.
+     *
      * @param xPixel the x-coordinate of the new position
      * @param yPixel the y-coordinate of the new position
      */
@@ -86,6 +91,7 @@ public class Pawn extends StackPane {
 
     /**
      * Converts the given number to a pawn color enum.
+     *
      * @param num the number representing the pawn color
      * @return the pawn color enum corresponding to the number
      */
@@ -100,6 +106,7 @@ public class Pawn extends StackPane {
 
     /**
      * Converts the given number to a pawn type enum.
+     *
      * @param num the number representing the pawn type
      * @return the pawn type enum corresponding to the number
      */
@@ -114,6 +121,7 @@ public class Pawn extends StackPane {
 
     /**
      * When the pawn is pressed, keep its x and y coordinates.
+     *
      * @param event the event object.
      */
     public void mousePressed(MouseEvent event) {
@@ -135,6 +143,7 @@ public class Pawn extends StackPane {
 
     /**
      * Returns a string representation of the pawn, including its type and color.
+     *
      * @return a string representation of the pawn
      */
     @Override

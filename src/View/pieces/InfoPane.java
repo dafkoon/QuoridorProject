@@ -7,7 +7,6 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 
 
-
 /**
  * Represents an information panel displaying player information such as name, remaining walls, and color.
  */
@@ -21,8 +20,9 @@ public class InfoPane extends Pane {
 
     /**
      * Adds player information to the information panel.
-     * @param playerName the name of the player
-     * @param wallsLeft the number of walls left for the player
+     *
+     * @param playerName  the name of the player
+     * @param wallsLeft   the number of walls left for the player
      * @param playerColor the color of the player
      */
     public void addInfo(String playerName, int wallsLeft, String playerColor) {
@@ -40,9 +40,10 @@ public class InfoPane extends Pane {
 
     /**
      * Updates the player information displayed in the information panel.
+     *
      * @param currentTurn the index of the player whose information is being updated
-     * @param playerName the updated name of the player
-     * @param wallsLeft the updated number of walls left for the player
+     * @param playerName  the updated name of the player
+     * @param wallsLeft   the updated number of walls left for the player
      * @param playerColor the updated color of the player
      */
     public void updateInfo(int currentTurn, String playerName, int wallsLeft, String playerColor) {

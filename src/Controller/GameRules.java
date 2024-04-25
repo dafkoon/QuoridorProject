@@ -1,62 +1,67 @@
-package Model;
+package Controller;
+import Model.*;
 
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+public class GameRules {
+    private final int MAX_PLAYERS = 2;
+    private final Player[] players;
+    private final Board board;
 
-/**
- * Manages the game rules and stores data.
- */
-public class Validator {
-    private static final int MAX_PLAYERS = 2;
+    private int turn;
+    private final int startingPlayer;
     private static int moveCounter;
     private static int headstart = 0;
 
-    private final int startingPlayer;
-    private int turn;
-
-    private final Player[] players = new Player[MAX_PLAYERS];
-    private final Board board = new Board();
 
     /**
      * Constructs the game rules with the specified starting player.
-     * @param startingPlayer the index of the starting player
+     *
+     * @param startingPlayer A number that is used to index the starting player.
      */
-    public Validator(int startingPlayer) {
+    public GameRules(int startingPlayer) {
+        this.players = new Player[MAX_PLAYERS];
+        this.board = new Board();
+
         this.startingPlayer = startingPlayer;
         this.turn = startingPlayer;
     }
 
     /**
      * Adds a player to the game.
-     * @param playerName the name of the player
-     * @param startingSquare the initial square of the player
-     * @param playerId the ID of the player
+     *
+     * @param playerName     Name of the player to add.
+     * @param startingSquare Initial square of the player.
+     * @param playerId       ID of the player.
      */
-    public void addPlayer(String playerName, String startingSquare, int playerId) {
+    public void addPlayerData(String playerName, String startingSquare, int playerId) {
         Player player = new Player(playerName, new Square(startingSquare));
         players[playerId] = player;
     }
 
     /**
-     * Commits a move in the game.
-     * @param move the move to commit
-     * @return true if the move is legal, false otherwise
+     * Processes a move played by a player.
+     *
+     * @param move A move to process.
+     * @return True if the move is legal and was committed, false otherwise.
      */
     public boolean commitMove(String move) {
-        if(gameOver()) {
+        if (gameOver()) {
             return false;
         }
-        if (isValidWallSyntax(move)) {
+        if (isValidWallSyntax(move)) { // Check if the move is a wall move in syntax.
             Wall wall = new Wall(move);
+            if(wall.equals(new Wall("e7h"))) {
+                System.out.println("on e7h");
+                isValidWallPlacement(wall);
+            }
             if (isValidWallPlacement(wall)) {
                 addWall(wall);
                 updateTurn();
                 return true;
             }
-        }
-        else if(move.length() == 2) {
+        } else if(move.length() == 2) { // It's a traversal move.
             Square newPos = new Square(move);
             Square oldPos = getCurrentPlayerPos();
             if (isValidTraversal(oldPos, newPos)) {
@@ -69,35 +74,13 @@ public class Validator {
     }
 
     /**
-     * Checks if the wall placement is valid.
-     * @param startingSquareString The String that represents the StartingSquare of the wall.
-     * @param isHorizontal a boolean flag that is true if the wall is horizontal, false if vertical
-     * @return True if the wall placement is legal, false otherwise
-     */
-    public boolean isValidWallPlacement(String startingSquareString, boolean isHorizontal) {
-        char orientation = isHorizontal ? 'h' : 'v';
-        Square sq = new Square(startingSquareString);
-        Wall wall = new Wall(sq, orientation);
-        return isValidWallPlacement(wall);
-    }
-    /**
-     * Checks if the wall placement is valid.
-     * @param wall the wall to check
-     * @return true if the wall placement is valid, false otherwise
-     */
-    public boolean isValidWallPlacement(Wall wall) {
-        if(players[getTurn()].getWallsLeft() <= 0 || !isValidWallSyntax(wall.toString()))
-            return false;
-        return board.isLegalWallPlacment(wall, players[0], players[1]);
-    }
-
-    /**
      * Checks if the syntax of the wall string is valid.
+     *
      * @param move the move to validate
      * @return true if the move syntax is valid, false otherwise
      */
-    private boolean isValidWallSyntax(String move) {
-        if(move.length() == 2)
+    public boolean isValidWallSyntax(String move) {
+        if (move.length() == 2)
             return false;
         Pattern p = Pattern.compile("([a-h][1-8]h?)|([a-h][2-9]v?)");
         Matcher m = p.matcher(move);
@@ -105,8 +88,35 @@ public class Validator {
     }
 
     /**
+     * Checks if the wall placement is valid.
+     *
+     * @param startingSquareString A String representation of the StartingSquare of the wall.
+     * @param isHorizontal         A boolean flag that is either true or false whether the wall is horizontal or not.
+     * @return True if the wall placement is legal, false otherwise.
+     */
+    public boolean isValidWallPlacement(String startingSquareString, boolean isHorizontal) {
+        char orientation = isHorizontal ? 'h' : 'v';
+        Square sq = new Square(startingSquareString);
+        Wall wall = new Wall(sq, orientation);
+        return isValidWallPlacement(wall);
+    }
+
+    /**
+     * Checks if the wall placement is valid.
+     *
+     * @param wall The wall to check if is valid.
+     * @return True if the wall placement is legal, false otherwise.
+     */
+    public boolean isValidWallPlacement(Wall wall) {
+        if (players[getTurn()].getWallsLeft() <= 0 || !isValidWallSyntax(wall.toString()))
+            return false;
+        return board.isLegalWallPlacment(wall, players[0], players[1]);
+    }
+
+    /**
      * Adds a wall to the game board.
-     * @param wall the wall to add
+     *
+     * @param wall A to add
      */
     public void addWall(Wall wall) {
         board.addWall(wall);
@@ -115,7 +125,8 @@ public class Validator {
 
     /**
      * Removes a wall from the game board.
-     * @param wall the wall to remove
+     *
+     * @param wall A wall to remove.
      */
     public void removeWall(Wall wall) {
         board.removeWall(wall);
@@ -124,15 +135,20 @@ public class Validator {
 
     /**
      * Checks if a traversal from one square to another is valid.
-     * @param from the starting square
-     * @param dest the destination square
-     * @return true if the traversal is valid, false otherwise
+     *
+     * @param from The square to move from.
+     * @param dest The square to move to.
+     * @return True if the traversal is valid, false otherwise
      */
     public boolean isValidTraversal(Square from, Square dest) {
         return board.isLegalTraversal(from, dest, getOtherPlayerPos());
     }
 
-
+    /**
+     * A method to check if any player reached their goal meaning the game is over.
+     *
+     * @return True if any player reached their goal, false if neither.
+     */
     public boolean gameOver() {
         return players[0].getPosition().getRow() == players[0].getDestRow() || players[1].getPosition().getRow() == players[1].getDestRow();
     }
@@ -147,24 +163,49 @@ public class Validator {
     }
 
     /**
-     * Checks if placing a wall blocks the goal of any player.
-     * @param wall the wall to check
-     * @return true if the wall blocks the goal, false otherwise
+     * Checks if placing a wall completely blocks a player from reaching their goal.
+     *
+     * @param wall A wall to check for.
+     * @return True if the wall blocks the goal while not intersecting other, false otherwise.
      */
-    public boolean doesWallBlockGoal(Wall wall) {
-        return !board.doesWallIntersectOther(wall) && board.doesWallBlockCompletely(wall, players[0], players[1]);
+    public boolean doesBlockPathToGoal(Wall wall) {
+        return !board.doesIntersectOtherWalls(wall) && board.doesWallBlockPathToGOal(wall, players[0], players[1]);
+    }
+
+    /**
+     * Checks if the given wall intersects any other placed walls on board.
+     *
+     * @param wall A wall to check if it intersects others.
+     * @return True if it does, false otherwise.
+     */
+    public boolean doesIntersectOtherWalls(Wall wall) {
+        return board.doesIntersectOtherWalls(wall);
+    }
+
+
+    /**
+     * Checks if both walls intersect each other.
+     *
+     * @param wall1 One wall.
+     * @param wall2 Second wall.
+     * @return True if they intersect, false otherwise.
+     */
+    public boolean doPairIntersect(Wall wall1, Wall wall2) {
+        return board.doWallsIntersect(wall1, wall2);
     }
 
     /**
      * Gets the current turn number of the current player.
+     *
      * @return The turn number.
      */
     public int getTurn() {
-        return turn%2;
+        return turn % 2;
     }
 
     /**
      * Gets the position of the current player.
+     *
      * @return The position of the current player.
      */
     public Square getCurrentPlayerPos() {
@@ -173,6 +214,7 @@ public class Validator {
 
     /**
      * Gets the position of the other player.
+     *
      * @return The position of the other player.
      */
     public Square getOtherPlayerPos() {
@@ -181,29 +223,34 @@ public class Validator {
 
     /**
      * Gets the pointer of the current player.
+     *
      * @return The current player.
      */
     public Player getCurrentPlayer() {
         return players[getTurn()];
     }
+
     /**
      * Gets the pointer of the other player.
+     *
      * @return The other player.
      */
     public Player getOtherPlayer() {
-        return players[(getTurn()+1)%2];
+        return players[(getTurn() + 1) % 2];
     }
 
     /**
      * Gets the board graph.
+     *
      * @return The board graph.
      */
-    public List<Square>[] getBoardGraph() {
-        return this.board.graph;
+    public Board getBoard() {
+        return this.board;
     }
 
     /**
      * Gets the player with the specified ID.
+     *
      * @param id The ID of the player.
      * @return The player with the specified ID.
      */
@@ -213,6 +260,7 @@ public class Validator {
 
     /**
      * Gets the ID of the starting player.
+     *
      * @return The ID of the starting player.
      */
     public int getStartingPlayer() {
@@ -221,10 +269,10 @@ public class Validator {
 
     /**
      * Gets the number of moves made so far.
+     *
      * @return The number of moves made.
      */
     public int getMoveNum() {
         return moveCounter;
     }
-
 }

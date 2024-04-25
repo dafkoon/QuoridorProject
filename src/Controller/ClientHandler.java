@@ -2,7 +2,6 @@ package Controller;
 
 import Model.Player;
 import Model.Square;
-import Model.Validator;
 import View.pieces.Pawn;
 import View.pieces.Pawn.PawnType;
 import View.pieces.Walls.HorizontalWall;
@@ -16,21 +15,21 @@ import static Utilities.Constants.*;
  * This class handles human input events and interactions in the game.
  */
 public class ClientHandler {
-    private final Validator validator;
+    private final GameRules gameRules;
     private final ViewUpdater viewUpdater;
     private AI ai;
-//    private final int startingPlayer;
     private boolean isHumanTurn;
 
     /**
      * Constructs a ClientSideHandler object.
-     * @param viewUpdater The game view.
+     *
+     * @param viewUpdater    The game view.
      * @param startingPlayer The ID of the starting player.
      */
     public ClientHandler(ViewUpdater viewUpdater, int startingPlayer) {
         this.viewUpdater = viewUpdater;
         this.isHumanTurn = startingPlayer == PawnType.HUMAN.ordinal();
-        this.validator = new Validator(startingPlayer);
+        this.gameRules = new GameRules(startingPlayer);
     }
 
     public void initPlayers(Pawn[] pawns) {
@@ -38,25 +37,26 @@ public class ClientHandler {
             String name = pawn.getType().name();
             int id = pawn.getType().ordinal();
             if (name.equals("HUMAN"))
-                validator.addPlayer(name, "e1", id);
+                gameRules.addPlayerData(name, "e1", id);
             else
-                validator.addPlayer(name, "e9", id);
+                gameRules.addPlayerData(name, "e9", id);
         }
         InitAI(PawnType.AI.ordinal());
     }
 
     /**
      * Adds an opponent to the game.
+     *
      * @param id The ID of the opponent.
      */
     private void InitAI(int id) {
-        ai = new AI(viewUpdater, validator, id);
+        ai = new AI(viewUpdater, gameRules, id);
     }
 
     public void showReachableTiles() {
-        Square src = validator.getPlayer(PawnType.HUMAN.ordinal()).getPosition();
+        Square src = gameRules.getPlayer(PawnType.HUMAN.ordinal()).getPosition();
         for (Square sq : src.neighbourhood(2)) {
-            if (validator.isValidTraversal(src, sq)) {
+            if (gameRules.isValidTraversal(src, sq)) {
                 viewUpdater.showTile(sq.toString());
             }
         }
@@ -68,6 +68,7 @@ public class ClientHandler {
 
     /**
      * Handles the mouse release event for moving a pawn.
+     *
      * @param pawn The pawn object.
      */
     public void mouseReleasedPawn(Pawn pawn) {
@@ -83,8 +84,8 @@ public class ClientHandler {
         int newCol = pixelToBoard(xPixel);
         int newRow = pixelToBoard(yPixel);
         Square squareToGo = new Square(newRow, newCol);
-        int turn = validator.getTurn();
-        if (validator.commitMove(squareToGo.toString())) {
+        int turn = gameRules.getTurn();
+        if (gameRules.commitMove(squareToGo.toString())) {
             viewUpdater.updatePawnPosition(newRow, newCol, turn);
             isHumanTurn = false;
             callAI();
@@ -96,8 +97,9 @@ public class ClientHandler {
 
     /**
      * Separates between the different types of walls and calls their appropriate event methods.
+     *
      * @param event The event that was created.
-     * @param wall The wall that the event happened to.
+     * @param wall  The wall that the event happened to.
      */
     public void wallEvents(MouseEvent event, Wall wall) {
         if (wall instanceof HorizontalWall) {
@@ -109,6 +111,7 @@ public class ClientHandler {
 
     /**
      * Handles mouse events related to vertical wall movement.
+     *
      * @param event The mouse event.
      * @param wall  The horizontal wall object.
      */
@@ -133,6 +136,7 @@ public class ClientHandler {
 
     /**
      * Handles mouse events related to horizontal wall movement.
+     *
      * @param event The mouse event.
      * @param wall  The horizontal wall object.
      */
@@ -156,34 +160,37 @@ public class ClientHandler {
 
     /**
      * Handles the mouse entering event for a vertical wall.
+     *
      * @param wall The vertical wall object.
      */
     private void verticalWallEntered(VerticalWall wall) {
         if (wall.getRow() > 1) {
-            if (validator.isValidWallPlacement(wall.toString(), false))
+            if (gameRules.isValidWallPlacement(wall.toString(), false))
                 viewUpdater.fillVerticalWall(wall, false); // Fill the wall but don't set it as pressed.
         }
     }
 
     /**
      * Handles the mouse exiting event for a vertical wall.
+     *
      * @param wall The vertical wall object.
      */
     private void verticalWallExited(VerticalWall wall) {
         if (wall.getRow() > 1 && !wall.getPressCommit()) {
-            if (validator.isValidWallPlacement(wall.toString(), false))
+            if (gameRules.isValidWallPlacement(wall.toString(), false))
                 viewUpdater.removeFillVerticalWall(wall);
         }
     }
 
     /**
      * Handles the mouse press event for a vertical wall.
+     *
      * @param wall The vertical wall object.
      */
     private void verticalWallPressed(VerticalWall wall) {
         String wallString = wall.toString() + 'v';
-        int turn = validator.getTurn();
-        if (validator.commitMove(wallString)) {
+        int turn = gameRules.getTurn();
+        if (gameRules.commitMove(wallString)) {
             viewUpdater.placeVerticalWall(wall.getRow(), wall.getCol(), turn);
             isHumanTurn = false;
         }
@@ -191,34 +198,37 @@ public class ClientHandler {
 
     /**
      * Handles the mouse entering event for a horizontal wall.
+     *
      * @param wall The horizontal wall object.
      */
     private void horizontalWallEntered(HorizontalWall wall) {
         if (wall.getCol() < BOARD_DIMENSION) {
-            if (validator.isValidWallPlacement(wall.toString(), true))
+            if (gameRules.isValidWallPlacement(wall.toString(), true))
                 viewUpdater.fillHorizontalWall(wall, false);
         }
     }
 
     /**
      * Handles the mouse exiting event for a horizontal wall.
+     *
      * @param wall The horizontal wall object.
      */
     private void horizontalWallExited(HorizontalWall wall) {
         if (wall.getCol() < BOARD_DIMENSION && !wall.getPressCommit()) {
-            if (validator.isValidWallPlacement(wall.toString(), true))
+            if (gameRules.isValidWallPlacement(wall.toString(), true))
                 viewUpdater.removeFillHorizontalWall(wall);
         }
     }
 
     /**
      * Handles the mouse press event for a horizontal wall.
+     *
      * @param wall The horizontal wall object.
      */
     private void horizontalWallPressed(HorizontalWall wall) {
         String wallString = wall.toString() + 'h';
-        int turn = validator.getTurn();
-        if (validator.commitMove(wallString)) {
+        int turn = gameRules.getTurn();
+        if (gameRules.commitMove(wallString)) {
             viewUpdater.placeHorizontalWalls(wall.getRow(), wall.getCol(), turn);
             isHumanTurn = false;
         }
@@ -228,7 +238,7 @@ public class ClientHandler {
      * Calls the AI if it's the starting player, otherwise does nothing.
      */
     public void startGame() {
-        if(!isHumanTurn)
+        if (!isHumanTurn)
             callAI();
     }
 
@@ -237,12 +247,12 @@ public class ClientHandler {
      * Checks if the game is over after calling the AI - AI won.
      */
     public void callAI() {
-        boolean isGameOver = validator.gameOver();
+        boolean isGameOver = gameRules.gameOver();
         if (isGameOver) {
             viewUpdater.setWinner(PawnType.HUMAN.ordinal());
         } else {
             ai.AiTurn();
-            if (validator.gameOver())
+            if (gameRules.gameOver())
                 viewUpdater.setWinner(PawnType.AI.ordinal());
         }
         isHumanTurn = true;
@@ -250,6 +260,7 @@ public class ClientHandler {
 
     /**
      * Converts pixel coordinates to board coordinates.
+     *
      * @param pixel The pixel coordinate.
      * @return The corresponding board coordinate.
      */
@@ -259,11 +270,12 @@ public class ClientHandler {
 
     /**
      * Retrieves the number of walls left for a player.
+     *
      * @param id The ID of the player.
      * @return The number of walls left for the player.
      */
     public int getPlayerWallsLeft(int id) {
-        Player player = this.validator.getPlayer(id);
+        Player player = this.gameRules.getPlayer(id);
         return player.getWallsLeft();
     }
 }

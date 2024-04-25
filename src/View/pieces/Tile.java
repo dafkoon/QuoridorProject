@@ -1,6 +1,7 @@
 package View.pieces;
 
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -21,6 +22,7 @@ public class Tile extends StackPane {
 
     /**
      * Constructs a new tile with the specified column and row position.
+     *
      * @param col the column position of the tile
      * @param row the row position of the tile
      */
@@ -57,6 +59,7 @@ public class Tile extends StackPane {
     /**
      * Returns a string representation of the tile based on its column and row position.
      * The string representation consists of the column letter (a-z) and the row number (1-9).
+     *
      * @return the string representation of the tile
      */
     @Override

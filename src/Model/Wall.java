@@ -7,12 +7,13 @@ import java.util.Objects;
  */
 public class Wall {
 
-    Square startingSq;
-    Orientation orientation = null;
+    public Square startingSq;
+    public Orientation orientation = null;
 
     /**
      * Constructs a wall with the specified starting square and orientation.
-     * @param startingSq the square located at the start of the wall
+     *
+     * @param startingSq  the square located at the start of the wall
      * @param orientation the direction that the wall will go in (vertical or horizontal)
      */
     public Wall(Square startingSq, Orientation orientation) {
@@ -22,7 +23,8 @@ public class Wall {
 
     /**
      * Constructs a wall with the specified starting square and orientation.
-     * @param startingSq the square located at the start of the wall
+     *
+     * @param startingSq  the square located at the start of the wall
      * @param orientation the direction that the wall will go in (specified as 'h' for horizontal or 'v' for vertical)
      */
     public Wall(Square startingSq, char orientation) {
@@ -33,6 +35,7 @@ public class Wall {
     /**
      * Constructs a wall using a string representation.
      * Example: "e3v" represents a vertical wall between columns e and f spanning rows 3 and 2.
+     *
      * @param s the string representation of the wall
      */
     public Wall(String s) {
@@ -42,10 +45,16 @@ public class Wall {
         }
     }
 
+    public Wall(Wall other) {
+        this.startingSq = other.startingSq;
+        this.orientation = other.orientation;
+    }
+
     /**
      * Returns the neighbor wall of the specified row, column, and orientation.
-     * @param row the row offset for the neighbor wall
-     * @param column the column offset for the neighbor wall
+     *
+     * @param row         the row offset for the neighbor wall
+     * @param column      the column offset for the neighbor wall
      * @param orientation the orientation of the neighbor wall
      * @return the neighbor wall
      */
@@ -56,6 +65,7 @@ public class Wall {
 
     /**
      * Gets the starting square of the wall.
+     *
      * @return the starting square of the wall
      */
     public Square getStartingSq() {
@@ -64,6 +74,7 @@ public class Wall {
 
     /**
      * Gets the orientation of the wall.
+     *
      * @return the orientation of the wall
      */
     public Orientation getOrientation() {
@@ -72,6 +83,12 @@ public class Wall {
 
 
     public String toString() {
+        try {
+            return startingSq.toString() + orientation.name().toLowerCase().charAt(0);
+        }
+        catch (Exception e) {
+            System.out.println("yo");
+        }
         return startingSq.toString() + orientation.name().toLowerCase().charAt(0);
     }
 

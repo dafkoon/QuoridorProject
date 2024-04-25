@@ -7,6 +7,7 @@ public class HorizontalWall extends Wall {
 
     /**
      * Constructor for a horizontal wall.
+     *
      * @param row The row of the wall.
      * @param col The column of the wall.
      */
@@ -14,7 +15,7 @@ public class HorizontalWall extends Wall {
         super(row, col);
         setWidth(TILE_SIZE);
         setHeight((double) TILE_SIZE / 10);
-        relocate((col-1) * TILE_SIZE, (BOARD_DIMENSION-row) * TILE_SIZE);
+        relocate((col - 1) * TILE_SIZE, (BOARD_DIMENSION - row) * TILE_SIZE);
     }
 }
 

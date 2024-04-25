@@ -7,6 +7,7 @@ public class VerticalWall extends Wall {
 
     /**
      * Constructor for a vertical wall.
+     *
      * @param row The row of the wall.
      * @param col The column of the wall.
      */
