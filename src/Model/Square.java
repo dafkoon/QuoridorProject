@@ -2,8 +2,6 @@ package Model;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static Utilities.Constants.BOARD_DIMENSION;
 
@@ -46,19 +44,6 @@ public class Square {
      * @return a new square with the displacement applied
      */
     public Square neighbor(int row, int col) {
-//        Square neighbor = new Square(this.row + row, this.col + col);
-//        Pattern p = Pattern.compile("[a-i][1-9]");
-//        Matcher m = p.matcher(neighbor.toString());
-//        if(!m.matches()) {
-////            System.out.println(this + " " +  row + " " + col);
-////            System.out.println(neighbor + " bad neighbor");
-////            StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-////            for (int i = 1; i < stackTrace.length; i++) {
-////                System.out.println("Called from: " + stackTrace[i].getClassName() + "." + stackTrace[i].getMethodName() +
-////                        " (" + stackTrace[i].getFileName() + ":" + stackTrace[i].getLineNumber() + ")");
-////            }
-//            return null;
-//        }
         return new Square(this.row + row, this.col + col);
     }
 

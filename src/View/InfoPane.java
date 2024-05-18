@@ -1,4 +1,4 @@
-package View.pieces;
+package View;
 
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
@@ -11,12 +11,14 @@ import javafx.scene.text.Text;
  * Represents an information panel displaying player information such as name, remaining walls, and color.
  */
 public class InfoPane extends Pane {
-    private int yOffset = 10;
+    private static int playerStatsOffset = 10;
 
     /**
      * Constructs a new information panel.
      */
-    public InfoPane() {}
+    public InfoPane() {
+
+    }
 
     /**
      * Adds player information to the information panel.
@@ -25,17 +27,17 @@ public class InfoPane extends Pane {
      * @param wallsLeft   the number of walls left for the player
      * @param playerColor the color of the player
      */
-    public void addInfo(String playerName, int wallsLeft, String playerColor) {
+    public void createPlayerStats(String playerName, int wallsLeft, String playerColor) {
         // Create a text node to display player information
         Text infoText = new Text();
         infoText.setText("Player: " + playerName + "\nWalls left: " + wallsLeft);
         infoText.setFill(Color.valueOf(playerColor));
         infoText.setFont(Font.font("Verdana", FontWeight.NORMAL, 12));
-        infoText.setTranslateY(yOffset);
+        infoText.setTranslateY(playerStatsOffset);
         // Add the text node to the information panel
         getChildren().add(infoText);
         // Increment Y offset for next player information
-        yOffset += 50;
+        playerStatsOffset += 50;
     }
 
     /**
@@ -46,7 +48,7 @@ public class InfoPane extends Pane {
      * @param wallsLeft   the updated number of walls left for the player
      * @param playerColor the updated color of the player
      */
-    public void updateInfo(int currentTurn, String playerName, int wallsLeft, String playerColor) {
+    public void updatePlayerStats(int currentTurn, String playerName, int wallsLeft, String playerColor) {
         // Retrieve the text node corresponding to the player's information
         Text infoText = (Text) getChildren().get(currentTurn);
         // Update the text content with the new player information
@@ -54,5 +56,7 @@ public class InfoPane extends Pane {
         infoText.setFill(Color.valueOf(playerColor));
         infoText.setFont(Font.font("Verdana", FontWeight.NORMAL, 12));
     }
+
+
 }
 

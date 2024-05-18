@@ -1,18 +1,19 @@
 package Controller;
 import Model.*;
 
+import java.util.ArrayList;
+import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class GameRules {
-    private final int MAX_PLAYERS = 2;
     private final Player[] players;
     private final Board board;
 
     private int turn;
     private final int startingPlayer;
     private static int moveCounter;
-    private static int headstart = 0;
+    private final Stack<String> moveStack = new Stack<>();
 
 
     /**
@@ -21,6 +22,7 @@ public class GameRules {
      * @param startingPlayer A number that is used to index the starting player.
      */
     public GameRules(int startingPlayer) {
+        int MAX_PLAYERS = 2;
         this.players = new Player[MAX_PLAYERS];
         this.board = new Board();
 
@@ -52,25 +54,27 @@ public class GameRules {
         }
         if (isValidWallSyntax(move)) { // Check if the move is a wall move in syntax.
             Wall wall = new Wall(move);
-            if(wall.equals(new Wall("e7h"))) {
-                System.out.println("on e7h");
-                isValidWallPlacement(wall);
-            }
             if (isValidWallPlacement(wall)) {
                 addWall(wall);
+                moveStack.add(wall.toString());
                 updateTurn();
                 return true;
             }
         } else if(move.length() == 2) { // It's a traversal move.
             Square newPos = new Square(move);
             Square oldPos = getCurrentPlayerPos();
-            if (isValidTraversal(oldPos, newPos)) {
+            if (isValidTraversal(oldPos, newPos, getOtherPlayerPos())) {
                 players[getTurn()].setPosition(newPos);
+                moveStack.add(newPos.toString());
                 updateTurn();
                 return true;
             }
         }
         return false;
+    }
+
+    public Stack<String> getMoveStack() {
+        return moveStack;
     }
 
     /**
@@ -110,7 +114,7 @@ public class GameRules {
     public boolean isValidWallPlacement(Wall wall) {
         if (players[getTurn()].getWallsLeft() <= 0 || !isValidWallSyntax(wall.toString()))
             return false;
-        return board.isLegalWallPlacment(wall, players[0], players[1]);
+        return board.isLegalWallPlacement(wall, players[0], players[1]);
     }
 
     /**
@@ -140,8 +144,8 @@ public class GameRules {
      * @param dest The square to move to.
      * @return True if the traversal is valid, false otherwise
      */
-    public boolean isValidTraversal(Square from, Square dest) {
-        return board.isLegalTraversal(from, dest, getOtherPlayerPos());
+    public boolean isValidTraversal(Square from, Square dest, Square occupiedSquare) {
+        return board.isLegalTraversal(from, dest, occupiedSquare);
     }
 
     /**
@@ -154,12 +158,8 @@ public class GameRules {
     }
 
     private void updateTurn() {
-        if (headstart != 0) {
-            headstart--;
-        } else {
-            turn++;
-            moveCounter++;
-        }
+        turn++;
+        moveCounter++;
     }
 
     /**
@@ -169,7 +169,7 @@ public class GameRules {
      * @return True if the wall blocks the goal while not intersecting other, false otherwise.
      */
     public boolean doesBlockPathToGoal(Wall wall) {
-        return !board.doesIntersectOtherWalls(wall) && board.doesWallBlockPathToGOal(wall, players[0], players[1]);
+        return !board.doesWallCrossAnother(wall) && board.doesWallBlockPathToGoal(wall, players[0], players[1]);
     }
 
     /**
@@ -178,9 +178,20 @@ public class GameRules {
      * @param wall A wall to check if it intersects others.
      * @return True if it does, false otherwise.
      */
-    public boolean doesIntersectOtherWalls(Wall wall) {
-        return board.doesIntersectOtherWalls(wall);
+    public boolean doesWallCrossOthers(Wall wall) {
+        return board.doesWallCrossAnother(wall);
     }
+
+    public ArrayList<Wall> getCrossingWalls(Wall wallToCross) {
+        ArrayList<Wall> crossingWalls = board.getCrossingWalls(wallToCross);
+        ArrayList<Wall> crossingLegalWalls = new ArrayList<>();
+        for(Wall wall: crossingWalls) {
+            if(isValidWallPlacement(wall))
+                crossingLegalWalls.add(wall);
+        }
+        return crossingLegalWalls;
+    }
+
 
 
     /**
@@ -191,7 +202,7 @@ public class GameRules {
      * @return True if they intersect, false otherwise.
      */
     public boolean doPairIntersect(Wall wall1, Wall wall2) {
-        return board.doWallsIntersect(wall1, wall2);
+        return board.doWallsCrossEachOther(wall1, wall2);
     }
 
     /**
@@ -202,6 +213,7 @@ public class GameRules {
     public int getTurn() {
         return turn % 2;
     }
+
 
     /**
      * Gets the position of the current player.

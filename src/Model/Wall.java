@@ -83,12 +83,6 @@ public class Wall {
 
 
     public String toString() {
-        try {
-            return startingSq.toString() + orientation.name().toLowerCase().charAt(0);
-        }
-        catch (Exception e) {
-            System.out.println("yo");
-        }
         return startingSq.toString() + orientation.name().toLowerCase().charAt(0);
     }
 

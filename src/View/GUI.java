@@ -2,7 +2,6 @@ package View;
 
 import Controller.ClientHandler;
 import Controller.ViewUpdater;
-import View.pieces.InfoPane;
 import View.pieces.Pawn;
 import View.pieces.Pawn.PawnColor;
 import View.pieces.Pawn.PawnType;
@@ -196,7 +195,7 @@ public class GUI extends Application {
         // Add information about each pawn to the info panel
         for (Pawn pawn : pawnList) {
             int id = pawn.getType().ordinal();
-            panel.addInfo(pawn.getType().name(), clientHandler.getPlayerWallsLeft(id), pawn.getColor().name());
+            panel.createPlayerStats(pawn.getType().name(), clientHandler.getPlayerWallsLeft(id), pawn.getColor().name());
         }
         // Set the position of the info panel relative to the game board
         panel.setTranslateX(BOARD_DIMENSION * TILE_SIZE + 10);
@@ -215,7 +214,7 @@ public class GUI extends Application {
             // Check if the pawn corresponds to the current player's turn
             if (id == playerTurn) {
                 // Update the information displayed in the info panel for the current player
-                infoPane.updateInfo(id, pawn.getType().name(), clientHandler.getPlayerWallsLeft(id), pawn.getColor().name());
+                infoPane.updatePlayerStats(id, pawn.getType().name(), clientHandler.getPlayerWallsLeft(id), pawn.getColor().name());
             }
         }
     }
@@ -351,6 +350,7 @@ public class GUI extends Application {
         popupStage.setTitle("Winner!");
         popupStage.show();
     }
+
 
 
     public static void main(String[] args) {

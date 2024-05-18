@@ -6,6 +6,7 @@ import View.pieces.Walls.HorizontalWall;
 import View.pieces.Walls.VerticalWall;
 
 import java.util.LinkedList;
+import java.util.Stack;
 
 import static Utilities.Constants.BOARD_SIZE;
 import static Utilities.Constants.TILE_SIZE;
@@ -33,13 +34,12 @@ public class ViewUpdater {
      * Fills a vertical wall.
      *
      * @param wall1     The first vertical wall.
-     * @param isPressed Indicates if the wall is being pressed.
      */
-    public void fillVerticalWall(VerticalWall wall1, boolean isPressed) {
+    public void fillVerticalWall(VerticalWall wall1) {
         int row = wall1.getRow();
         int col = wall1.getCol();
         VerticalWall wall2 = view.findVerticalWall(row - 1, col);
-        view.fillWall(wall1, wall2, isPressed);
+        view.fillWall(wall1, wall2, false);
     }
 
     /**
@@ -58,13 +58,12 @@ public class ViewUpdater {
      * Fills a horizontal wall on the human side.
      *
      * @param wall1     The first horizontal wall.
-     * @param isPressed Indicates if the wall is being pressed.
      */
-    public void fillHorizontalWall(HorizontalWall wall1, boolean isPressed) {
+    public void fillHorizontalWall(HorizontalWall wall1) {
         int row = wall1.getRow();
         int col = wall1.getCol();
         HorizontalWall wall2 = view.findHorizontalWall(row, col + 1);
-        view.fillWall(wall1, wall2, isPressed);
+        view.fillWall(wall1, wall2, false);
     }
 
     /**
@@ -130,8 +129,11 @@ public class ViewUpdater {
     public void updatePawnPosition(int row, int col, int playerTurn) {
         if (row == -1 || col == -1) {
             view.updatePawnLocation(playerTurn, -1, -1);
-        } else
-            view.updatePawnLocation(playerTurn, col * TILE_SIZE, (BOARD_SIZE - TILE_SIZE) - row * TILE_SIZE);
+        } else {
+            int xLocation = col * TILE_SIZE;
+            int yLocation = (BOARD_SIZE - TILE_SIZE) - row * TILE_SIZE;
+            view.updatePawnLocation(playerTurn, xLocation, yLocation);
+        }
     }
 
     /**
@@ -142,4 +144,21 @@ public class ViewUpdater {
     public void setWinner(int playerTurn) {
         view.showWinner(playerTurn);
     }
+
+    public void showMoves(Stack<String> moves) {
+        for(int i = 0; i < moves.size(); i+=2) {
+            System.out.print(moves.get(i));
+            if (i != moves.size() - 1) {
+                System.out.print(", ");
+            }
+        }
+        System.out.println();
+        for(int j = 1; j < moves.size(); j+=2) {
+            System.out.print(moves.get(j));
+            if (j != moves.size() - 1) {
+                System.out.print(", ");
+            }
+        }
+    }
+
 }

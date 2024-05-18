@@ -4,9 +4,7 @@ import Model.Player;
 import Model.Square;
 import Model.Wall;
 
-
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import static Utilities.BFS.calculateBFS;
 import static Utilities.Constants.BOARD_DIMENSION;
@@ -15,14 +13,13 @@ import static Utilities.Constants.BOARD_DIMENSION;
  * This class contains the algorithm to decide a move for the AI player.
  */
 public class AI {
-
     private final GameRules gameRules;
+
     private final ViewUpdater viewUpdater;
     private final int agentID;
     private final Player agentPlayer;
     private final Player opponentPlayer;
     private List<Square>[] graphOfBoard;
-    private final ArrayList<Square> totalPath = new ArrayList<>();
 
 
     /**
@@ -47,10 +44,12 @@ public class AI {
      */
     public void AiTurn() {
         setGraphOfBoard(gameRules.getBoard().graph);
-        if (agentPlayer.getWallsLeft() == 0)
-            takeShortestPath();
-        else
-            compareBetweenPaths();
+        if(gameRules.getTurn() == agentID) {
+            if (agentPlayer.getWallsLeft() == 0)
+                takeShortestPath();
+            else
+                compareBetweenPaths();
+        }
     }
 
     /**
@@ -58,7 +57,7 @@ public class AI {
      * shortest path to the destination.
      */
     private void takeShortestPath() {
-        ArrayList<Square> path = calculatePath(agentPlayer, opponentPlayer.getPosition());
+        List<Square> path = calculatePath(agentPlayer, opponentPlayer.getPosition());
         makeMove(path.get(1).toString()); // Index 0 is the player's current position.
     }
 
@@ -71,101 +70,55 @@ public class AI {
      */
     private ArrayList<Square> calculatePath(Player movingPlayer, Square occupiedSquare) {
         ArrayList<Square> shortestPath = calculateBFS(getGraphOfBoard(), movingPlayer.getPosition(), movingPlayer.getDestRow());
-        if (shortestPath.contains(occupiedSquare) && shortestPath.size() <= 2) { // The other player is sitting on the destination row.
-            shortestPath.remove(occupiedSquare); // Remove the square
-
-            // Calculate the potential pawn moves.
-            ArrayList<Square> potentialMoves = generatePawnMoves(movingPlayer.getPosition());
-            for(Square square: potentialMoves) {
-                // From the potential moves look for one that is on the destination row.
-                if(square.getRow() == movingPlayer.getDestRow())
-                    shortestPath.add(square);
-            }
-            if(shortestPath.size() == 1) {
-                // Wasn't able to add a square which is on the destination row.
-                shortestPath.add(potentialMoves.get(0));
-            }
-        }
-        // The occupied square is somewhere along the path - A jump is needed.
-        if (shortestPath.contains(occupiedSquare) && shortestPath.size() > 2) {
+        if(shortestPath.contains(occupiedSquare)) {
+            int occupiedSquareIndex = shortestPath.indexOf(occupiedSquare);
             shortestPath.remove(occupiedSquare);
 
-            // A check is needed to see if the jump is a direct jump (no back wall)
-            // or indirect jump (back wall), in that case the player needs to check to one side of the occupied square.
-            if (!gameRules.isValidTraversal(shortestPath.get(0), shortestPath.get(1))) {
-                // If enters - indirect jump.
-                ArrayList<Square> possibleMoves = generatePawnMoves(movingPlayer.getPosition());
-                ArrayList<Square> currentPath;
-                int minPathLength = Integer.MAX_VALUE;
-                for (Square firstMove : possibleMoves) {
-                    // Search for the shortest path from all the possible squares.
-                    currentPath = calculateBFS(getGraphOfBoard(), firstMove, movingPlayer.getDestRow());
-                    if (currentPath.size() < minPathLength) {
-                        minPathLength = currentPath.size();
-                        shortestPath = currentPath;
+            if(occupiedSquareIndex == shortestPath.size()) {
+                // Occupied square is on the last square in the path. Was in size()-1 but was already removed.
+
+                // Generate potential moves from the last square.
+                ArrayList<Square> potentialMoves = generatePawnMoves(shortestPath.get(shortestPath.size() - 1), occupiedSquare);
+                boolean gotSquareWithTargetRow = false;
+                for(int i = 0; i < potentialMoves.size() && ! gotSquareWithTargetRow; i++) {
+                    // From the potential moves look for one that is on the destination row.
+                    if(potentialMoves.get(i).getRow() == movingPlayer.getDestRow()) {
+                        shortestPath.add(potentialMoves.get(i));
+                        gotSquareWithTargetRow = true;
                     }
                 }
-                // Add the movingPlayer's square because short path was calculated from the first move in the alternate path.
-                shortestPath.add(0, movingPlayer.getPosition());
+                if(shortestPath.size() == 1) {
+                    // Wasn't able to add a square which is on the destination row.
+                    shortestPath.add(potentialMoves.get(0));
+                }
+            }
+            else if(shortestPath.size() > 2) {
+                // Need to check if the jump is a direct jump (no back wall)
+                // or indirect jump (back wall), in that case the player needs to check to one side of the occupied square.
+                if (!gameRules.isValidTraversal(shortestPath.get(occupiedSquareIndex-1), shortestPath.get(occupiedSquareIndex), occupiedSquare)) {
+                    // If enters - indirect jump because traversal from before the occupiedSquare to the square after it (now at occupied index because occupied was removed).
+
+                    // Clear the list from the occupied index till the end.
+                    shortestPath.subList(occupiedSquareIndex, shortestPath.size()).clear();
+                    ArrayList<Square> possibleMoves = generatePawnMoves(shortestPath.get(shortestPath.size()-1), occupiedSquare);
+
+                    ArrayList<Square> currentPath;
+                    ArrayList<Square> bestPath = new ArrayList<>();
+                    int minPathLength = Integer.MAX_VALUE;
+                    for (Square move : possibleMoves) {
+                        // Search for the shortest path from all the possible squares.
+                        currentPath = calculateBFS(getGraphOfBoard(), move, movingPlayer.getDestRow());
+                        if (currentPath.size() < minPathLength) {
+                            minPathLength = currentPath.size();
+                            bestPath = currentPath;
+                        }
+                    }
+                    shortestPath.addAll(bestPath);
+                    shortestPath.remove(occupiedSquare); // LAST THING UPDATED
+                }
             }
         }
         return shortestPath;
-    }
-
-    /**
-     * Method to check if the agent is the starting player.
-     *
-     * @return True if the agent is the starting player, false otherwise.
-     */
-    private boolean isAgentStarting() {
-        return gameRules.getStartingPlayer() == agentID;
-    }
-
-    /**
-     * Method to check if the game is after the fifth round.
-     *
-     * @return True if it's after the fifth round, false otherwise.
-     */
-    private boolean isAfterFifthRound() {
-        return gameRules.getMoveNum() > 10;
-    }
-
-    /**
-     * Method to check if the opponent placed a wall.
-     *
-     * @return True if the opponent placed a wall, false otherwise.
-     */
-    private boolean opponentPlacedWall() {
-        return opponentPlayer.getWallsLeft() < 10;
-    }
-
-    /**
-     * Method to check if the opponent is close to its destination compared to the agent.
-     *
-     * @param agentPathLength    The length of the agent path.
-     * @param opponentPathLength The length of the opponent path.
-     * @param extraForOpponent   Additional steps considered for the opponent's path.
-     * @return True if the opponent is closer, false otherwise.
-     */
-    private boolean isOpponentCloser(int agentPathLength, int opponentPathLength, int extraForOpponent) {
-        return agentPathLength > opponentPathLength + extraForOpponent;
-    }
-
-
-    /**
-     * Method that determines whether a "head start" for the opponent is needed.
-     * The "head start" is for handling the case that the opponent is the starting player which means
-     * that from the start of the game it will be close to its goal.
-     * In that case the agent shouldn't just try to block the opponent from the start, so it how much closer can
-     * the opponent be until it's a real problem.
-     *
-     * @return 2 if the opponent is the starting player and 5th round not yet reached,
-     * or opponent is the starting player, but it placed a wall already.
-     */
-    private int decideOnOpponentHeadStart() {
-        if (isAgentStarting() || (!isAgentStarting() && isAfterFifthRound()) || (!isAgentStarting() && opponentPlacedWall()))
-            return 0;
-        return 2;
     }
 
     /**
@@ -174,54 +127,13 @@ public class AI {
     private void compareBetweenPaths() {
         ArrayList<Square> agentPath = calculatePath(agentPlayer, opponentPlayer.getPosition());
         ArrayList<Square> opponentPath = calculatePath(opponentPlayer, agentPlayer.getPosition());
-
         int opponentHeadStart = decideOnOpponentHeadStart();
-
         if (isOpponentCloser(agentPath.size(), opponentPath.size(), opponentHeadStart)) {
-            // Opponent is considered closer to destination.
-            if(blockOpponent(opponentPath)) // A wall to block the opponent was found
+            if(placeOffensiveWall(opponentPath, agentPath)) // A wall to block the opponent was found
                 return;
         }
         checkIfOpponentHasWalls(agentPath, opponentPath);
-    }
 
-    /**
-     * Searches for a wall that stands in the path of the opponent.
-     * Tries to minimize the value of AgentBFS-OpponentBFS,
-     *
-     * @param opponentPath Path of the opponent.
-     * @return True if a wall is successfully placed, false otherwise.
-     */
-    private boolean blockOpponent(ArrayList<Square> opponentPath) {
-        ArrayList<Wall> increasePathWalls;
-        int minDifference = Integer.MAX_VALUE;
-        int newOpponentPath = 0, newAgentPath, newPathDifference;
-        Wall bestWall = null;
-
-        // Search for the wall that has minimum value for AgentBFS-OpponentBFS.
-        // If agent's path length gets longer (bad) the number gets bigger.
-        // If opponent's path length gets longer (good) the number gets smaller.
-        // In other words, trying to find the wall that increased the most for the opponent while not lengthening the agent's by as much.
-        for(int i = 0; i < opponentPath.size() - 1; i++) {
-            increasePathWalls = getWallsBetween(opponentPath.get(i), opponentPath.get(i+1));
-            for(Wall wall : increasePathWalls) {
-                addVirtualWall(wall);
-                newAgentPath = calculatePath(agentPlayer, opponentPlayer.getPosition()).size();
-                newOpponentPath = calculatePath(opponentPlayer, agentPlayer.getPosition()).size();
-                newPathDifference = newAgentPath - newOpponentPath;
-                if (newPathDifference < minDifference) {
-                    minDifference = newAgentPath - newOpponentPath;
-                    bestWall = wall;
-                }
-                removeVirtualWall(wall);
-            }
-        }
-        if (bestWall == null || opponentPath.size() == newOpponentPath) {
-            // Wall not found OR the wall doesn't increase the opponent's path at all.
-            return false;
-        }
-        makeMove(bestWall.toString());
-        return true;
     }
 
     /**
@@ -233,15 +145,66 @@ public class AI {
     private void checkIfOpponentHasWalls(ArrayList<Square> agentPath, ArrayList<Square> opponentPath) {
         if (opponentPlayer.getWallsLeft() == 0) {
             takeShortestPath();
-            return;
         }
-        ArrayList<Square> quickPath = searchQuickPath(agentPath, opponentPath);
-        if(quickPath != null && blockQuickPath(opponentPath, quickPath)) {
-            // A quick path exists and was able to block it.
-            return;
+        else {
+            ArrayList<Square> quickPath = searchQuickPath(agentPath, opponentPath);
+            if(quickPath != null && blockQuickPath(opponentPath, quickPath)) {
+                return;
+            }
+            searchForKillerWalls(agentPath, opponentPath);
         }
-        // A quick path was not found / couldn't block it.
-        searchForKillerWalls(agentPath, opponentPath);
+    }
+
+    /**
+     * Searches for a wall that stands in the path of the opponent.
+     * Tries to minimize the value of AgentBFS-OpponentBFS,
+     *
+     * @param opponentPath Path of the opponent.
+     * @return True if a wall is successfully placed, false otherwise.
+     */
+    private boolean placeOffensiveWall(ArrayList<Square> opponentPath, ArrayList<Square> agentPath) {
+        ArrayList<Wall> increasePathWalls;
+        int minimizeBothValues = Integer.MAX_VALUE;
+        int newOpponentPath, newAgentPath, distanceFromOpponent;
+        int opponentPathWithBestWall = 0, agentPathWithBestWall = 0;
+        int pathDifference;
+        Wall bestWall = null;
+
+        // Search for the wall that has minimum value for AgentBFS-OpponentBFS.
+        // If agent's path length gets longer (bad) the number gets bigger.
+        // If opponent's path length gets longer (good) the number gets smaller.
+        // In other words, trying to find the wall that increased the most for the opponent while not lengthening the agent's by as much.
+        for(int i = 0; i < opponentPath.size() - 1; i++) {
+            increasePathWalls = getWallsBetween(opponentPath.get(i), opponentPath.get(i+1));
+            for(Wall wall : increasePathWalls) {
+
+                addVirtualWall(wall);
+                newAgentPath = calculatePath(agentPlayer, opponentPlayer.getPosition()).size();
+                newOpponentPath = calculatePath(opponentPlayer, agentPlayer.getPosition()).size();
+                removeVirtualWall(wall);
+                pathDifference = newAgentPath-newOpponentPath;
+
+                distanceFromOpponent = calculateManhattanDistance(opponentPath.get(0), wall.getStartingSq());
+
+                if(pathDifference+distanceFromOpponent < minimizeBothValues) {
+                    minimizeBothValues = pathDifference+distanceFromOpponent;
+                    opponentPathWithBestWall = newOpponentPath;
+                    agentPathWithBestWall = newAgentPath;
+                    bestWall = wall;
+                }
+            }
+        }
+        if(bestWall == null) {
+            return false;
+        }
+        if(opponentPathWithBestWall == opponentPath.size())
+            // Didn't change the length of the opponent's path.
+            return false;
+        if(opponentPathWithBestWall - opponentPath.size() <= agentPathWithBestWall - agentPath.size())
+            // Increased the path of the agent the same or more than the opponent's.
+            return false;
+        makeMove(bestWall.toString());
+        return true;
     }
 
     /**
@@ -262,14 +225,14 @@ public class AI {
             if (width <= 2)
                 quickPath.add(opponentPath.get(i));
 
-            // If there wasn't a deviation yet, and it's not the first square (player's current square).
+                // If there wasn't a deviation yet, and it's not the first square (player's current square).
             else if (!foundDeviation && i != 0)
                 foundDeviation = true;
             else
                 laneExists = false;
         }
 
-        if (quickPath.size() < 6) // Too short to be considered a short path.
+        if (quickPath.size() < 3) // Too short to be considered a short path.
             return null;
 
         if (quickPath.size() > opponentPath.size() - 2)
@@ -305,11 +268,10 @@ public class AI {
 
         int opponentPathLen = opponentPath.size();
         addVirtualWall(wall);
-        int newOpponentPathLen = calculatePath(opponentPlayer, agentPlayer.getPosition()).size();
+        ArrayList<Square> newOpponentPathLen = calculatePath(opponentPlayer, agentPlayer.getPosition());
         removeVirtualWall(wall);
-
         // Check if the wall even increase the opponent's path.
-        if(newOpponentPathLen > opponentPathLen) {
+        if(newOpponentPathLen.size() > opponentPathLen) {
             makeMove(wall.toString());
             return true;
         }
@@ -327,7 +289,6 @@ public class AI {
         Square sq1, sq2, sq3, sq4;
         ArrayList<Wall> blockingWalls1 = new ArrayList<>(), blockingWalls2;
         Wall wallThatBlocksPath = null;
-        int rowOffsetDirection = 0;
 
         // Calculates the direction on which the path goes, up or down.
         int verticalDirection = playerPath.get(startPathIndex+1).getRow()-playerPath.get(startPathIndex).getRow();
@@ -335,17 +296,18 @@ public class AI {
             return null;
         }
 
+        int rowOffsetDirection = 0;
         // Calculates the first square in the path and the one after it.
-        Square pathStart = playerPath.get(startPathIndex);
-        Square afterPathStartSq = playerPath.get(startPathIndex + 1);
-        int otherLaneOffset = getOtherLaneOffset(pathStart);
+        Square firstSquareInPath = playerPath.get(startPathIndex);
+        Square secondSquareInPath = playerPath.get(startPathIndex + 1);
+        int otherLaneOffset = getOtherLaneOffset(firstSquareInPath);
 
         if (otherLaneOffset == 0) { // Lane is 1 column wide.
             // While no walls were found and the squares which walls are calculated from are on the board.
-            while (blockingWalls1.isEmpty() && (pathStart.getRow()+rowOffsetDirection >= 0 && pathStart.getRow()+rowOffsetDirection < 9)) {
+            while (blockingWalls1.isEmpty() && (secondSquareInPath.getRow()+rowOffsetDirection >= 0 && secondSquareInPath.getRow()+rowOffsetDirection < 9)) {
                 // Try to find a wall that blocks passage between sq1 to sq2.
-                sq1 = pathStart.neighbor(rowOffsetDirection, 0);
-                sq2 = afterPathStartSq.neighbor(rowOffsetDirection, 0);
+                sq1 = firstSquareInPath.neighbor(rowOffsetDirection, 0);
+                sq2 = secondSquareInPath.neighbor(rowOffsetDirection, 0);
                 blockingWalls1 = getWallsBetween(sq1, sq2);
                 rowOffsetDirection += verticalDirection;
             }
@@ -356,15 +318,15 @@ public class AI {
             // In this case the lane is 2 columns wide and the "otherLaneOffset" gives an offset of -1/1 to the column to get to that other column in the path.
             // Try to find a wall that blocks both columns in the narrow path.
             boolean found = false;
-            while (!found && (pathStart.getRow()+rowOffsetDirection >= 0 && pathStart.getRow()+rowOffsetDirection < 9)) {
+            while (!found && (secondSquareInPath.getRow()+rowOffsetDirection >= 0 && secondSquareInPath.getRow()+rowOffsetDirection < 9)) {
 
                 // Squares on the other lane of the narrow path.
-                sq1 = pathStart.neighbor(rowOffsetDirection, otherLaneOffset);
-                sq2 = afterPathStartSq.neighbor(rowOffsetDirection, otherLaneOffset);
+                sq1 = firstSquareInPath.neighbor(rowOffsetDirection, otherLaneOffset);
+                sq2 = secondSquareInPath.neighbor(rowOffsetDirection, otherLaneOffset);
 
                 // Squares on the lane that the player is on.
-                sq3 = pathStart.neighbor(rowOffsetDirection, 0);
-                sq4 = afterPathStartSq.neighbor(rowOffsetDirection, 0);
+                sq3 = firstSquareInPath.neighbor(rowOffsetDirection, 0);
+                sq4 = secondSquareInPath.neighbor(rowOffsetDirection, 0);
 
                 blockingWalls1 = getWallsBetween(sq1, sq2);
                 blockingWalls2 = getWallsBetween(sq3, sq4);
@@ -411,29 +373,110 @@ public class AI {
      * @param opponentPath The path of the opponent.
      */
     private void searchForKillerWalls(ArrayList<Square> agentPath, ArrayList<Square> opponentPath) {
-        boolean blockedKillerWalls;
-        ArrayList<Wall> walls = drasticallyIncreasePath(agentPlayer, agentPath, opponentPath.get(0));
+        ArrayList<Wall> walls = new ArrayList<>();
         ArrayList<Wall> killerWalls = new ArrayList<>();
+        ArrayList<Square> pathArraySubList = new ArrayList<>();
 
-        // Check for every wall if it's really a killer wall.
-        for(Wall wall : walls) {
-            if(isReallyKillerWall(wall))
-                killerWalls.add(wall);
+        for (int i = 1; i < agentPath.size() - 1; i++) {
+
+            // Create a sub list from agentPath, from i until the end of the list.
+            List<Square> pathSubList = agentPath.subList(i, agentPath.size());
+            pathArraySubList.addAll(pathSubList);
+
+            changePosition(agentPath.get(i));
+            ArrayList<Wall> increasingPathWalls = drasticallyIncreasePath(agentPlayer, pathArraySubList, opponentPath.get(0));
+            if (!increasingPathWalls.isEmpty()) {
+                // Add all the walls that drastically increase the path of the agent, from any square along the path.
+                walls.addAll(increasingPathWalls);
+            }
+            pathArraySubList.clear();
         }
-        if(killerWalls.isEmpty()) {
-            takeShortestPath();
-        } else {
-            // Call method and if the return value is false that means no wall that blocks ALL killer wall was found.
-            blockedKillerWalls = blockKillerWalls(killerWalls);
-            if(!blockedKillerWalls) {
-                // Take alternate path around a killer wall.
-                addVirtualWall(killerWalls.get(0));
-                ArrayList<Square> alternatePath = calculatePath(agentPlayer, opponentPath.get(0));
-                removeVirtualWall(killerWalls.get(0));
-                makeMove(alternatePath.get(1).toString());
+        changePosition(agentPath.get(0));
+        walls = sortWalls(walls);
+
+        for (Wall wall : walls) {
+            // && !isAdjacentToPlayer(agentPlayer.getPosition(), wall.getStartingSq())
+            if (isReallyKillerWall(wall, opponentPath.size(), agentPath.size())) {
+                killerWalls.add(wall);
             }
         }
+        boolean blockedKillerWalls = blockKillerWalls(killerWalls);
+        if(!blockedKillerWalls)
+            takeShortestPath();
     }
+
+    /**
+     * Sort the list of walls by how much they increase the length for the player.
+     * Implements bubble sort because the list will always be small.
+     *
+     * @param walls List of walls to sort.
+     * @return A list of walls sorted, from high to low.
+     */
+    private ArrayList<Wall> sortWalls(ArrayList<Wall> walls) {
+        walls = removeWallDuplicates(walls);
+        for (int i = 0; i < walls.size() - 1; i++) {
+            for (int j = i + 1; j < walls.size(); j++) {
+                Wall wall1 = walls.get(i);
+                Wall wall2 = walls.get(j);
+                addVirtualWall(wall1);
+                int length1 = calculatePath(agentPlayer, opponentPlayer.getPosition()).size();
+                removeVirtualWall(wall1);
+                addVirtualWall(wall2);
+                int length2 = calculatePath(agentPlayer, opponentPlayer.getPosition()).size();
+                removeVirtualWall(wall2);
+
+                if (length2 > length1) {
+                    // Swap walls if wall2 has a higher impact
+                    Wall temp = walls.get(i);
+                    walls.set(i, walls.get(j));
+                    walls.set(j, temp);
+                }
+            }
+        }
+        return walls;
+    }
+
+    /**
+     * Removes duplicate elements in a wall list.
+     *
+     * @param walls List of walls.
+     * @return A list of walls containing only distinct walls.
+     */
+    private ArrayList<Wall> removeWallDuplicates(ArrayList<Wall> walls) {
+        ArrayList<Wall> newList = new ArrayList<>();
+        for(Wall wall : walls) {
+            if(!newList.contains(wall))
+                newList.add(wall);
+        }
+        return newList;
+    }
+
+    /**
+     * Method to check if a "killer wall" is actually a killer wall, does this by calculations of the players' paths when
+     * the wall is placed.
+     *
+     * @param wall A wall to check if its actually killer.
+     * @param opponentPathLength Length of the opponent's path.
+     * @return True if the wall is a killer wall, false otherwise.
+     */
+    private boolean isReallyKillerWall(Wall wall, int opponentPathLength, int agentPathLength) {
+        addVirtualWall(wall);
+        int newOpponentPathLength = calculatePath(opponentPlayer, agentPlayer.getPosition()).size();
+        removeVirtualWall(wall);
+        if(newOpponentPathLength - opponentPathLength >= 2) {
+            // If the wall increases the path of the opponent that means it's in his path as well,
+            // so it's not likely that the opponent will place it.
+            return false;
+        }
+        if(agentPathLength > opponentPathLength+4) {
+            // If agent path is already much longer than opponent's, there is no real reason to try to block
+            // such wall because it's better off to try and close the gap rather than wasting a wall.
+            return false;
+        }
+        return true;
+
+    }
+
 
     /**
      * Tries to find a wall which when placed makes all killer walls illegal.
@@ -442,60 +485,44 @@ public class AI {
      * @return True if such wall is found, false otherwise.
      */
     private boolean blockKillerWalls(ArrayList<Wall> killerWalls) {
-        Wall blockingWall = null;
-        for(int i = 0; i < killerWalls.size() && blockingWall == null; i++) { // Iterate over all the killerWalls.
-            boolean blocksAllKillerWalls = true;
-
+        Wall blocksMost = null;
+        Wall blocksWorst = null;
+        int maxBlockedWalls = 0;
+        for(int i = 0; i < killerWalls.size() && i <=3; i++) { // Iterate over all the killerWalls.
             addVirtualWall(killerWalls.get(i));
-            ArrayList<Wall> interferingWalls = getIllegalWalls(); // Calculate the walls that are illegal when killerWall is placed (one wall, not the full list).
+            ArrayList<Wall> interferingWalls = getIllegalWalls(); // Calculate the walls that are illegal when the killerWall is placed.
             removeVirtualWall(killerWalls.get(i));
+            interferingWalls.addAll(gameRules.getCrossingWalls(killerWalls.get(i)));
 
             for (Wall interferingWall : interferingWalls) { // Iterate over all the illegal walls.
+                int blockedWalls = 0;
                 addVirtualWall(interferingWall);
-                for (int j = 0; j < killerWalls.size() && blocksAllKillerWalls; j++) { // Iterate over all the killer walls and check if any one them is valid.
-                    if (gameRules.isValidWallPlacement(killerWalls.get(j))) {
-                        // If one wall out of the killer walls is valid that means that the interfering wall doesn't block all killer walls.
-                        blocksAllKillerWalls = false;
-                    }
+                for (Wall killerWall : killerWalls) { // Iterate over all the killer walls and check if any one them is valid.
+                    if (!gameRules.isValidWallPlacement(killerWall))
+                        blockedWalls++;
                 }
                 removeVirtualWall(interferingWall);
-
                 // Check if current interfering wall blocked all killerWalls placements and in itself is valid (without killerWall on board).
-                if (blocksAllKillerWalls && gameRules.isValidWallPlacement(interferingWall)) {
-                    blockingWall = interferingWall;
+                if(gameRules.isValidWallPlacement(interferingWall)) {
+                    if(blockedWalls > maxBlockedWalls) {
+                        maxBlockedWalls = blockedWalls;
+                        blocksMost = interferingWall;
+                    }
+                    if(blocksWorst == null) {
+                        blocksWorst = interferingWall;
+                    }
                 }
             }
         }
-        if(blockingWall != null) {
-            makeMove(blockingWall.toString());
+        if(maxBlockedWalls == 1) {
+            makeMove(blocksWorst.toString());
+            return true;
+        }
+        else if(blocksMost != null) {
+            makeMove(blocksMost.toString());
             return true;
         }
         return false;
-
-    }
-
-    /**
-     * Method to check if a "killer wall" is actually a killer wall, does this by calculations of the players' paths when
-     * the wall is placed.
-     *
-     * @param wall A wall to check if its actually killer.
-     * @return True if the wall is a killer wall, false otherwise.
-     */
-    private boolean isReallyKillerWall(Wall wall) {
-        addVirtualWall(wall);
-        int newAgentPathLength = calculatePath(agentPlayer, opponentPlayer.getPosition()).size();
-        int newOpponentPathLength = calculatePath(opponentPlayer, agentPlayer.getPosition()).size();
-        removeVirtualWall(wall);
-        if (newAgentPathLength <= newOpponentPathLength) {
-            // The wall doesn't make it so that the agent's path is longer than the opponent's, it's not a killer wall.
-            return false;
-        }
-        if(newAgentPathLength - newOpponentPathLength <= 2 && newOpponentPathLength > 5) {
-            // The wall increases the path of the opponent that means it's in his path as well so;
-            // it's not likely that the opponent will place it.
-            return false;
-        }
-        return true;
     }
 
     /**
@@ -529,6 +556,7 @@ public class AI {
         }
         return illegals;
     }
+
 
     /**
      * Blocks the crossing between two squares by placing walls.
@@ -606,13 +634,17 @@ public class AI {
             if (next.equals(opponentPlayer.getPosition())) {
                 next = src.neighbor(0, direction * ++i);
             }
-            if (gameRules.isValidTraversal(prev, next)) {
+            if (gameRules.isValidTraversal(prev, next, agentPlayer.getPosition())) {
                 prev = next;
                 steps++;
             } else
                 finished = true;
         }
         return steps;
+    }
+
+    private void changePosition(Square square) {
+        agentPlayer.setPosition(square);
     }
 
 
@@ -646,10 +678,8 @@ public class AI {
             int turn = gameRules.getTurn();
             if (move.length() == 2) {
                 Square sq = new Square(move);
-                Square before = agentPlayer.getPosition();
                 if (gameRules.commitMove(sq.toString())) {
                     // Valid.
-                    totalPath.add(before);
                     viewUpdater.updatePawnPosition(sq.getRow(), sq.getCol(), turn);
                 }
                 else
@@ -692,14 +722,14 @@ public class AI {
     /**
      * Generates valid pawn moves from the given source square.
      *
-     * @param src The source square.
+     * @param from The source square.
      * @return An ArrayList of valid pawn moves.
      */
-    private ArrayList<Square> generatePawnMoves(Square src) {
+    private ArrayList<Square> generatePawnMoves(Square from, Square occupiedSquare) {
         ArrayList<Square> validMoves = new ArrayList<>();
-        for (Square sq : src.neighbourhood(2)) {
-            if (gameRules.isValidTraversal(src, sq)) {
-                validMoves.add(sq);
+        for (Square neighbor : from.neighbourhood(2)) {
+            if (!neighbor.equals(occupiedSquare) && gameRules.isValidTraversal(from, neighbor, occupiedSquare)) {
+                validMoves.add(neighbor);
             }
         }
         return validMoves;
@@ -716,7 +746,7 @@ public class AI {
             for (int col = 0; col < BOARD_DIMENSION - 1; col++) {
                 Square sq = new Square(row, col);
                 Wall wall = new Wall(sq, Wall.Orientation.HORIZONTAL);
-                if(!gameRules.doesIntersectOtherWalls(wall)) {
+                if(!gameRules.doesWallCrossOthers(wall)) {
                     walls.add(wall);
                 }
             }
@@ -725,7 +755,7 @@ public class AI {
             for (int col = 0; col < BOARD_DIMENSION - 1; col++) {
                 Square sq = new Square(row, col);
                 Wall wall = new Wall(sq, Wall.Orientation.VERTICAL);
-                if(!gameRules.doesIntersectOtherWalls(wall)) {
+                if(!gameRules.doesWallCrossOthers(wall)) {
                     walls.add(wall);
                 }
             }
@@ -744,17 +774,79 @@ public class AI {
     private ArrayList<Wall> drasticallyIncreasePath(Player player, ArrayList<Square> playerPath, Square occupiedSquare) {
         ArrayList<Wall> possibleWalls = generateAllWalls();
         ArrayList<Wall> wallsToIncreasePath = new ArrayList<>();
-        int originalPlayerPathLength = playerPath.size();
-        int newPlayerPathLength;
+        ArrayList<Square> newPlayerPathLength;
         for(Wall wall: possibleWalls) {
             if(gameRules.isValidWallPlacement(wall)) {
                 addVirtualWall(wall);
-                newPlayerPathLength = calculatePath(player, occupiedSquare).size();
-                if(newPlayerPathLength >= originalPlayerPathLength + 4)
+                newPlayerPathLength = calculatePath(player, occupiedSquare);
+                if(newPlayerPathLength.size() >= playerPath.size() + 4) {
                     wallsToIncreasePath.add(wall);
+                }
                 removeVirtualWall(wall);
             }
         }
         return wallsToIncreasePath;
     }
+
+    private int calculateManhattanDistance(Square sq1, Square sq2) {
+        int xDistance = Math.abs(sq1.getCol()-sq2.getCol());
+        int yDistance = Math.abs(sq1.getRow()-sq2.getRow());
+        return xDistance + yDistance;
+    }
+
+    /**
+     * Method that determines whether a "head start" for the opponent is needed.
+     * The "head start" is for handling the case that the opponent is the starting player which means
+     * that from the start of the game it will be close to its goal.
+     * In that case the agent shouldn't just try to block the opponent from the start, so it how much closer can
+     * the opponent be until it's a real problem.
+     *
+     * @return 2 if the opponent is the starting player and 5th round not yet reached,
+     * or opponent is the starting player, but it placed a wall already.
+     */
+    private int decideOnOpponentHeadStart() {
+        if (isAgentStarting() || (!isAgentStarting() && isAfterFifthRound()) || (!isAgentStarting() && opponentPlacedWall()))
+            return 0;
+        return 2;
+    }
+
+    /**
+     * Method to check if the agent is the starting player.
+     *
+     * @return True if the agent is the starting player, false otherwise.
+     */
+    private boolean isAgentStarting() {
+        return gameRules.getStartingPlayer() == agentID;
+    }
+
+    /**
+     * Method to check if the game is after the fifth round.
+     *
+     * @return True if it's after the fifth round, false otherwise.
+     */
+    private boolean isAfterFifthRound() {
+        return gameRules.getMoveNum() > 10;
+    }
+
+    /**
+     * Method to check if the opponent placed a wall.
+     *
+     * @return True if the opponent placed a wall, false otherwise.
+     */
+    private boolean opponentPlacedWall() {
+        return opponentPlayer.getWallsLeft() < 10;
+    }
+
+    /**
+     * Method to check if the opponent is close to its destination compared to the agent.
+     *
+     * @param agentPathLength    The length of the agent path.
+     * @param opponentPathLength The length of the opponent path.
+     * @param extraForOpponent   Additional steps considered for the opponent's path.
+     * @return True if the opponent is closer, false otherwise.
+     */
+    private boolean isOpponentCloser(int agentPathLength, int opponentPathLength, int extraForOpponent) {
+        return agentPathLength > opponentPathLength + extraForOpponent;
+    }
+
 }

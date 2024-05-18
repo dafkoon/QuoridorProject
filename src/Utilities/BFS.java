@@ -10,14 +10,6 @@ import java.util.*;
  */
 public abstract class BFS {
 
-    /**
-     * Calculates the shortest path using breadth-first search (BFS) algorithm.
-     *
-     * @param currentGraph the graph represented as an array of lists of squares
-     * @param srcSq        the source square from which the search begins
-     * @param destRow      the row of the destination square
-     * @return the shortest path from the source square to a square in the specified destination row
-     */
     public static ArrayList<Square> calculateBFS(List<Square>[] currentGraph, Square srcSq, int destRow) {
         ArrayList<Square> path = new ArrayList<>();
         if (currentGraph == null)

@@ -54,9 +54,11 @@ public class ClientHandler {
     }
 
     public void showReachableTiles() {
-        Square src = gameRules.getPlayer(PawnType.HUMAN.ordinal()).getPosition();
-        for (Square sq : src.neighbourhood(2)) {
-            if (gameRules.isValidTraversal(src, sq)) {
+        Square playerSquare = gameRules.getPlayer(PawnType.HUMAN.ordinal()).getPosition();
+        Square occupiedSquare = gameRules.getPlayer(PawnType.AI.ordinal()).getPosition();
+
+        for (Square sq : playerSquare.neighbourhood(2)) {
+            if (gameRules.isValidTraversal(playerSquare, sq, occupiedSquare)) {
                 viewUpdater.showTile(sq.toString());
             }
         }
@@ -166,7 +168,7 @@ public class ClientHandler {
     private void verticalWallEntered(VerticalWall wall) {
         if (wall.getRow() > 1) {
             if (gameRules.isValidWallPlacement(wall.toString(), false))
-                viewUpdater.fillVerticalWall(wall, false); // Fill the wall but don't set it as pressed.
+                viewUpdater.fillVerticalWall(wall); // Fill the wall but don't set it as pressed.
         }
     }
 
@@ -204,7 +206,7 @@ public class ClientHandler {
     private void horizontalWallEntered(HorizontalWall wall) {
         if (wall.getCol() < BOARD_DIMENSION) {
             if (gameRules.isValidWallPlacement(wall.toString(), true))
-                viewUpdater.fillHorizontalWall(wall, false);
+                viewUpdater.fillHorizontalWall(wall);
         }
     }
 
@@ -250,10 +252,13 @@ public class ClientHandler {
         boolean isGameOver = gameRules.gameOver();
         if (isGameOver) {
             viewUpdater.setWinner(PawnType.HUMAN.ordinal());
+            viewUpdater.showMoves(gameRules.getMoveStack());
         } else {
             ai.AiTurn();
-            if (gameRules.gameOver())
+            if (gameRules.gameOver()) {
                 viewUpdater.setWinner(PawnType.AI.ordinal());
+                viewUpdater.showMoves(gameRules.getMoveStack());
+            }
         }
         isHumanTurn = true;
     }

@@ -25,14 +25,6 @@ public class Player {
         this.walls = MAX_WALLS;
     }
 
-    /**
-     * Gets the name of the player.
-     *
-     * @return the name of the player (HUMAN / AI)
-     */
-    public String getName() {
-        return playerName;
-    }
 
     /**
      * Gets the amount of walls the player has left.
